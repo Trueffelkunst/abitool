@@ -451,7 +451,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v4.3 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v4.5 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -476,17 +476,31 @@ const Engine = (function(){
   }
   const PFLICHT_ALLE4=['pruefung','d','m','fs','nw','wsem'];
   function istPflicht(f){return f.istAbiturfach||PFLICHT_ALLE4.indexOf(f.kategorie)!==-1;}
+  /* Einbringungs-Optimierer (Feinmodell, gegen ISB-Einbringungsbeispiele geprüft):
+     - alle 4 HJL verpflichtend: Abiturfächer, Deutsch, Mathe, Leistungsfach, einzige FS, einzige NW, W-Seminar
+     - Fremdsprachen-/Naturwissenschafts-Pool je mind. 4 HJL (bei mehreren Fächern)
+     - Sport (nicht LF) und Zusatzangebot: höchstens 3 HJL
+     - übrige Fächer: 1 HJL streichbar; auf 40 auffüllen; bei Überhang Optionsregel (niedrigste streichen) */
   function waehleBlockI(faecher){
-    const ZIEL=40;let pflicht=[],optBest=[],rest=[];
+    const ZIEL=40;
+    const fsC=faecher.filter(f=>f.kategorie==='fs').length, nwC=faecher.filter(f=>f.kategorie==='nw').length;
+    const cap=f=>((f.kategorie==='sport'&&!f.istLF)||f.kategorie==='zusatz')?3:4;
+    const all4=f=>f.istAbiturfach||f.kategorie==='d'||f.kategorie==='m'||f.kategorie==='wsem'||f.istLF||(f.kategorie==='fs'&&fsC===1)||(f.kategorie==='nw'&&nwC===1);
+    let pflicht=[],optBest=[],rest=[],poolFS=[],poolNW=[];
     faecher.forEach(f=>{
       let hjl=[];['12/1','12/2','13/1','13/2'].forEach((ab,i)=>{
         let p=f.hjl&&f.hjl[i];if(p===''||p==null||isNaN(p))return;
         hjl.push({fid:f.id,fach:f.name,abschnitt:ab,punkte:+p});});
       if(!hjl.length)return;
-      if(istPflicht(f)){pflicht=pflicht.concat(hjl);}
-      else{let s=hjl.slice().sort((a,b)=>b.punkte-a.punkte);
-        optBest=optBest.concat(s.slice(0,3));rest=rest.concat(s.slice(3));}
+      hjl.sort((a,b)=>b.punkte-a.punkte);hjl=hjl.slice(0,cap(f));   /* Obergrenze einbringbarer HJL */
+      if(all4(f)){pflicht=pflicht.concat(hjl);return;}
+      if(f.kategorie==='fs'&&fsC>1){poolFS=poolFS.concat(hjl);return;}
+      if(f.kategorie==='nw'&&nwC>1){poolNW=poolNW.concat(hjl);return;}
+      optBest=optBest.concat(hjl.slice(0,3));rest=rest.concat(hjl.slice(3));   /* übrige Fächer: 1 streichbar */
     });
+    const poolSplit=p=>{p.sort((a,b)=>b.punkte-a.punkte);pflicht=pflicht.concat(p.slice(0,4));optBest=optBest.concat(p.slice(4));};
+    if(poolFS.length)poolSplit(poolFS);   /* Fremdsprachen-Pool: beste 4 verpflichtend */
+    if(poolNW.length)poolSplit(poolNW);   /* Naturwissenschafts-Pool: beste 4 verpflichtend */
     let basis=pflicht.concat(optBest),ausgew,hinweis='';
     if(basis.length<=ZIEL){rest.sort((a,b)=>b.punkte-a.punkte);
       ausgew=basis.concat(rest.slice(0,Math.max(0,ZIEL-basis.length)));}
@@ -544,14 +558,15 @@ const KEY='abiloop.state.v2';
 const KEY_V1='abiloop.state.v1';
 var DEMO=false; /* Demo-Modus: nur Ansicht, speichert nichts */
 const KAT=[['other','Sonstiges'],['pruefung','Abiturfach'],['d','Deutsch'],['m','Mathe'],
-  ['fs','einzige FS'],['nw','einzige NW']];
+  ['fs','Fremdsprache'],['nw','Naturwissenschaft'],['vk','Vertiefungskurs'],['sport','Sport'],['zusatz','Zusatzangebot']];
 /* Auswahlliste echter Oberstufenfächer (Bayern) inkl. sinnvoller Default-Kategorie */
 const FAECHER=[['Deutsch','d'],['Englisch','fs'],['Mathematik','m'],
   ['Französisch','fs'],['Spanisch','fs'],['Italienisch','fs'],['Latein','fs'],['Griechisch','fs'],['Russisch','fs'],
   ['Physik','nw'],['Chemie','nw'],['Biologie','nw'],['Informatik','other'],
   ['Geschichte','other'],['Sozialkunde / Politik u. Gesellschaft','other'],['Geographie','other'],['Wirtschaft und Recht','other'],
   ['Katholische Religionslehre','other'],['Evangelische Religionslehre','other'],['Ethik','other'],
-  ['Kunst','other'],['Musik','other'],['Sport','other'],['Psychologie','other']];
+  ['Kunst','other'],['Musik','other'],['Sport','sport'],['Psychologie','other'],
+  ['Vertiefungskurs Deutsch','vk'],['Vertiefungskurs Mathematik','vk']];
 function inFaecher(n){return FAECHER.some(s=>s[0]===n);}
 function fachOptions(sel){
   return '<option value="">Fach auswählen</option>'+
@@ -728,7 +743,14 @@ function renderSubj(){
   c.querySelectorAll('.del').forEach(b=>b.addEventListener('click',e=>{
     state.faecher.splice(+e.target.dataset.i,1);save();renderAll();}));
 }
-function isPflicht(f){return f.istAbiturfach||['pruefung','d','m','fs','nw','wsem'].indexOf(f.kategorie)!==-1;}
+function isPflicht(f){
+  if(f.istAbiturfach||f.istLF||['pruefung','d','m','wsem'].indexOf(f.kategorie)!==-1)return true;
+  const fsC=(state.faecher||[]).filter(x=>x.kategorie==='fs').length;
+  const nwC=(state.faecher||[]).filter(x=>x.kategorie==='nw').length;
+  if(f.kategorie==='fs'&&fsC===1)return true;   /* einzige FS */
+  if(f.kategorie==='nw'&&nwC===1)return true;   /* einzige NW */
+  return false;
+}
 
 /* ===== W-Seminar: 4 der 40 HJL (Kurs 12/1, 12/2, Seminararbeit-Gesamtergebnis = 2 HJL) ===== */
 function syncWsem(){
@@ -782,21 +804,42 @@ function recompute(){
     if(!ok)r.bestehen.bestanden=false;
   })();
   renderWsem();
-  const noteStr=r.note!=null?fmt(r.note):'–';
-  document.getElementById('heroNote').textContent=noteStr;
-  document.getElementById('heroPunkte').textContent=r.gesamtpunkte;
-  document.getElementById('heroBlockI').textContent=r.blockI.punkte;
-  document.getElementById('heroBlockII').textContent=r.blockII.punkte;
-  document.getElementById('heroBar').style.width=(r.gesamtpunkte/900*100)+'%';
+  /* Hochrechnung: aktueller Schnitt der Halbjahresleistungen → auf 40 HJL + 5 Abiturprüfungen projiziert */
+  let proj=null;
+  (function(){
+    const hjl=r.blockI.hjl||[];if(!hjl.length)return;
+    const avg=hjl.reduce((s,h)=>s+h.punkte,0)/hjl.length;            /* Ø Halbjahresleistung 0–15 */
+    const projBI=Math.min(600,Math.round(avg*40));                   /* Block I auf alle 40 HJL */
+    const det=r.blockII.detail||[];let summe=0,cnt=0;
+    det.forEach(d=>{summe+=(d.roh!=null?d.roh:avg);cnt++;});          /* erfasste Prüfungen nutzen, Rest = Ø */
+    while(cnt<5){summe+=avg;cnt++;}
+    const projBII=Math.min(300,Math.round(summe*4));                 /* 5 Prüfungen ×4 */
+    const total=projBI+projBII;
+    proj={note:Engine.punkteZuNote(total),total:total,bi:projBI,bii:projBII};
+  })();
+  const set=(id,v)=>{document.getElementById(id).textContent=v;};
   const sub=document.getElementById('heroSub');
   const badge=document.getElementById('heroBadge');
-  if(r.gesamtpunkte===0){sub.textContent='noch keine Daten';}
-  else if(r.vollstaendig){sub.textContent='Endstand (alle Daten erfasst)';}
-  else{sub.textContent='Prognose mit aktuellen Eingaben';}
-  if(r.gesamtpunkte===0){badge.className='badge prog';badge.textContent='Prognose';}
-  else if(!r.vollstaendig){badge.className='badge prog';badge.textContent='Prognose – noch nicht alle Daten';}
-  else{badge.className='badge '+(r.bestehen.bestanden?'ok':'no');
-    badge.textContent=r.bestehen.bestanden?'✓ Abitur bestanden':'✗ nicht bestanden';}
+  if(r.gesamtpunkte===0){
+    set('heroNote','–');set('heroPunkte',0);set('heroBlockI',0);set('heroBlockII',0);
+    document.getElementById('heroBar').style.width='0%';
+    sub.textContent='noch keine Daten';badge.className='badge prog';badge.textContent='Prognose';
+  }else if(r.vollstaendig){
+    set('heroNote',r.note!=null?fmt(r.note):'–');set('heroPunkte',r.gesamtpunkte);
+    set('heroBlockI',r.blockI.punkte);set('heroBlockII',r.blockII.punkte);
+    document.getElementById('heroBar').style.width=(r.gesamtpunkte/900*100)+'%';
+    sub.textContent='Endstand (alle Daten erfasst)';
+    badge.className='badge '+(r.bestehen.bestanden?'ok':'no');
+    badge.textContent=r.bestehen.bestanden?'✓ Abitur bestanden':'✗ nicht bestanden';
+  }else{
+    /* Prognose: Hochrechnung anzeigen */
+    const t=proj?proj.total:r.gesamtpunkte;
+    set('heroNote',(proj&&proj.note!=null)?fmt(proj.note):'–');
+    set('heroPunkte',t);set('heroBlockI',proj?proj.bi:r.blockI.punkte);set('heroBlockII',proj?proj.bii:r.blockII.punkte);
+    document.getElementById('heroBar').style.width=(t/900*100)+'%';
+    sub.textContent='Voraussichtlicher Schnitt – wenn es so weiterläuft';
+    badge.className='badge prog';badge.textContent='Prognose (Hochrechnung)';
+  }
 
   // Ergebnis-Tab
   document.getElementById('bIpkt').textContent=r.blockI.punkte;
@@ -2158,7 +2201,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v19';
+    const C='abiloop-v21';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
