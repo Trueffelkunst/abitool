@@ -241,7 +241,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
   <!-- TABS -->
   <div class="tabs" id="tabs">
     <button data-tab="heute" class="active">Heute</button>
-    <button data-tab="loops">Loops</button>
+    <button data-tab="loops">Reviere</button>
     <button data-tab="plan">Prüfungsplan</button>
     <button data-tab="daten">Meine Daten</button>
     <button data-tab="ergebnis">Ergebnis</button>
@@ -262,7 +262,30 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <!-- ===== TAB: LOOPS ===== -->
   <div class="tab hide" id="tab-loops">
+    <div class="card" id="vorschauCard">
+      <h2>Fach-Vorschau (zum Prüfen)</h2>
+      <div class="hint">Jedes freigeschaltete Fach ansehen und eine Beispielaufgabe erzeugen – ohne es in Antons Profil einzutragen. Ideal zum fachlichen Gegenchecken (z. B. Psychologie).</div>
+      <div class="row-btns" style="gap:8px;flex-wrap:wrap;margin-top:4px">
+        <select id="vorschauFach" onchange="renderVorschau()" style="flex:1;min-width:140px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"></select>
+        <select id="vorschauTyp" style="flex:1;min-width:140px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"></select>
+      </div>
+      <div class="row-btns" style="margin-top:10px"><button class="btn" onclick="vorschauStart()">Beispielaufgabe erzeugen</button></div>
+      <div id="vorschauInfo" class="hint" style="margin-top:8px"></div>
+      <div id="vorschauBox" style="margin-top:12px"></div>
+    </div>
     <div id="loopsList"></div>
+    <div class="card" id="karikCard" style="display:none">
+      <h2>Karikatur-Trainer</h2>
+      <div class="hint">Wähle Fach und Thema – AbiTool beschreibt dir eine passende, selbst erdachte Karikatur (kein geschütztes Original) und stellt die Analyseaufgabe: beschreiben → deuten → Aussageabsicht &amp; Bewertung. Echte veröffentlichte Karikaturen legst du selbst bei (Urheberrecht).</div>
+      <div class="row-btns" style="gap:8px;flex-wrap:wrap;margin-top:4px">
+        <select id="karikFach" onchange="renderKarikThema()" style="flex:1;min-width:140px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"></select>
+        <select id="karikThema" style="flex:1;min-width:140px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"></select>
+      </div>
+      <input id="karikBild" placeholder="Bild-URL einer echten Karikatur (optional) – aus den geprüften Quellen unten" style="width:100%;margin:8px 0 2px;font-size:13px;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)">
+      <div class="row-btns" style="margin-top:10px"><button class="btn" onclick="karikStart()">Karikatur-Aufgabe erzeugen</button></div>
+      <div id="karikBox" style="margin-top:12px"></div>
+      <details style="margin-top:12px"><summary style="font-weight:700;color:var(--primary);cursor:pointer">Geprüfte Karikatur-Quellen zum Aussuchen</summary><div id="karikQuellen" style="margin-top:8px"></div></details>
+    </div>
   </div>
 
   <!-- ===== TAB: PRÜFUNGSPLAN ===== -->
@@ -281,6 +304,22 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
   <!-- ===== TAB: DATEN ===== -->
   <div class="tab hide" id="tab-daten">
     <div class="card">
+      <h2>Schnell einrichten – per Foto/Screenshot</h2>
+      <div class="hint">Lade Bilder hoch, Claude füllt automatisch aus (du bestätigst jeweils). Reihenfolge am besten 1 → 2 → 3. Voraussetzung: „Claude als Motor" (weiter unten) ist eingerichtet. Bilder werden nur zur Analyse gesendet, nicht gespeichert.</div>
+      <div class="row-btns">
+        <button class="btn ghost sm" onclick="document.getElementById('impFaecher').click()">1 · Fächerplaner</button>
+        <button class="btn ghost sm" onclick="document.getElementById('impNoten').click()">2 · Notenübersicht</button>
+        <button class="btn ghost sm" onclick="document.getElementById('impPlan').click()">3 · Klausurplan</button>
+      </div>
+      <input type="file" id="impFaecher" accept="image/*" multiple style="display:none">
+      <input type="file" id="impNoten" accept="image/*" multiple style="display:none">
+      <input type="file" id="impPlan" accept="image/*" multiple style="display:none">
+      <div id="stFaecher" style="margin-top:8px"></div>
+      <div id="stNoten" style="margin-top:8px"></div>
+      <div id="stPlan" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card">
       <div class="section-title">
         <div><h2>Meine Fächer</h2><div class="hint">Wähle deine Fächer und trag die Halbjahres-Notenpunkte (0–15) ein. Markiere mit „Abi" deine 5 Abiturprüfungsfächer und mit „LF" dein Leistungsfach – beim Abiturfach erscheint ein Feld für das Abiturergebnis.</div></div>
       </div>
@@ -291,6 +330,19 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
         <button class="btn ghost sm" onclick="loadBeispiel()">Beispiel laden</button>
         <button class="btn ghost sm" onclick="clearProfile()">Leeren</button>
       </div>
+    </div>
+
+    <div class="card" id="wsemCard">
+      <h2>W-Seminar &amp; Seminararbeit</h2>
+      <div class="hint">Das W-Seminar bringt <b>4 der 40 Halbjahresleistungen</b> ein: die Kursleistung in 12/1 und 12/2 sowie das <b>Gesamtergebnis der Seminararbeit</b> (zählt als 2 HJL). Gesamtergebnis = (schriftliche Arbeit ×3 + Präsentation/Prüfungsgespräch ×1) ⁄ 2, max. 30 Punkte.</div>
+      <input id="wsemLeit" placeholder="Leitfach / Thema (optional)" oninput="wsemSet('leitfach',this)" style="width:100%;margin:2px 0 10px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:9px 11px;border-radius:11px;color:var(--ink)">
+      <div class="hjl-row">
+        <label class="hjl"><span>Kurs 12/1</span><input type="number" inputmode="numeric" min="0" max="15" placeholder="–" id="wsemWs1" oninput="wsemSet('ws1',this)"></label>
+        <label class="hjl"><span>Kurs 12/2</span><input type="number" inputmode="numeric" min="0" max="15" placeholder="–" id="wsemWs2" oninput="wsemSet('ws2',this)"></label>
+        <label class="hjl"><span>Arbeit ×3</span><input type="number" inputmode="numeric" min="0" max="15" placeholder="–" id="wsemArb" oninput="wsemSet('arbeit',this)"></label>
+        <label class="hjl"><span>Präsent. ×1</span><input type="number" inputmode="numeric" min="0" max="15" placeholder="–" id="wsemPra" oninput="wsemSet('praes',this)"></label>
+      </div>
+      <div id="wsemOut" class="result-line warn" style="margin-top:8px"></div>
     </div>
 
     <div class="card">
@@ -304,6 +356,14 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       </div>
       <input type="file" id="shotInput" accept="image/*" multiple style="display:none">
       <div id="kiStatus" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <h2>Echtes Aufgabenmaterial (für verlässliche Übungen)</h2>
+      <div class="hint">Lade echte Prüfungs-/Abituraufgaben hoch (Foto, mit Erwartungshorizont falls vorhanden). AbiTool erzeugt Übungen dann durch <b>Transformation echter Vorlagen</b> statt frei zu erfinden — gekennzeichnet als „aus echtem Material transformiert". Nur Aufgabenmaterial, keine fremden korrigierten Arbeiten.</div>
+      <div class="row-btns"><button class="btn ghost sm" onclick="document.getElementById('impArchiv').click()">Aufgabenmaterial hochladen</button></div>
+      <input type="file" id="impArchiv" accept="image/*" multiple style="display:none">
+      <div id="stArchiv" style="margin-top:8px"></div>
     </div>
   </div>
 
@@ -376,7 +436,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v2.4 · Waldgrün</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v3.4 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -399,7 +459,7 @@ const Engine = (function(){
     if(P<300)return null;if(P>=823)return 1.0;if(P===300)return 4.0;
     return Math.round((1.1+0.1*Math.floor((822-P)/18))*10)/10;
   }
-  const PFLICHT_ALLE4=['pruefung','d','m','fs','nw'];
+  const PFLICHT_ALLE4=['pruefung','d','m','fs','nw','wsem'];
   function istPflicht(f){return f.istAbiturfach||PFLICHT_ALLE4.indexOf(f.kategorie)!==-1;}
   function waehleBlockI(faecher){
     const ZIEL=40;let pflicht=[],optBest=[],rest=[];
@@ -542,6 +602,7 @@ function migrate(s){
   s.pruefungen=s.pruefungen||[];
   s.coverage=s.coverage||{};
   s.muster=s.muster||{};
+  s.archiv=s.archiv||[];
   (s.faecher||[]).forEach(f=>{if(typeof f.istLF!=='boolean')f.istLF=false;if(f.abiErgebnis==null)f.abiErgebnis='';});
   return s;
 }
@@ -569,6 +630,7 @@ function renderAbi(){
 function renderSubj(){
   const c=document.getElementById('subjList');c.innerHTML='';
   state.faecher.forEach((f,i)=>{
+    if(f.kategorie==='wsem')return; /* W-Seminar hat eine eigene Karte */
     const d=document.createElement('div');d.className='subj';
     const opts=KAT.map(k=>`<option value="${k[0]}" ${f.kategorie===k[0]?'selected':''}>${k[1]}</option>`).join('');
     const flag=isPflicht(f)?'<span class="flag">alle 4 zählen</span>':'<span class="flag" style="background:#fff0e9;color:#d9663a">1 streichbar</span>';
@@ -617,12 +679,59 @@ function renderSubj(){
   c.querySelectorAll('.del').forEach(b=>b.addEventListener('click',e=>{
     state.faecher.splice(+e.target.dataset.i,1);save();renderAll();}));
 }
-function isPflicht(f){return f.istAbiturfach||['pruefung','d','m','fs','nw'].indexOf(f.kategorie)!==-1;}
+function isPflicht(f){return f.istAbiturfach||['pruefung','d','m','fs','nw','wsem'].indexOf(f.kategorie)!==-1;}
+
+/* ===== W-Seminar: 4 der 40 HJL (Kurs 12/1, 12/2, Seminararbeit-Gesamtergebnis = 2 HJL) ===== */
+function syncWsem(){
+  state.faecher=(state.faecher||[]).filter(f=>f.kategorie!=='wsem');
+  const w=state.wsem;if(!w)return;
+  const num=v=>(v===''||v==null||isNaN(v))?null:Math.max(0,Math.min(15,Math.round(+v)));
+  const ws1=num(w.ws1),ws2=num(w.ws2),a=num(w.arbeit),p=num(w.praes);
+  if(ws1==null&&ws2==null&&a==null&&p==null&&!w.leitfach)return;
+  let semA='',semB='';
+  if(a!=null&&p!=null){const ges=Math.round((a*3+p)/2);semA=Math.ceil(ges/2);semB=Math.floor(ges/2);}
+  state.faecher.push({id:'__wsem__',kategorie:'wsem',name:'W-Seminar'+(w.leitfach?' · '+w.leitfach:''),
+    istAbiturfach:false,istLF:false,
+    hjl:[ws1==null?'':ws1, ws2==null?'':ws2, semA, semB], abiErgebnis:''});
+}
+function wsemSet(k,el){
+  state.wsem=state.wsem||{leitfach:'',ws1:'',ws2:'',arbeit:'',praes:''};
+  if(k==='leitfach'){state.wsem.leitfach=el.value;}
+  else{let c=clamp(el.value);if(c!==el.value&&c!=='')el.value=c;state.wsem[k]=c;}
+  save();recompute();
+}
+function renderWsem(){
+  const out=document.getElementById('wsemOut');if(!out)return;
+  const w=state.wsem;
+  const setv=(id,v)=>{const e=document.getElementById(id);if(e&&document.activeElement!==e)e.value=(v==null?'':v);};
+  setv('wsemLeit',w&&w.leitfach);setv('wsemWs1',w&&w.ws1);setv('wsemWs2',w&&w.ws2);setv('wsemArb',w&&w.arbeit);setv('wsemPra',w&&w.praes);
+  const num=v=>(v===''||v==null||isNaN(v))?null:+v;
+  const a=w?num(w.arbeit):null,p=w?num(w.praes):null;
+  if(a==null||p==null){out.className='result-line warn';
+    out.textContent='Trag „Arbeit" und „Präsentation" ein, dann rechne ich das Seminararbeits-Gesamtergebnis (max. 30 P) aus.';return;}
+  const ges=Math.round((a*3+p)/2),sperre=(a===0||p===0);
+  const ws1=w?num(w.ws1):null,ws2=w?num(w.ws2):null,sum=(ws1||0)+(ws2||0)+ges;
+  out.className='result-line'+(sperre?' bad':'');
+  out.innerHTML='Seminararbeit-Gesamtergebnis: <b>'+ges+' / 30</b> P (zählt als 2 Halbjahresleistungen).'+
+    ((ws1!=null||ws2!=null)?' · W-Seminar gesamt: <b>'+sum+' / 60</b> P'+(ws1!=null&&ws2!=null?' (4 HJL)':'')+'.':'')+
+    (sperre?'<br><b>Sperrklausel:</b> 0 Punkte in Arbeit oder Präsentation → keine Zulassung zum Abitur.':'');
+}
 
 /* ===== Recompute & hero ===== */
 function recompute(){
+  syncWsem();
   syncAbi();
   const r=Engine.berechne(state);
+  // W-Seminar-Sperrklausel: 0 P in Seminararbeit ODER Präsentation → keine Zulassung
+  (function(){const w=state.wsem;if(!w)return;
+    const num=v=>(v===''||v==null||isNaN(v))?null:+v;
+    const a=num(w.arbeit),p=num(w.praes);
+    if(a==null&&p==null)return;
+    const ok=!(a===0||p===0);
+    r.bestehen.bedingungen.push({label:'Seminararbeit und Präsentation je > 0 Punkte (W-Seminar)',erfuellt:ok});
+    if(!ok)r.bestehen.bestanden=false;
+  })();
+  renderWsem();
   const noteStr=r.note!=null?fmt(r.note):'–';
   document.getElementById('heroNote').textContent=noteStr;
   document.getElementById('heroPunkte').textContent=r.gesamtpunkte;
@@ -799,7 +908,9 @@ function renderNextStrip(){
 const RASTER={
   sprache:['Grammatik / Sprachrichtigkeit','Vokabular / Register','Argumentation / Textaufbau','Operator-Handling','inhaltliches Missverständnis'],
   text:['Fachwissen / inhaltliche Richtigkeit','Argumentation / Struktur','Operator-Handling','Beleg- / Materialbezug','Fachsprache / Darstellung'],
-  mathnw:['Ansatz / Strategie','Rechnung / Umformung','Begründung / Herleitung','Einheiten / Genauigkeit','Fachbegriffe / Notation','Flüchtigkeitsfehler']
+  analyse:['Material-/Quellenauswertung','Operator-Handling','Beschreibung statt Deutung/Urteil','Sach-/Werturteil getrennt','Fachbegriffe','Argumentation / Struktur'],
+  mathnw:['Ansatz / Strategie','Rechnung / Umformung','Begründung / Herleitung','Einheiten / Genauigkeit','Fachbegriffe / Notation','Flüchtigkeitsfehler'],
+  psych:['Theorie-/Modellbezug','Anwendung auf Fallbeispiel','Operator-Handling','Fachbegriffe / Fachsprache','empirisch-methodischer Bezug','Argumentation / Struktur']
 };
 /* typen[].modus: 's' = schriftlich · 'm' = mündlich */
 const KATALOG={
@@ -827,6 +938,11 @@ const KATALOG={
       {id:'eliz',n:'Theater & Gesellschaft im Elisabethanischen Zeitalter'},
       {id:'cur',n:'Aktuelle Ereignisse und Entwicklungen'},
       {id:'lit',n:'Literatur & Medien (Roman, Drama, Shakespeare, Gedichte, short stories, Film)'}],
+    cartoons:[
+      {t:'Einwanderung / American Dream',m:'Freiheitsstatue (weinend/eingezäunt), melting pot/salad bowl, Grenzmauer'},
+      {t:'Klimawandel',m:'schmelzende Erdkugel, Eisbär auf schrumpfender Scholle, rauchende Fabrik'},
+      {t:'Soziale Medien / Überwachung',m:'Smartphone-Zombies, Big-Brother-Auge, Daten-Krake'},
+      {t:'Globalisierung / Konsum',m:'Erde als Einkaufswagen, Uncle Sam, goldene Bögen'}],
     quelle:'ISB-Leitfaden Leistungsnachweise PuLSt mod. Fremdsprachen (04/2025); LehrplanPLUS Englisch 12/13 (grundlegendes Anforderungsniveau), Lernbereich 5 Themengebiete.'},
 
   deutsch:{label:'Deutsch',aktiv:true,match:['deutsch'],raster:RASTER.sprache,
@@ -850,40 +966,247 @@ const KATALOG={
       {id:'medien',n:'Medien & Medienkritik'}],
     quelle:'ISB Deutsch-Abitur ab 2026 (Aufgabenarten IL/AP/EP/MA); LehrplanPLUS Deutsch 12/13 und ländergemeinsame Themenfelder/Lektüren (deutschabitur.bayern.de).'},
 
-  /* --- weitere Oberstufenfächer: Erkennung + Raster bereits da, fachliche Freischaltung folgt --- */
   fremdsprache:{label:'Fremdsprache',aktiv:false,match:['franz','frz','spanisch','italien','latein','griech','russ'],raster:RASTER.sprache,
     fach:'moderne oder klassische Fremdsprache (G9)',hinweise:'',typen:[],
     quelle:'Aufgabentypen je Sprache nach ISB/LehrplanPLUS – bei Freischaltung ergänzt.'},
-  mathematik:{label:'Mathematik',aktiv:false,match:['mathe'],raster:RASTER.mathnw,
-    fach:'Mathematik (G9)',hinweise:'',typen:[],
-    quelle:'Aufgabentypen/AFB nach ISB Mathematik – bei Freischaltung ergänzt.'},
+
+  mathematik:{label:'Mathematik',aktiv:true,match:['mathe'],raster:RASTER.mathnw,
+    fach:'Mathematik (G9, Bayern; Abiturprüfung ab 2026)',
+    hinweise:'Schriftliche Prüfung zweiteilig: Teil A hilfsmittelfrei (kein Rechner/Formelsammlung), Teil B mit Hilfsmitteln (WTR oder CAS, Formelsammlung). Sachgebiete: Analysis, Geometrie (Vektoren/Raum), Stochastik. Operatoren nach AFB: I (gib an, berechne, skizziere, beschreibe), II (bestimme/ermittle, untersuche, weise nach, erläutere, ordne zu), III (begründe, beurteile, interpretiere, verallgemeinere, entwickle). Schwerpunkt AFB II. Bei Nachweis-/Begründungsaufgaben vollständige Herleitung mit sauberer Notation.',
+    typen:[
+      {id:'analysis',n:'Analysis (Differential-/Integralrechnung)',modus:'s'},
+      {id:'geometrie',n:'Geometrie (Vektoren/Raum)',modus:'s'},
+      {id:'stochastik',n:'Stochastik (Wahrscheinlichkeit, Verteilungen)',modus:'s'},
+      {id:'hilfsmittelfrei',n:'Hilfsmittelfreier Teil (Teil A)',modus:'s'},
+      {id:'koll',n:'Kolloquium (mündlich)',modus:'m'}],
+    themen:[
+      {id:'diff',n:'Differentialrechnung'},
+      {id:'int',n:'Integralrechnung'},
+      {id:'explog',n:'Exponential- & Logarithmusfunktion'},
+      {id:'trig',n:'Sinus-/Kosinus- & Wurzelfunktion'},
+      {id:'vektor',n:'Vektor-/Koordinatengeometrie im Raum'},
+      {id:'wahr',n:'Wahrscheinlichkeit & Verteilungen (Binomial/Normal)'},
+      {id:'statistik',n:'Beurteilende Statistik'}],
+    quelle:'ISB Bayern, Mathematik-Abitur ab 2026 (Teil A/B); LehrplanPLUS Mathematik 12/13; ISB-Operatorenliste.'},
+
   nawi:{label:'Naturwissenschaft',aktiv:false,match:['physik','chemie','biolog','nawi','natur'],raster:RASTER.mathnw,
     fach:'Naturwissenschaft (Physik/Chemie/Biologie, G9)',hinweise:'',typen:[],
     quelle:'Aufgabentypen/AFB nach ISB – bei Freischaltung ergänzt.'},
+
   informatik:{label:'Informatik',aktiv:false,match:['informat'],raster:RASTER.mathnw,
     fach:'Informatik (G9)',hinweise:'',typen:[],quelle:'nach ISB – bei Freischaltung ergänzt.'},
-  gesellschaft:{label:'Gesellschaftswissenschaft',aktiv:false,match:['geschichte','sozial','geo','wirtschaft','recht','politik','gesellschaft'],raster:RASTER.text,
-    fach:'gesellschaftswissenschaftliches Fach (Geschichte/Sozialkunde/Geographie/Wirtschaft+Recht, G9)',hinweise:'',typen:[],
-    quelle:'Aufgabentypen/AFB nach ISB – bei Freischaltung ergänzt.'},
-  wertefach:{label:'Religion / Ethik',aktiv:false,match:['religion','reli','ethik'],raster:RASTER.text,
-    fach:'Religionslehre oder Ethik (G9)',hinweise:'',typen:[],
-    quelle:'Aufgabentypen/AFB nach ISB – bei Freischaltung ergänzt.'},
+
+  wirtschaftrecht:{label:'Wirtschaft und Recht',aktiv:true,match:['wirtschaft','recht','wr'],raster:RASTER.analyse,
+    fach:'Wirtschaft und Recht (G9, Bayern; Abitur ab 2026)',
+    hinweise:'Materialgebundene Aufgaben über BWL, VWL und Recht; im Recht Gutachtenstil (Anspruchsgrundlage prüfen). Operatoren nach AFB: I (nennen, beschreiben, darstellen), II (analysieren, erläutern, einordnen, anwenden, im Recht „prüfen" i.S. Gutachten), III (beurteilen, bewerten, erörtern, Stellung nehmen).',
+    typen:[
+      {id:'analyse',n:'Materialanalyse',modus:'s'},
+      {id:'rechtsfall',n:'Fallanalyse / Rechtsgutachten',modus:'s'},
+      {id:'eroerterung',n:'Wirtschaftspolitische Erörterung',modus:'s'},
+      {id:'karikatur',n:'Karikaturanalyse',modus:'s'},
+      {id:'berechnung',n:'Berechnung / Modellanwendung',modus:'s'}],
+    themen:[
+      {id:'vertrag',n:'Vertrags- & Schuldrecht, Leistungsstörungen'},
+      {id:'markt',n:'Markt, Preisbildung, Wettbewerb'},
+      {id:'wipo',n:'Wirtschaftspolitik & Konjunktur'},
+      {id:'unternehmen',n:'Unternehmen, Rechtsformen, Finanzierung'},
+      {id:'international',n:'Internationale Verflechtung & EU'},
+      {id:'geld',n:'Geldanlage & Institutionenökonomik'}],
+    cartoons:[
+      {t:'Marktwirtschaft / Wettbewerb',m:'unsichtbare Hand, Angebot-Nachfrage-Waage, Monopol-Faust'},
+      {t:'Globalisierung',m:'Containerschiffe, Sweatshop vs. Konsument, Wettlauf nach unten'},
+      {t:'Verbraucherschutz',m:'Kleingedrucktes mit Lupe, getäuschter Kunde, Etikettenschwindel'},
+      {t:'Sozialstaat / Steuern',m:'Steuer-Schraubstock, demografische Renten-Pyramide'}],
+    quelle:'ISB Bayern, Illustrierende Prüfungsaufgaben Wirtschaft und Recht; LehrplanPLUS WR 11–13.'},
+
+  geschichte:{label:'Geschichte',aktiv:true,match:['geschichte'],raster:RASTER.analyse,
+    fach:'Geschichte (G9, Bayern; Abitur ab 2026)',
+    hinweise:'Quellengebundene Aufgaben. Operatoren nach AFB: I (nennen, beschreiben, einordnen), II (analysieren, erläutern, charakterisieren, vergleichen, herausarbeiten), III (beurteilen, bewerten, erörtern, Stellung nehmen, gestalten). Bei Quellen/Karikaturen: einordnen (Autor, Zeit, Kontext) → analysieren → Aussageabsicht & Bewertung.',
+    typen:[
+      {id:'quelle',n:'Quellenanalyse (Text)',modus:'s'},
+      {id:'karikatur',n:'Karikaturanalyse',modus:'s'},
+      {id:'statistik',n:'Statistik-/Diagrammauswertung',modus:'s'},
+      {id:'bild',n:'Bild-/Plakatanalyse',modus:'s'},
+      {id:'darstellung',n:'Darstellungstext-Analyse',modus:'s'},
+      {id:'gestaltung',n:'Gestaltungsaufgabe (Rede, Brief …)',modus:'s'}],
+    themen:[
+      {id:'weimar',n:'Demokratie & Diktatur (Weimar, NS-Staat, Völkermord)'},
+      {id:'brdddr',n:'BRD & DDR / Wiedervereinigung'},
+      {id:'kalterkrieg',n:'Kalter Krieg & Ost-West-Konflikt'},
+      {id:'erinnerung',n:'Demokratie & Erinnerungskultur heute'},
+      {id:'global',n:'Internationale Ordnung nach 1945 / Globalisierung'}],
+    cartoons:[
+      {t:'Imperialismus',m:'„Kuchen der Könige" (Aufteilung Afrikas/Chinas), Rhodes-Koloss, „Dropping the Pilot"'},
+      {t:'Weimar / Versailles',m:'Dolchstoßlegende, Inflations-Schubkarre, brüchige Republik, „Diktat"'},
+      {t:'Kalter Krieg',m:'Eiserner Vorhang, USA–UdSSR-Armdrücken, Atompilz, geteiltes Berlin'},
+      {t:'NS-Zeit',m:'NS-Propaganda (stets kritisch einordnen), Heartfield-Fotomontagen'}],
+    quelle:'ISB Bayern, Illustrierende Prüfungsaufgaben Geschichte; LehrplanPLUS Geschichte 12/13; ISB-Operatorenliste.'},
+
+  sozialkunde:{label:'Politik und Gesellschaft',aktiv:true,match:['sozial','politik','gesellschaft','pug'],raster:RASTER.analyse,
+    fach:'Sozialkunde / Politik und Gesellschaft (G9, Bayern)',
+    hinweise:'Materialgebundene Aufgaben. Operatoren nach AFB: I (nennen, beschreiben, darstellen), II (analysieren, erläutern, einordnen, vergleichen, herausarbeiten), III (beurteilen, bewerten, erörtern, Stellung nehmen). Trennung von Sach- und Werturteil. Karikaturen: beschreiben → deuten (Symbole/Stilmittel/Überzeichnung) → Sach-/Werturteil.',
+    typen:[
+      {id:'karikatur',n:'Karikaturanalyse',modus:'s'},
+      {id:'text',n:'Text-/Quellenanalyse',modus:'s'},
+      {id:'statistik',n:'Statistik-/Schaubildauswertung',modus:'s'},
+      {id:'eroerterung',n:'(Material-)Erörterung',modus:'s'},
+      {id:'modell',n:'Struktogramm-/Modellanalyse',modus:'s'}],
+    themen:[
+      {id:'demografie',n:'Demografischer Wandel & Zusammenhalt'},
+      {id:'medien',n:'Politische Willensbildung im Medienzeitalter'},
+      {id:'rechtsstaat',n:'Demokratischer Rechtsstaat / wehrhafte Demokratie / Populismus'},
+      {id:'foederalismus',n:'Föderale & direkte Demokratie (Bayern)'},
+      {id:'global',n:'Globales Zusammenleben / UN / Multilateralismus'},
+      {id:'eu',n:'EU & internationale Politik'}],
+    cartoons:[
+      {t:'Gewaltenteilung',m:'Waage, Marionettenfäden an Richtern, verschwimmende Gewalten'},
+      {t:'Parteien / Wahlen',m:'Wahlurne, Wahlversprechen-Ballons, Koalitions-Tauziehen'},
+      {t:'EU / Brexit',m:'sinkendes/leckes Boot, fallende EU-Sterne, Brexit-Tür, Bürokratie-Labyrinth'},
+      {t:'Migration',m:'„Festung Europa", Mittelmeer-Boote, „das Boot ist voll"'},
+      {t:'Medien / Fake News',m:'Smartphone-Zombies, Filterblase, Fake-News-Schlagzeilen'}],
+    quelle:'ISB Bayern, EPA-Operatorenliste PuG / Illustrierende Prüfungsaufgaben; LehrplanPLUS PuG 11–13.'},
+
+  geographie:{label:'Geographie',aktiv:true,match:['geo','erdkunde'],raster:RASTER.analyse,
+    fach:'Geographie (G9, Bayern)',
+    hinweise:'Materialgebundene Aufgaben mit Raumbezug. Operatoren nach AFB: I (nennen, beschreiben, lokalisieren), II (analysieren, erläutern, einordnen, in Beziehung setzen), III (beurteilen, bewerten, erörtern, Stellung nehmen). Immer Raum-/Maßstabsbezug und Mensch-Umwelt-System beachten.',
+    typen:[
+      {id:'raumanalyse',n:'Raumanalyse / Problemerörterung',modus:'s'},
+      {id:'karte',n:'Kartenauswertung',modus:'s'},
+      {id:'klima',n:'Klimadiagramm-/Diagrammauswertung',modus:'s'},
+      {id:'statistik',n:'Statistik-/Tabellenauswertung',modus:'s'}],
+    themen:[
+      {id:'global',n:'Globalisierte Welt; USA/Russland/China; Ozeanien'},
+      {id:'atmo',n:'Atmosphäre/Ozeane; Klimazonen, Hochgebirge'},
+      {id:'risiko',n:'Plattentektonik & Risikomanagement'},
+      {id:'wirtschaft',n:'Wirtschaftsräumliche Dynamik, Tourismus'},
+      {id:'nachhaltig',n:'Ressourcen, Nachhaltigkeit, Migration, urbane Räume'}],
+    quelle:'ISB Bayern; LehrplanPLUS Geographie 11–13.'},
+
+  wertefach:{label:'Religion / Ethik',aktiv:true,match:['religion','reli','ethik'],raster:RASTER.text,
+    fach:'Religionslehre (kath./ev.) oder Ethik (G9, Bayern)',
+    hinweise:'Wahrnehmen/verstehen → urteilen. Texte/Quellen erschließen und auf die Lebenswelt beziehen; Positionen differenziert darstellen, eigenes begründetes Urteil. Operatoren nach AFB: I (nennen, beschreiben, wiedergeben), II (analysieren, erläutern, einordnen, anwenden), III (beurteilen, erörtern, Stellung nehmen, prüfen). In Ethik: Moraltheorie auf Fall/Dilemma anwenden, Argumentation prüfen.',
+    typen:[
+      {id:'textanalyse',n:'Text-/Quellenanalyse',modus:'s'},
+      {id:'eroerterung',n:'Theologisch-ethische Erörterung',modus:'s'},
+      {id:'dilemma',n:'Fall-/Dilemmaanalyse',modus:'s'},
+      {id:'stellung',n:'Begründete Stellungnahme',modus:'s'},
+      {id:'karikatur',n:'Bild-/Karikaturanalyse',modus:'s'}],
+    themen:[
+      {id:'ethik',n:'Ethische Grundlegung (Wert, Norm, Gewissen)'},
+      {id:'moral',n:'Moraltheorien (Aristoteles, Kant, Utilitarismus …)'},
+      {id:'verantwortung',n:'Diskurs- & Verantwortungsethik; Bereichsethiken'},
+      {id:'menschenbild',n:'Menschenbild, Freiheit & Determination'},
+      {id:'gott',n:'Gottesfrage, Theodizee, Religionen im Dialog'},
+      {id:'zukunft',n:'Hoffnung, Eschatologie, Zukunftsverantwortung'}],
+    cartoons:[
+      {t:'Ethik & Technik',m:'KI/Roboter-Dilemma, Mensch vs. Maschine, Verantwortung'},
+      {t:'Konsum & Gewissen',m:'Konsument vs. Gewissen, Wegwerfgesellschaft'}],
+    quelle:'ISB Bayern (Illustrierende Prüfungsaufgaben); LehrplanPLUS kath./ev. Religion & Ethik 11–13.'},
+
+  psychologie:{label:'Psychologie',aktiv:true,match:['psycholog'],raster:RASTER.psych,
+    fach:'Psychologie (bayerische Oberstufe, Profilfach im gesellschaftswissenschaftlichen Bereich; LehrplanPLUS Bayern, Psychologie 12/13)',
+    hinweise:'Profilfach ohne zentrale Abiturprüfung – nur schulinterne Leistungsnachweise, alle drei Anforderungsbereiche ausgewogen. Es gibt keine eigene Psychologie-Operatorenliste; verwende die ISB-Operatoren (analog Politik und Gesellschaft): AFB I (benennen, beschreiben, darstellen, zusammenfassen), AFB II (analysieren, auswerten, erklären, erläutern, einordnen, vergleichen, herausarbeiten), AFB III (begründen, beurteilen, bewerten, diskutieren, erörtern, problematisieren, Stellung nehmen, entwickeln). Dominanter Aufgabentyp: Anwendung psychologischer Theorien/Modelle auf konkrete Fallbeispiele – stets fachsprachlich präzise und theoriegestützt.',
+    typen:[
+      {id:'fall',n:'Theorie-/Modellanwendung auf Fallbeispiel',modus:'s'},
+      {id:'material',n:'Materialgebundene Analyse (Fachtext/Untersuchung)',modus:'s'},
+      {id:'vergleich',n:'Vergleich von Modellen/Perspektiven',modus:'s'},
+      {id:'methode',n:'Empirie-/Methodenaufgabe (Hypothese, Design, Gütekriterien)',modus:'s'},
+      {id:'eroerterung',n:'Reflexion/Erörterung (auch ethische Implikationen)',modus:'s'},
+      {id:'koll',n:'Kolloquium / mündliche Prüfung',modus:'m'}],
+    themen:[
+      {id:'wiss',n:'Basismodul: Psychologie als Wissenschaft (Methoden, Paradigmen, Berufsfelder)'},
+      {id:'allg',n:'Basismodul: Allgemeine Psychologie (Wahrnehmung, Aufmerksamkeit, Motivation, Emotion, Intelligenz)'},
+      {id:'entw',n:'Entwicklungspsychologie'},
+      {id:'lern',n:'Lernpsychologie (Konditionieren, Lernen am Modell, Gedächtnis)'},
+      {id:'pers',n:'Persönlichkeitspsychologie (Freud, Big Five, Rogers …)'},
+      {id:'sozial',n:'Sozialpsychologie (Konformität, Einstellungen, Asch/Milgram, Gruppen)'},
+      {id:'komm',n:'Kommunikationspsychologie (Watzlawick, Schulz von Thun, TZI)'}],
+    quelle:'LehrplanPLUS Bayern, Psychologie 12/13 (ISB) – 7 Module (2 Basis- + 5 Wahlmodule). Operatoren analog ISB Politik und Gesellschaft. Profilfach ohne zentrale Abiturprüfung.'},
+
   kunstmusik:{label:'Kunst / Musik',aktiv:false,match:['kunst','musik'],raster:RASTER.text,
     fach:'Kunst oder Musik (G9)',hinweise:'',typen:[],
     quelle:'Aufgabentypen/AFB nach ISB – bei Freischaltung ergänzt.'}
 };
+/* ===== Geprüfte Quellen-Registry (von Recherche-Agenten verifiziert, Juni 2026) =====
+   art: 'aufgaben' (echte Prüfungsaufgaben m. Erwartungshorizont) · 'karikatur' · 'lehrplan' · 'material'
+   top:true = "zuerst hierhin". frei = Lizenz-/Nutzungshinweis. */
+const QUELLEN={
+  englisch:[
+    {t:'ISB · Illustrierende Prüfungsaufgaben Englisch (ab 2026)',url:'https://www.isb.bayern.de/schularten/gymnasium/faecher/englisch/illustrierende-pruefungsaufgaben/',was:'Offizielle Beispielaufgaben gA/eA mit Lösungsvorschlägen (Hörverstehen, Schreiben, Sprachmittlung).',art:'aufgaben',frei:'amtlich, frei',top:true},
+    {t:'IQB · Abiturpool Englisch 2020–2025',url:'https://www.iqb.hu-berlin.de/de/schule/aufgaben/sekii/abiturpr%C3%BCfungsaufgaben-englisch/',was:'70 echte Abituraufgaben, filterbar nach Kompetenz & Themenfeld.',art:'aufgaben',frei:'amtlich, frei'},
+    {t:'IQB · Bewertungs-/Erwartungshorizont-Dokumente',url:'https://www.iqb.hu-berlin.de/de/schule/sekundarstufe-ii/begleitendedokumente/',was:'Operatoren, Bewertungsraster, Erwartungshorizont-Kriterien.',art:'material',frei:'amtlich, frei'},
+    {t:'LehrplanPLUS · Englisch 12',url:'https://www.lehrplanplus.bayern.de/fachlehrplan/gymnasium/12/englisch/grundlegend',was:'Verbindliche Themengebiete 12/13.',art:'lehrplan',frei:'amtlich'},
+    {t:'British Cartoon Archive (Uni Kent)',url:'https://archive.cartoons.ac.uk/',was:'Über 150.000 britische Cartoons (UK-Politik/Brexit). Rechte pro Bild prüfen.',art:'karikatur',frei:'Ansicht frei'}
+  ],
+  deutsch:[
+    {t:'IQB · Abiturpool Deutsch 2021–2025',url:'https://www.iqb.hu-berlin.de/de/schule/aufgaben/sekii/abiturpr%C3%BCfungsaufgaben-deutsch/',was:'85 echte Aufgaben mit vollständigem Erwartungshorizont; filterbar nach Lektüre (Woyzeck, Faust I, Corpus Delicti).',art:'aufgaben',frei:'amtlich, frei',top:true},
+    {t:'ISB · deutschabitur.bayern.de',url:'https://www.deutschabitur.bayern.de/',was:'Bayerisches Portal: Beispielaufgaben, Themenfelder, Lektüren, Bewertung.',art:'aufgaben',frei:'amtlich, frei'},
+    {t:'ISB · Korrektur & Bewertung (Schlussgutachten)',url:'https://www.deutschabitur.bayern.de/korrektur-und-bewertung/',was:'Vollständige Beispiel-Gutachten mit Erwartungshorizont und Punkten.',art:'material',frei:'amtlich, frei'},
+    {t:'Zeno.org · Büchner „Woyzeck" (Volltext)',url:'https://www.zeno.org/Literatur/M/B%C3%BCchner,+Georg/Dramen/Woyzeck',was:'Pflichtlektüre als gemeinfreier Volltext.',art:'material',frei:'gemeinfrei'},
+    {t:'LehrplanPLUS · Deutsch 12',url:'https://www.lehrplanplus.bayern.de/fachlehrplan/gymnasium/12/deutsch/regulaer',was:'Verbindliche Lernbereiche 12/13.',art:'lehrplan',frei:'amtlich'}
+  ],
+  mathematik:[
+    {t:'ISB · Illustrierende Prüfungsaufgaben Mathematik (ab 2026)',url:'https://www.isb.bayern.de/schularten/gymnasium/faecher/mathematik/illustrierende-pruefungsaufgaben/',was:'Beispielaufgaben Teil A/B + Lösungsvorschläge + 4 Kolloquiums-Beispiele.',art:'aufgaben',frei:'amtlich, frei',top:true},
+    {t:'ISB · Abituraufgaben vergangener Jahre',url:'https://www.isb.bayern.de/schularten/gymnasium/leistungserhebungen/abiturpruefung/mathematik/',was:'Echte Original-Abituraufgaben 2011–2025 (Teil A/B, CAS). Ohne Lösungen.',art:'aufgaben',frei:'amtlich, frei'},
+    {t:'IQB · Aufgabenpool Mathematik',url:'https://www.iqb.hu-berlin.de/de/schule/aufgaben/sekii/abiturpruefungsaufgaben-mathematik/',was:'554 Pool-Aufgaben, filterbar (Analysis/Geometrie/Stochastik, Teil A/B).',art:'aufgaben',frei:'amtlich, frei'},
+    {t:'abiturloesung.de · Bayern (mit Lösungen)',url:'https://abiturloesung.de/abitur/Bayern/Gymnasium',was:'250+ bayerische Abituraufgaben mit Lösungen (Video/PDF). Verlinken, nicht kopieren.',art:'material',frei:'frei nutzbar'},
+    {t:'LehrplanPLUS · Mathematik 12',url:'https://www.lehrplanplus.bayern.de/fachlehrplan/gymnasium/12/mathematik/regulaer',was:'Themenstruktur 12/13.',art:'lehrplan',frei:'amtlich'}
+  ],
+  geschichte:[
+    {t:'ISB · Illustrierende Prüfungsaufgaben Geschichte (ab 2026)',url:'https://www.isb.bayern.de/schularten/gymnasium/faecher/geschichte/illustrierende-pruefungsaufgaben/',was:'Beispielaufgaben gA/eA mit separatem Erwartungshorizont (Quellen-/Materialanalyse).',art:'aufgaben',frei:'amtlich, frei',top:true},
+    {t:'Wikimedia Commons · Weimar/Kaiserreich (gemeinfrei)',url:'https://commons.wikimedia.org/wiki/Category:Politics_of_the_Weimar_Republic',was:'Gemeinfreie historische Karikaturen (Simplicissimus, Punch …) – frei anzeigbar. Lizenz pro Datei prüfen.',art:'karikatur',frei:'meist gemeinfrei'},
+    {t:'LeMO / Deutsches Historisches Museum',url:'https://www.dhm.de/lemo/',was:'Kuratierte historische Karikaturen mit Kontext (Texte CC BY-NC-SA).',art:'karikatur',frei:'CC BY-NC-SA / pro Bild'},
+    {t:'GHDI · German History in Documents and Images',url:'https://ghdi.ghi-dc.org/',was:'Thematisch geordnete Quellen & Karikaturen mit Begleittext.',art:'karikatur',frei:'frei zugänglich'},
+    {t:'LehrplanPLUS Bayern',url:'https://www.lehrplanplus.bayern.de/',was:'Themengebiete 12/13.',art:'lehrplan',frei:'amtlich'}
+  ],
+  sozialkunde:[
+    {t:'ISB · Illustrierende Prüfungsaufgaben PuG (ab 2026)',url:'https://www.isb.bayern.de/schularten/gymnasium/faecher/politik-und-gesellschaft-sozialkunde/illustrierende-pruefungsaufgaben/',was:'Beispielaufgaben gA/eA mit Erwartungshorizont (inkl. echter Karikatur, Statistik, Verfassungsschema).',art:'aufgaben',frei:'amtlich, frei',top:true},
+    {t:'bpb · Themenblätter (CC BY-SA 4.0)',url:'https://www.bpb.de/shop/materialien/themenblaetter/',was:'Arbeitsblätter zu PuG-Themen, ab Ausgabe 123 als OER (frei verwendbar mit Namensnennung).',art:'karikatur',frei:'CC BY-SA 4.0'},
+    {t:'LpB-BW · „Mit spitzer Feder" (Karikaturen)',url:'https://www.politikundunterricht.de/3_4_17/karikaturen.pdf',was:'100+ politische Karikaturen zu zehn Themenfeldern, didaktisch aufbereitet.',art:'karikatur',frei:'frei für Bildung'},
+    {t:'bpb · Methode „Karikatur interpretieren"',url:'https://www.bpb.de/lernen/methoden/46832/12-karikatur-interpretieren/',was:'Methodengerüst Beschreiben → Deuten.',art:'material',frei:'frei'}
+  ],
+  wirtschaftrecht:[
+    {t:'ISB · Illustrierende Prüfungsaufgaben Wirtschaft/Recht (ab 2026)',url:'https://www.isb.bayern.de/schularten/gymnasium/faecher/wirtschaft-und-recht/illustrierende-pruefungsaufgaben/',was:'Beispielaufgaben gA/eA mit Erwartungshorizont & Bewertungsschlüssel (BWL/VWL/Recht, inkl. Karikaturaufgabe).',art:'aufgaben',frei:'amtlich, frei',top:true},
+    {t:'LehrplanPLUS · Wirtschaft/Recht 12 (eA)',url:'https://www.lehrplanplus.bayern.de/fachlehrplan/gymnasium/12/wirtschaft-und-recht/erhoeht',was:'Lernbereiche BWL, VWL, Recht.',art:'lehrplan',frei:'amtlich'},
+    {t:'LpB-BW · „Mit spitzer Feder" (Karikaturen)',url:'https://www.politikundunterricht.de/3_4_17/karikaturen.pdf',was:'Karikaturen u. a. zu Wirtschaft/Globalisierung/Sozialstaat.',art:'karikatur',frei:'frei für Bildung'},
+    {t:'Deutsche Bundesbank · Unterrichtsmaterial',url:'https://www.bundesbank.de/de/service/schule-und-bildung/unterrichtsmaterialien',was:'Material & Infografiken zu Geldpolitik/Inflation/EZB (zur Einbindung freigegeben).',art:'material',frei:'frei m. Quellenangabe'}
+  ],
+  wertefach:[
+    {t:'ISB · Illustrierende Prüfungsaufgaben Ethik (ab 2026)',url:'https://www.isb.bayern.de/schularten/gymnasium/faecher/ethik/illustrierende-pruefungsaufgaben/',was:'Beispielaufgaben gA/eA mit Erwartungshorizont (inkl. Karikatur zu Jonas, Graphic Novel).',art:'aufgaben',frei:'amtlich, frei',top:true},
+    {t:'ISB · Illustrierende Prüfungsaufgaben Kath. Religionslehre',url:'https://www.isb.bayern.de/schularten/gymnasium/faecher/katholische-religionslehre/illustrierende-pruefungsaufgaben/',was:'Beispielaufgaben gA/eA mit Lösungsvorschlägen (Text-, Gestaltungs-, Themaaufgabe).',art:'aufgaben',frei:'amtlich, frei'},
+    {t:'ISB · Illustrierende Prüfungsaufgaben Ev. Religionslehre',url:'https://www.isb.bayern.de/schularten/gymnasium/faecher/evangelische-religionslehre/illustrierende-pruefungsaufgaben/',was:'Beispielaufgaben gA/eA mit Lösungsvorschlägen.',art:'aufgaben',frei:'amtlich, frei'},
+    {t:'rpi-virtuell · Materialpool „Karikatur"',url:'https://material.rpi-virtuell.de/schlagwort/karikatur/',was:'OER-Material zu Karikaturen im Religions-/Ethikunterricht. Lizenz pro Beitrag.',art:'karikatur',frei:'meist OER/CC'}
+  ],
+  geographie:[
+    {t:'ISB · Illustrierende Prüfungsaufgaben Geographie (ab 2026)',url:'https://www.isb.bayern.de/schularten/gymnasium/faecher/geographie/illustrierende-pruefungsaufgaben/',was:'Beispielaufgaben gA/eA mit Erwartungshorizont (Raumanalyse, Klimadaten, Satellitenbild).',art:'aufgaben',frei:'amtlich, frei',top:true},
+    {t:'klimadiagramme.de (KIT)',url:'https://www.klimadiagramme.de/',was:'Tausende Klimadiagramme/-daten – im ISB-Abitur als Quelle genutzt. Daten neu erzeugen statt Bilder kopieren.',art:'material',frei:'m. Quellenangabe'},
+    {t:'Destatis · amtliche Strukturdaten',url:'https://www.destatis.de/',was:'Bevölkerung, Migration, Wirtschaft, Energie – frei mit Quellenangabe (DL-DE/BY).',art:'material',frei:'DL-DE/BY, frei'},
+    {t:'LehrplanPLUS · Geographie 13 (eA)',url:'https://www.lehrplanplus.bayern.de/fachlehrplan/gymnasium/13/geographie/erhoeht',was:'Fünf Lernbereiche 12/13.',art:'lehrplan',frei:'amtlich'}
+  ],
+  psychologie:[
+    {t:'LehrplanPLUS · Fachlehrplan Psychologie 12/13',url:'https://www.lehrplanplus.bayern.de/fachlehrplan/gymnasium/12/ps',was:'Alle 7 Module (2 Basis- + 5 Wahlmodule) mit Kompetenzerwartungen und Inhalten. Gemeinsamer 12/13-Plan.',art:'lehrplan',frei:'amtlich, frei',top:true},
+    {t:'LehrplanPLUS · Fachprofil Psychologie',url:'https://www.lehrplanplus.bayern.de/fachprofil/gymnasium/ps',was:'Gegenstandsbereiche, Kompetenzstrukturmodell, Modulverteilung 12/13, Profilfach-Charakter.',art:'lehrplan',frei:'amtlich, frei'},
+    {t:'ISB · Operatorenliste Politik und Gesellschaft (PDF)',url:'https://www.isb.bayern.de/fileadmin/user_upload/Gymnasium/Faecher/Politik_Gesellschaft/EPA/EPA-Operatorenliste_ISB.pdf',was:'AFB I–III + Operatoren mit Definitionen – fachnächster Ersatz mangels eigener Psychologie-Liste.',art:'material',frei:'amtlich, frei'},
+    {t:'ISB · Leitfaden „Kompetenzorientierte Leistungsaufgaben" (PDF)',url:'https://www.isb.bayern.de/fileadmin/user_upload/Grundsatzabteilung/Kompetenzorientierung/Leitfaden_kompetenzorientierte_leistungsaufgaben_2019.pdf',was:'Grundprinzipien für Leistungsaufgaben, AFB-Ausgewogenheit, Operatorenkonzept.',art:'material',frei:'amtlich, frei'}
+  ]
+};
+function quellenHtml(f,arten){
+  const key=fachKey(f);const list=(QUELLEN[key]||[]).filter(q=>!arten||arten.indexOf(q.art)>-1);
+  if(!list.length)return '<div class="hint" style="margin:0">Für dieses Fach sind noch keine Quellen hinterlegt.</div>';
+  return list.map(q=>'<div style="padding:6px 0;border-bottom:1px solid var(--line);font-size:13px">'+(q.top?'⭐ ':'')+'<a href="'+esc(q.url)+'" target="_blank" rel="noopener" style="color:var(--primary);font-weight:700;text-decoration:none">'+esc(q.t)+'</a><div style="color:var(--muted);font-size:12px;margin-top:2px">'+esc(q.was)+(q.frei?' · '+esc(q.frei):'')+'</div></div>').join('');
+}
 function fachKey(f){const n=((f&&f.name)||'').toLowerCase();
   for(const key in KATALOG){if(KATALOG[key].match.some(m=>n.indexOf(m)>-1))return key;}
   return null;}
 function loopKey(f){return fachKey(f);}            /* Alias (Abwärtskompatibilität) */
-function fachCfg(f){const key=fachKey(f);return key?KATALOG[key]:null;}
+function fachCfg(f){if(f&&f.kategorie==='wsem')return null;const key=fachKey(f);return key?KATALOG[key]:null;}
 
 /* ===== Prüfungsplan: SA-Slots automatisch aus der Fächerwahl ===== */
 const ABS=['12/1','12/2','13/1','13/2'];
 function saAbschnitte(f){return (f.kategorie==='d'||f.kategorie==='m'||f.istLF)?ABS:ABS.slice(0,3);}
 function syncPlan(){
   const want=[];
-  state.faecher.forEach(f=>saAbschnitte(f).forEach(ab=>want.push(f.id+'|'+ab)));
+  state.faecher.forEach(f=>{if(f.kategorie==='wsem')return;saAbschnitte(f).forEach(ab=>want.push(f.id+'|'+ab));});
   state.pruefungen=state.pruefungen.filter(p=>p.art!=='sa'||want.indexOf(p.fid+'|'+p.abschnitt)>-1);
   want.forEach(w=>{const parts=w.split('|'),fid=parts[0],ab=parts[1];
     if(!state.pruefungen.some(p=>p.art==='sa'&&p.fid===fid&&p.abschnitt===ab))
@@ -1052,7 +1375,7 @@ function renderLoops(){
 
     html+='<div class="card"><h2>Dein Revier · '+esc(f.name)+'</h2>'+
       (nx?'<div class="loop-next">Nächste Prüfung: <b>'+artLabel(nx.p)+'</b> · '+inWorten(tageBis(nx.d))+' ('+fmtDat(nx.d)+')'+(nx.p.scope?'<br>Stoff: '+esc(nx.p.scope):'')+'</div>'
-         :'<div class="loop-next">Noch kein Termin im Prüfungsplan – trag ihn ein, dann richtet sich dein Loop nach deiner nächsten Prüfung.</div>');
+         :'<div class="loop-next">Noch kein Termin im Prüfungsplan – trag ihn ein, dann richtet sich dein Revier nach deiner nächsten Prüfung.</div>');
 
     if(cfg.aktiv && typenAll.length){
       /* KERN: Antizipation / Abdeckung – immer verfügbar, auch ohne je geschriebene Arbeit */
@@ -1061,6 +1384,7 @@ function renderLoops(){
         '<div class="hint" style="margin:0"><b style="color:var(--ink)">Strecke'+(modusLbl?' · '+modusLbl+' SA':'')+':</b> '+done+' von '+typen.length+' Aufgabentypen erlegt'+
         (offen.length?' – frische Fährte: <b>'+esc(offen[0].n)+'</b>':' – alles erlegt, stark! 🎀')+'</div></div>'+
         '<div class="cov">'+typen.map(t=>'<button class="'+(cov[t.id]?'done':'')+'" onclick="uebenTyp(\''+f.id+'\',\''+t.id+'\')" title="Übung zu diesem Aufgabentyp">'+(cov[t.id]?'✓ ':'')+esc(t.n)+'</button>').join('')+'</div>'+'<div class="hint" style="margin:6px 0 0;font-size:12px">Tippe einen Aufgabentyp, um gezielt dafür zu üben – das Häkchen kommt nach „Bearbeitet – abhaken".</div>'+
+        ((cfg.cartoons&&cfg.cartoons.length)?'<div class="hint" style="margin-top:14px"><b style="color:var(--ink)">Karikatur-Antizipation</b> – diese Motive kommen zu deinem Fach erfahrungsgemäß dran (echte Karikatur selbst beilegen, Urheberrecht):</div><div class="tchips">'+cfg.cartoons.map(c=>'<span class="tchip" style="cursor:default;background:#F2EAD5;color:#836A38;border-color:#E6D9B6"><b>'+esc(c.t)+':</b> '+esc(c.m)+'</span>').join('')+'</div>':'')+
         ((nx&&cfg.themen)?'<div class="hint" style="margin-top:14px"><b style="color:var(--ink)">Stoff der nächsten Prüfung</b> – hak ab, was die Lehrkraft angesagt hat (LehrplanPLUS):</div><div class="tchips">'+cfg.themen.map(t=>{const on=(nx.p.themen||[]).indexOf(t.id)>-1;return '<button class="tchip'+(on?' on':'')+'" data-pid="'+nx.p.id+'" data-theme="'+t.id+'">'+(on?'✓ ':'')+esc(t.n)+'</button>';}).join('')+'</div>':'')+
         '<div class="row-btns" style="margin-top:12px">'+
         (modus==='m'
@@ -1072,12 +1396,14 @@ function renderLoops(){
         (mu.length?'Deine Übungen zielen gerade zusätzlich auf: '+mu.map(m=>'<span class="chip">'+esc(m.label)+'</span>').join(' ')
           :'Schon eine korrigierte Arbeit zurück? Scanne sie – dann zielen die Übungen zusätzlich auf deine wiederkehrenden Schwachstellen.')+'</div>'+
         '<div class="row-btns" style="margin-top:6px"><button class="btn ghost" onclick="scanStart(\''+f.id+'\')">Korrigierte Arbeit scannen</button></div>'+
-        '<div class="hint" style="margin-top:10px">'+(cfg.vorlaeufig?'Aufgabentypen vorläufig. ':'')+'Quelle: '+esc(cfg.quelle)+'</div>';
+        '<div class="hint" style="margin-top:10px">'+(cfg.vorlaeufig?'Aufgabentypen vorläufig. ':'')+'Quelle: '+esc(cfg.quelle)+'</div>'+
+        '<details style="margin-top:12px"><summary style="font-weight:700;color:var(--primary);cursor:pointer">Geprüfte Quellen für echtes Material</summary><div style="margin-top:8px">'+quellenHtml(f)+
+        '<div class="hint" style="margin-top:8px">Echtes Material schlägt KI: Lade echte Aufgaben unter „Meine Daten" hoch – dann werden Übungen daraus transformiert (verlässlicher als frei erfunden). ⭐ = zuerst hierhin.</div></div></details>';
     }
     html+='<div id="flow-'+f.id+'"></div></div>';
   });
-  if(bald.length)html+='<div class="card"><h2>Weitere Fächer</h2><div class="loop-soon">'+bald.join(', ')+' – die Loops folgen Schritt für Schritt. Die Maschine dahinter ist dieselbe; jedes Fach wird freigeschaltet, sobald sein Aufgabenkatalog fachlich gegen ISB/LehrplanPLUS geprüft ist. Wir starten mit Englisch.</div></div>';
-  if(!any && !bald.length)html='<div class="card"><div class="hint">Leg unter „Meine Daten" deine Fächer an – dann bekommt jedes Fach hier seinen Loop. Wir starten mit Englisch als erstem fertigen Fach.</div></div>';
+  if(bald.length)html+='<div class="card"><h2>Weitere Fächer</h2><div class="loop-soon">'+bald.join(', ')+' – die Reviere folgen Schritt für Schritt. Die Maschine dahinter ist dieselbe; jedes Fach wird freigeschaltet, sobald sein Aufgabenkatalog fachlich gegen ISB/LehrplanPLUS geprüft ist. Wir starten mit Englisch.</div></div>';
+  if(!any && !bald.length)html='<div class="card"><div class="hint">Leg unter „Meine Daten" deine Fächer an – dann bekommt jedes Fach hier sein Revier. Wir starten mit Englisch als erstem fertigen Fach.</div></div>';
   c.innerHTML=html;
   c.querySelectorAll('.cov button[data-fid]').forEach(b=>b.addEventListener('click',function(e){
     const fid=e.currentTarget.dataset.fid,tid=e.currentTarget.dataset.tid;
@@ -1092,6 +1418,116 @@ function renderLoops(){
     const i=p.themen.indexOf(th);if(i>-1)p.themen.splice(i,1);else p.themen.push(th);
     save();renderLoops();
   }));
+  renderKarik();
+  renderVorschauList();
+}
+
+/* ===== Fach-Vorschau (zum Prüfen, ohne Profil-Eintrag) ===== */
+function renderVorschauList(){
+  const fs=document.getElementById('vorschauFach');if(!fs)return;
+  const keys=Object.keys(KATALOG).filter(k=>KATALOG[k].aktiv&&(KATALOG[k].typen||[]).length);
+  const prev=fs.value;
+  fs.innerHTML=keys.map(k=>'<option value="'+k+'">'+esc(KATALOG[k].label)+'</option>').join('');
+  if(prev&&keys.indexOf(prev)>-1)fs.value=prev;
+  renderVorschau();
+}
+function renderVorschau(){
+  const fs=document.getElementById('vorschauFach'),ts=document.getElementById('vorschauTyp'),info=document.getElementById('vorschauInfo');if(!fs||!ts)return;
+  const cfg=KATALOG[fs.value];if(!cfg){ts.innerHTML='';if(info)info.textContent='';return;}
+  const prev=ts.value;ts.innerHTML=(cfg.typen||[]).map(t=>'<option value="'+t.id+'">'+esc(t.n)+(t.modus==='m'?' (mündlich)':'')+'</option>').join('');
+  if(prev&&(cfg.typen||[]).some(t=>t.id===prev))ts.value=prev;
+  if(info)info.textContent='Quelle: '+(cfg.quelle||'');
+}
+async function vorschauStart(){
+  const box=document.getElementById('vorschauBox');if(!box)return;
+  const fs=document.getElementById('vorschauFach'),ts=document.getElementById('vorschauTyp');
+  const key=fs?fs.value:'',cfg=KATALOG[key];if(!cfg){box.innerHTML='<div class="result-line warn">Wähle zuerst ein Fach.</div>';return;}
+  const ziel=(cfg.typen||[]).find(t=>t.id===(ts?ts.value:''))||(cfg.typen||[])[0];if(!ziel){box.innerHTML='<div class="result-line warn">Für dieses Fach sind keine Aufgabentypen hinterlegt.</div>';return;}
+  const istM=ziel.modus==='m',istKarik=/karik/i.test(ziel.id||'');
+  const arch=(state.archiv||[]).filter(a=>a&&a.angabe&&fachKey({name:a.fach||''})===key);
+  const vorlage=arch.find(a=>a.typ&&((ziel.n||'').toLowerCase().indexOf((a.typ||'').toLowerCase())>-1))||arch[0]||null;
+  const prov=vorlage?'aus echtem Material transformiert':'KI-generiert (ungeprüft)';
+  box.innerHTML='<div class="result-line"><span class="busy"></span>Beispielaufgabe – '+esc(ziel.n)+' …</div>';
+  try{
+    const sys='Du erzeugst GENAU EINE Übungsaufgabe für einen bayerischen Oberstufenschüler, Fach '+cfg.fach+'. '
+      +(cfg.hinweise?cfg.hinweise+' ':'')
+      +'Aufgabentyp: '+ziel.n+'. '
+      +(istM?'Es ist eine MÜNDLICHE Aufgabe: formuliere eine Sprechaufgabe (Impuls bzw. Diskussionsfragen), keinen zu schreibenden Text. '
+        :istKarik?'Es ist eine Karikatur-Analyse: beschreibe eine selbst erdachte, zum Fach passende Karikatur ausführlich in Worten und stelle die Analyseaufgabe (beschreiben → deuten → Aussageabsicht & Bewertung). '
+        :'Bei Textaufgaben: liefere das nötige Material bzw. den Ausgangstext mit. ')
+      +(vorlage?'Dir liegt eine ECHTE Beispielaufgabe vor – transformiere sie (Kontext/Namen/Zahlen variieren, Format/Operator/AFB/Niveau beibehalten), erfinde nicht frei. VORLAGE: <<<'+vorlage.angabe+'>>>. ':'')
+      +'Antworte NUR mit JSON: {"titel":"…","operator":"…","afb":"I|II|III","angabe":"vollständige Aufgabenstellung inkl. Material","erwartung":["Kernpunkt 1","Kernpunkt 2","…"],"fokus":"1 ermutigender Satz auf Deutsch"}'+JSONRULE;
+    const out=await claude([{role:'user',content:'Bitte eine Aufgabe.'}],sys,4096);
+    const a=parseJson(out);
+    box.innerHTML='<div class="aufgabe"><h3>'+esc(a.titel||'Beispielaufgabe')+'</h3>'+
+      '<div style="margin-bottom:8px"><span class="chip">'+esc(cfg.label)+'</span><span class="chip">'+esc(ziel.n)+'</span><span class="chip">Operator: '+esc(a.operator||'–')+'</span><span class="chip">AFB '+esc(a.afb||'–')+'</span><span class="chip" style="background:'+(vorlage?'#E3F0E8':'#F2EAD5')+';color:'+(vorlage?'#1A5A3E':'#836A38')+'">'+prov+'</span></div>'+
+      '<div style="white-space:pre-wrap">'+esc(a.angabe||'')+'</div>'+
+      (a.fokus?'<div class="result-line" style="margin-top:10px">'+esc(a.fokus)+'</div>':'')+
+      '<details style="margin-top:10px"><summary style="font-weight:700;color:var(--primary);cursor:pointer">Erwartungshorizont</summary><ul style="margin:8px 0 0;padding-left:20px">'+(a.erwartung||[]).map(x=>'<li style="margin-bottom:5px">'+esc(x)+'</li>').join('')+'</ul></details>'+
+      '<div class="row-btns" style="margin-top:12px"><button class="btn ghost sm" onclick="vorschauStart()">Andere Aufgabe</button></div></div>';
+  }catch(err){box.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}
+}
+
+/* ===== Karikatur-Trainer: Fach + Thema → beschriebene Karikatur + Analyseaufgabe ===== */
+function renderKarik(){
+  const fsel=document.getElementById('karikFach'),card=document.getElementById('karikCard');if(!fsel||!card)return;
+  const cands=(state.faecher||[]).filter(f=>{const c=fachCfg(f);return c&&c.aktiv&&c.cartoons&&c.cartoons.length;});
+  if(!cands.length){card.style.display='none';return;}
+  card.style.display='';
+  const prev=fsel.value;
+  fsel.innerHTML=cands.map(f=>'<option value="'+f.id+'">'+esc(f.name)+'</option>').join('');
+  if(prev&&cands.some(f=>f.id===prev))fsel.value=prev;
+  renderKarikThema();
+}
+function renderKarikThema(){
+  const fsel=document.getElementById('karikFach'),tsel=document.getElementById('karikThema');if(!fsel||!tsel)return;
+  const f=fachById(fsel.value),cfg=f?fachCfg(f):null;if(!cfg){tsel.innerHTML='';return;}
+  let opts=(cfg.cartoons||[]).map((c,i)=>'<option value="cart:'+i+'">'+esc(c.t)+'</option>').join('');
+  opts+=(cfg.themen||[]).map(t=>'<option value="thema:'+esc(t.id)+'">Thema: '+esc(t.n)+'</option>').join('');
+  const prev=tsel.value;tsel.innerHTML=opts;if(prev&&[].slice.call(tsel.options).some(o=>o.value===prev))tsel.value=prev;
+  const q=document.getElementById('karikQuellen');if(q)q.innerHTML=quellenHtml(f,['karikatur','material']);
+}
+async function karikStart(){
+  const box=document.getElementById('karikBox');if(!box)return;
+  const fsel=document.getElementById('karikFach'),tsel=document.getElementById('karikThema');
+  const f=fsel?fachById(fsel.value):null,cfg=f?fachCfg(f):null;
+  if(!cfg){box.innerHTML='<div class="result-line warn">Wähle zuerst ein Fach mit Karikatur-Themen.</div>';return;}
+  const bildEl=document.getElementById('karikBild'),url=bildEl?bildEl.value.trim():'';
+  const tv=tsel?tsel.value:'';let themaLabel='',motiv='';
+  if(tv.indexOf('cart:')===0){const c=(cfg.cartoons||[])[+tv.slice(5)];if(c){themaLabel=c.t;motiv=c.m;}}
+  else if(tv.indexOf('thema:')===0){const t=(cfg.themen||[]).find(x=>x.id===tv.slice(6));if(t)themaLabel=t.n;}
+  const arch=(state.archiv||[]).filter(a=>a&&a.angabe&&fachKey({name:a.fach||''})===fachKey(f)&&/karik/i.test(a.typ||''));
+  const vorlage=arch[0]||null;
+  const provLbl=url?'echte Karikatur (von dir gewählt)':(vorlage?'aus echtem Material transformiert':'KI-generiert (ungeprüft)');
+  const provCol=url?['#E3F0E8','#1A5A3E']:(vorlage?['#E3F0E8','#1A5A3E']:['#F2EAD5','#836A38']);
+  box.innerHTML='<div class="result-line"><span class="busy"></span>'+(url?'Ich analysiere die echte Karikatur und baue die Aufgabe …':'Ich erfinde dir eine Karikatur zu „'+esc(themaLabel||cfg.label)+'" …')+'</div>';
+  try{
+    let out;
+    if(url){
+      const sys='Du bist Prüferin bzw. Prüfer im bayerischen Abitur, Fach '+cfg.fach+'. Dir wird eine ECHTE Karikatur gezeigt. '
+        +'Erstelle daraus GENAU EINE Übungs-Analyseaufgabe'+(themaLabel?' zum Thema '+themaLabel:'')+'. '
+        +'Beschreibe zuerst objektiv die sichtbaren Bildelemente, dann die Analyseaufgabe in drei Schritten passend zu den ISB-Operatoren: 1) beschreiben, 2) deuten (Symbolik, Stilmittel, Übertreibung), 3) Aussageabsicht und begründete Bewertung. '
+        +'Antworte NUR mit JSON: {"titel":"…","bildbeschreibung":"was auf der Karikatur konkret zu sehen ist","operator":"…","afb":"I|II|III","angabe":"die dreischrittige Analyseaufgabe","erwartung":["Kernpunkt 1","Kernpunkt 2","…"],"fokus":"1 ermutigender Satz auf Deutsch"}'+JSONRULE;
+      out=await claude([{role:'user',content:[{type:'image',source:{type:'url',url:url}},{type:'text',text:'Bitte analysiere diese Karikatur und erstelle die Aufgabe.'}]}],sys,4096);
+    }else{
+      const sys='Du erstellst GENAU EINE Karikatur-Analyseaufgabe für einen bayerischen Oberstufenschüler, Fach '+cfg.fach+'. '
+        +'Thema: '+(themaLabel||'fachtypisch')+'. '+(motiv?'Motiv-Anregung: '+motiv+'. ':'')
+        +'BESCHREIBE eine zum Thema passende, selbst erdachte Karikatur ausführlich in Worten (Bildelemente, Figuren, Symbole, Übertreibung/Zuspitzung, Bildunterschrift) — KEIN urheberrechtlich geschütztes Original und keine real existierende Karikatur nachzeichnen. '
+        +'Stelle dann die Analyseaufgabe in drei Schritten passend zu den ISB-Operatoren: 1) beschreiben, 2) deuten (Symbolik, Stilmittel, Übertreibung), 3) Aussageabsicht und begründete Bewertung. '
+        +(vorlage?'Dir liegt eine ECHTE Beispiel-Karikaturaufgabe vor – orientiere Format, Operatoren und Anforderungsniveau daran, variiere den Inhalt frei und kopiere nichts. VORLAGE: <<<'+vorlage.angabe+'>>>. ':'')
+        +'Antworte NUR mit JSON: {"titel":"…","bildbeschreibung":"ausführliche Beschreibung der erdachten Karikatur","operator":"…","afb":"I|II|III","angabe":"die dreischrittige Analyseaufgabe","erwartung":["Kernpunkt 1","Kernpunkt 2","…"],"fokus":"1 ermutigender Satz auf Deutsch"}'+JSONRULE;
+      out=await claude([{role:'user',content:'Bitte eine Karikatur-Aufgabe.'}],sys,4096);
+    }
+    const a=parseJson(out);
+    box.innerHTML='<div class="aufgabe"><h3>'+esc(a.titel||'Karikatur')+'</h3>'+
+      '<div style="margin-bottom:8px"><span class="chip">'+esc(cfg.label)+'</span><span class="chip">Karikaturanalyse</span><span class="chip">Operator: '+esc(a.operator||'–')+'</span><span class="chip">AFB '+esc(a.afb||'–')+'</span><span class="chip" style="background:'+provCol[0]+';color:'+provCol[1]+'">'+provLbl+'</span></div>'+
+      (url?'<img src="'+esc(url)+'" alt="Karikatur" style="max-width:100%;border-radius:11px;margin-bottom:10px" onerror="this.style.display=\'none\'">':'')+
+      (a.bildbeschreibung?'<div style="background:#f6f6fc;border-radius:11px;padding:11px 13px;white-space:pre-wrap;margin-bottom:10px"><b>'+(url?'Bildbeschreibung:':'Die Karikatur (in Worten):')+'</b><br>'+esc(a.bildbeschreibung)+'</div>':'')+
+      '<div style="white-space:pre-wrap">'+esc(a.angabe||'')+'</div>'+
+      (a.fokus?'<div class="result-line" style="margin-top:10px">'+esc(a.fokus)+'</div>':'')+
+      '<details style="margin-top:10px"><summary style="font-weight:700;color:var(--primary);cursor:pointer">Erwartungshorizont – erst nach dem Bearbeiten öffnen</summary><ul style="margin:8px 0 0;padding-left:20px">'+(a.erwartung||[]).map(x=>'<li style="margin-bottom:5px">'+esc(x)+'</li>').join('')+'</ul></details>'+
+      '<div class="row-btns" style="margin-top:12px"><button class="btn ghost sm" onclick="karikStart()">Andere Karikatur</button></div></div>';
+  }catch(err){box.innerHTML='<div class="result-line bad">'+esc(err.message)+(url?' · Falls es an der Bild-URL liegt: andere Quelle probieren (manche Seiten sperren externes Laden).':'')+'</div>';}
 }
 
 /* ===== KI-Anbindung (Hybrid: nur Analyse & Transformation via API, Rest lokal) ===== */
@@ -1163,6 +1599,108 @@ function importApply(){
   toast('Punkte importiert');
 }
 
+/* ===== Einrichten: Fächerplaner / Notenübersicht / Klausurplan importieren ===== */
+async function impRun(files,statusEl,sys,maxTokens){
+  statusEl.innerHTML='<div class="result-line"><span class="busy"></span>Ich lese deine Bilder … (werden nicht gespeichert)</div>';
+  const imgs=await imgParts(files);
+  const out=await claude([{role:'user',content:imgs.concat([{type:'text',text:'Bitte auslesen.'}])}],sys,maxTokens||1800);
+  return parseJson(out);
+}
+function setupNoKey(el){if(!getKey()){el.innerHTML='<div class="result-line warn">Bitte zuerst „Claude als Motor" unter „Meine Daten" einrichten.</div>';return true;}return false;}
+
+(function(){const inp=document.getElementById('impFaecher');if(!inp)return;
+inp.addEventListener('change',async function(e){
+  const files=Array.from(e.target.files);e.target.value='';if(!files.length)return;
+  const st=document.getElementById('stFaecher');if(setupNoKey(st))return;
+  try{
+    const sys='Du liest einen Screenshot/Foto des bayerischen Oberstufen-Fächerplaners (G9). Extrahiere die belegten Fächer des Schülers. Markiere das Leistungsfach (istLF) und die fünf Abiturprüfungsfächer (istAbiturfach), soweit erkennbar. Kategorie je Fach: "d"=Deutsch, "m"=Mathematik, "fs"=einzige fortgeführte Fremdsprache, "nw"=einzige Naturwissenschaft, "pruefung"=sonstiges Abiturfach, "other"=sonstiges. Antworte NUR mit JSON: {"faecher":[{"name":"Englisch","kategorie":"fs","istAbiturfach":true,"istLF":true}]}'+JSONRULE;
+    const j=await impRun(files,st,sys,1800);window._impF=(j.faecher||[]);
+    if(!window._impF.length){st.innerHTML='<div class="result-line warn">Keine Fächer erkannt – schärferes Bild probieren.</div>';return;}
+    st.innerHTML='<div class="result-line warn">Erkannt – bitte prüfen, dann übernehmen (ersetzt deine bisherige Fächerliste):</div>'+
+      window._impF.map(f=>'<div style="font-size:13.5px;font-weight:700;padding:5px 0;border-bottom:1px solid var(--line)">'+esc(f.name||'?')+(f.istLF?' · LF':'')+(f.istAbiturfach?' · Abi':'')+'</div>').join('')+
+      '<div class="row-btns" style="margin-top:10px"><button class="btn sm" onclick="impFaecherApply()">Übernehmen</button><button class="btn ghost sm" onclick="document.getElementById(\'stFaecher\').innerHTML=\'\'">Verwerfen</button></div>';
+  }catch(err){st.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}
+});})();
+function impFaecherApply(){
+  const list=window._impF||[];if(!list.length)return;
+  state.faecher=list.map(f=>({id:id(),name:String(f.name||'Fach'),kategorie:(['d','m','fs','nw','pruefung','other'].indexOf(f.kategorie)>-1?f.kategorie:'other'),istAbiturfach:!!f.istAbiturfach,istLF:!!f.istLF,hjl:['','','',''],abiErgebnis:''}));
+  window._impF=null;save();renderAll();
+  document.getElementById('stFaecher').innerHTML='<div class="result-line">Übernommen. Prüf in „Meine Daten" kurz Kategorie, LF und Abi.</div>';toast('Fächer übernommen');
+}
+
+(function(){const inp=document.getElementById('impNoten');if(!inp)return;
+inp.addEventListener('change',async function(e){
+  const files=Array.from(e.target.files);e.target.value='';if(!files.length)return;
+  const st=document.getElementById('stNoten');if(setupNoKey(st))return;
+  try{
+    const sys='Du liest Screenshots einer Noten-/Punkteübersicht eines bayerischen Oberstufenschülers (G9). Extrahiere pro Fach die Halbjahres-Notenpunkte (ganze Zahlen 0–15) der Abschnitte 12/1, 12/2, 13/1, 13/2. Antworte NUR mit JSON: {"faecher":[{"name":"Englisch","hjl":[12,9,null,null]}]} – null für unbekannt/leer. Erfinde nichts.'+JSONRULE;
+    const j=await impRun(files,st,sys,1600);window._impN=(j.faecher||[]);
+    if(!window._impN.length){st.innerHTML='<div class="result-line warn">Keine Punkte erkannt – schärfere Screenshots probieren.</div>';return;}
+    st.innerHTML='<div class="result-line warn">Erkannt – bitte prüfen, dann übernehmen:</div>'+
+      window._impN.map(x=>'<div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:700;padding:5px 0;border-bottom:1px solid var(--line)"><span>'+esc(x.name||'?')+'</span><span>'+(x.hjl||[]).map(v=>v==null?'–':v).join(' · ')+'</span></div>').join('')+
+      '<div class="row-btns" style="margin-top:10px"><button class="btn sm" onclick="impNotenApply()">Übernehmen</button><button class="btn ghost sm" onclick="document.getElementById(\'stNoten\').innerHTML=\'\'">Verwerfen</button></div>';
+  }catch(err){st.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}
+});})();
+function impNotenApply(){
+  (window._impN||[]).forEach(function(x){
+    let f=state.faecher.find(f=>f.name.toLowerCase().trim()===String(x.name||'').toLowerCase().trim());
+    if(!f){f={id:id(),name:String(x.name||'Fach'),kategorie:'other',istAbiturfach:false,istLF:false,hjl:['','','',''],abiErgebnis:''};state.faecher.push(f);}
+    (x.hjl||[]).forEach(function(v,i){if(v!=null&&!isNaN(v)&&i<4)f.hjl[i]=String(Math.max(0,Math.min(15,Math.round(v))));});
+  });
+  window._impN=null;save();renderAll();
+  document.getElementById('stNoten').innerHTML='<div class="result-line">Punkte übernommen.</div>';toast('Punkte übernommen');
+}
+
+(function(){const inp=document.getElementById('impPlan');if(!inp)return;
+inp.addEventListener('change',async function(e){
+  const files=Array.from(e.target.files);e.target.value='';if(!files.length)return;
+  const st=document.getElementById('stPlan');if(setupNoKey(st))return;
+  try{
+    const sys='Du liest einen Schulaufgaben-/Klausurplan eines bayerischen Oberstufenschülers. Extrahiere pro Eintrag: Fach, Ausbildungsabschnitt ("12/1","12/2","13/1" oder "13/2"; ordne anhand des Datums grob zu, falls nicht angegeben), Datum im Format YYYY-MM-DD, ob mündlich (true/false), und Stoff/Thema falls angegeben. Antworte NUR mit JSON: {"termine":[{"fach":"Deutsch","abschnitt":"12/2","datum":"2026-06-17","muendlich":false,"scope":"Drama"}]}'+JSONRULE;
+    const j=await impRun(files,st,sys,2000);window._impP=(j.termine||[]);
+    if(!window._impP.length){st.innerHTML='<div class="result-line warn">Keine Termine erkannt – schärferes Bild probieren.</div>';return;}
+    st.innerHTML='<div class="result-line warn">Erkannt – bitte prüfen, dann übernehmen:</div>'+
+      window._impP.map(t=>'<div style="font-size:13.5px;font-weight:700;padding:5px 0;border-bottom:1px solid var(--line)">'+esc(t.fach||'?')+' · '+esc(t.abschnitt||'?')+' · '+esc(t.datum||'?')+(t.muendlich?' · mündlich':'')+(t.scope?' · '+esc(t.scope):'')+'</div>').join('')+
+      '<div class="row-btns" style="margin-top:10px"><button class="btn sm" onclick="impPlanApply()">Übernehmen</button><button class="btn ghost sm" onclick="document.getElementById(\'stPlan\').innerHTML=\'\'">Verwerfen</button></div>';
+  }catch(err){st.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}
+});})();
+function impPlanApply(){
+  let n=0;
+  (window._impP||[]).forEach(function(t){
+    const name=String(t.fach||'').toLowerCase().trim();if(!name)return;
+    const f=state.faecher.find(x=>x.name.toLowerCase().trim()===name)||state.faecher.find(x=>x.name.toLowerCase().indexOf(name)>-1);
+    if(!f)return;
+    const p=state.pruefungen.find(x=>x.art==='sa'&&x.fid===f.id&&x.abschnitt===t.abschnitt);
+    if(!p)return;
+    if(t.datum&&/^\d{4}-\d{2}-\d{2}$/.test(t.datum))p.datum=t.datum;
+    if(t.scope)p.scope=String(t.scope);
+    if(t.muendlich&&f.kategorie==='fs'){state.pruefungen.forEach(x=>{if(x.fid===f.id&&x.art==='sa')x.muendlich=false;});p.muendlich=true;}
+    n++;
+  });
+  window._impP=null;save();renderAll();
+  document.getElementById('stPlan').innerHTML='<div class="result-line">'+n+' Termine übernommen.</div>';toast('Klausurplan übernommen');
+}
+
+(function(){const inp=document.getElementById('impArchiv');if(!inp)return;
+inp.addEventListener('change',async function(e){
+  const files=Array.from(e.target.files);e.target.value='';if(!files.length)return;
+  const st=document.getElementById('stArchiv');if(setupNoKey(st))return;
+  try{
+    const sys='Du liest Foto(s) echter Prüfungs-/Abituraufgaben (bayerische Oberstufe). Extrahiere je Aufgabe: fach, typ (Aufgabenart, z. B. Karikaturanalyse, Analysis, Textanalyse), thema, angabe (vollständige Aufgabenstellung als Text), erwartung (Erwartungshorizont/Lösungshinweise als Text, falls vorhanden – sonst leer), quelle (z. B. Abitur 2024, ISB). Antworte NUR mit JSON: {"aufgaben":[{"fach":"…","typ":"…","thema":"…","angabe":"…","erwartung":"…","quelle":"…"}]}'+JSONRULE;
+    const j=await impRun(files,st,sys,4096);window._impA=(j.aufgaben||[]);
+    if(!window._impA.length){st.innerHTML='<div class="result-line warn">Keine Aufgabe erkannt – schärferes Bild probieren.</div>';return;}
+    st.innerHTML='<div class="result-line warn">Erkannt – bitte prüfen, dann ins Archiv übernehmen:</div>'+
+      window._impA.map(x=>'<div style="font-size:13px;font-weight:700;padding:5px 0;border-bottom:1px solid var(--line)">'+esc(x.fach||'?')+' · '+esc(x.typ||'?')+' · '+esc(x.thema||'')+(x.erwartung?' · mit Erwartungshorizont':'')+'</div>').join('')+
+      '<div class="row-btns" style="margin-top:10px"><button class="btn sm" onclick="impArchivApply()">Ins Archiv</button><button class="btn ghost sm" onclick="document.getElementById(\'stArchiv\').innerHTML=\'\'">Verwerfen</button></div>';
+  }catch(err){st.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}
+});})();
+function impArchivApply(){
+  state.archiv=state.archiv||[];
+  (window._impA||[]).forEach(function(x){if(x&&x.angabe)state.archiv.push({fach:String(x.fach||''),typ:String(x.typ||''),thema:String(x.thema||''),angabe:String(x.angabe||''),erwartung:String(x.erwartung||''),quelle:String(x.quelle||'')});});
+  window._impA=null;save();
+  document.getElementById('stArchiv').innerHTML='<div class="result-line">Im Archiv: '+state.archiv.length+' Aufgabe(n). Übungen werden jetzt bevorzugt daraus transformiert.</div>';toast('Archiv aktualisiert');
+}
+
 /* ===== Scan-Coach Englisch: Scan → Fehlermuster (Mensch im Loop) → eine Aufgabe ===== */
 var scanFid=null;
 function scanStart(fid){
@@ -1228,6 +1766,10 @@ async function uebenStart(fid,forcedTid){
   if(!ziel){const offen=auswahl.filter(t=>!cov[t.id]);ziel=offen.length?offen[0]:auswahl[Math.floor(Math.random()*auswahl.length)];}
   const mu=((state.muster||{})[fid]||[]).slice(-3);
   const istM=ziel.modus==='m';
+  const istKarik=/karik/i.test(ziel.id||'');
+  const arch=(state.archiv||[]).filter(a=>a&&a.angabe&&fachKey({name:a.fach||''})===fachKey(f));
+  const vorlage=arch.find(a=>a.typ&&((ziel.n||'').toLowerCase().indexOf((a.typ||'').toLowerCase())>-1||(a.typ||'').toLowerCase().indexOf((ziel.n||'').toLowerCase().slice(0,6))>-1))||arch[0]||null;
+  const prov=vorlage?'aus echtem Material transformiert':'KI-generiert (ungeprüft)';
   box.innerHTML='<div class="result-line"><span class="busy"></span>Ich baue dir eine Aufgabe – Typ: '+esc(ziel.n)+' …</div>';
   try{
     const sys='Du erzeugst GENAU EINE Übungsaufgabe für einen bayerischen Oberstufenschüler, Fach '+cfg.fach+'. '
@@ -1237,12 +1779,14 @@ async function uebenStart(fid,forcedTid){
       +(nx&&nx.p.scope?'Stoffumfang/Hinweis der Lehrkraft: '+nx.p.scope+'. ':'')
       +(mu.length?'Baue die Aufgabe so, dass sie diese Fehlermuster im frischen Kontext fordert (ohne sie zu erwähnen): '+mu.map(m=>m.label).join('; ')+'. ':'')
       +(istM?'Es ist eine MÜNDLICHE Aufgabe: formuliere eine Sprechaufgabe (Impuls bzw. Diskussionsfragen), keinen zu schreibenden Text. '
+            :istKarik?'Es ist eine KARIKATUR-Analyse: BESCHREIBE eine zum Thema passende, selbst erdachte Karikatur ausführlich in Worten (Bildelemente, Symbole, Übertreibung, Bildunterschrift) — kein urheberrechtlich geschütztes Original — und stelle die Analyseaufgabe: beschreiben → deuten (Symbolik/Stilmittel) → Aussageabsicht & Bewertung. '
             :'Bei Textaufgaben: liefere den Ausgangstext mit (300–450 Wörter, selbst verfasst im Stil authentischer Prüfungstexte). ')
+      +(vorlage?'Dir liegt eine ECHTE Beispielaufgabe vor. Erzeuge die neue Übung durch TRANSFORMATION dieser Vorlage: Kontext, Namen, Zahlen und Material variieren, aber Format, Operator, Anforderungsbereich und Schwierigkeitsgrad beibehalten. Erfinde NICHT frei. VORLAGE-ANGABE: <<<'+vorlage.angabe+'>>>'+(vorlage.erwartung?' VORLAGE-ERWARTUNGSHORIZONT: <<<'+vorlage.erwartung+'>>>':'')+'. ':'')
       +'Antworte NUR mit JSON, kein anderer Text: {"titel":"…","operator":"Operator","afb":"I|II|III","angabe":"vollständige Aufgabenstellung'+(cfg.label==='Englisch'?' auf Englisch':'')+', inkl. Material","erwartung":["Kernpunkt 1","Kernpunkt 2","…"],"fokus":"1 ermutigender Satz auf Deutsch: worauf es für ihn ankommt"}'+JSONRULE;
     const out=await claude([{role:'user',content:'Bitte eine Aufgabe.'}],sys,4096);
     const a=parseJson(out);
     box.innerHTML='<div class="aufgabe"><h3>'+esc(a.titel||'Deine Aufgabe')+'</h3>'+
-      '<div style="margin-bottom:8px"><span class="chip">'+esc(ziel.n)+'</span><span class="chip">Operator: '+esc(a.operator||'–')+'</span><span class="chip">AFB '+esc(a.afb||'–')+'</span></div>'+
+      '<div style="margin-bottom:8px"><span class="chip">'+esc(ziel.n)+'</span><span class="chip">Operator: '+esc(a.operator||'–')+'</span><span class="chip">AFB '+esc(a.afb||'–')+'</span><span class="chip" style="background:'+(vorlage?'#E3F0E8':'#F2EAD5')+';color:'+(vorlage?'#1A5A3E':'#836A38')+'">'+prov+'</span></div>'+
       '<div style="white-space:pre-wrap">'+esc(a.angabe||'')+'</div>'+
       (a.fokus?'<div class="result-line" style="margin-top:10px">'+esc(a.fokus)+'</div>':'')+
       '<details style="margin-top:10px"><summary style="font-weight:700;color:var(--primary);cursor:pointer">Erwartungshorizont – erst nach dem Bearbeiten öffnen</summary><ul style="margin:8px 0 0;padding-left:20px">'+(a.erwartung||[]).map(x=>'<li style="margin-bottom:5px">'+esc(x)+'</li>').join('')+'</ul></details>'+
@@ -1421,7 +1965,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v3';
+    const C='abiloop-v10';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
