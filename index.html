@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Antons AbiTool">
+<meta name="theme-color" content="#4E5743">
+<title>Antons AbiTool</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<style>
+:root{
+  --primary:#4E5743; --primary-d:#333A29; --accent:#A98C53; --accent-d:#836A38;
+  --mint:#1fbf9c; --amber:#f6b73c; --rose:#ff5d7e;
+  --ink:#232A1E; --muted:#73766A; --line:#E4E3D9; --card:#FBFBF7; --bg:#ECEDE6;
+  --grad:linear-gradient(135deg,#4E5743,#3A4131); --grad-warm:linear-gradient(135deg,#B89A5E,#8E7340);
+  --shadow:0 14px 36px rgba(33,36,61,.10); --shadow-sm:0 6px 18px rgba(33,36,61,.07);
+  --r:22px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  -webkit-text-size-adjust:100%}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.wrap{max-width:860px;margin:0 auto;padding:18px 16px 90px}
+h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.02em}
+.muted{color:var(--muted)}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+/* Header / Brand */
+.brand{display:flex;align-items:center;gap:12px;padding:8px 2px 16px}
+.brand .tag{font-size:12.5px;color:var(--accent-d);margin-top:5px;font-weight:700;letter-spacing:.01em}
+.brand .logo-pre{font-size:12px;font-weight:800;color:var(--ink);letter-spacing:.14em;text-transform:uppercase;margin:0 0 4px 3px;opacity:.75}
+.brand .logo{font-size:34px;font-weight:850;letter-spacing:-.01em;line-height:1;color:var(--ink);
+  display:inline-flex;align-items:flex-end;margin:0}
+.brand .logo .iwrap{position:relative;display:inline-block}
+.brand .logo .cap{position:absolute;left:50%;bottom:.56em;transform:translateX(-50%);width:.98em;line-height:0}
+.brand .logo .cap svg{display:block;width:100%;height:auto}
+.brand .logo .inf{display:inline-block;width:1.34em;height:.74em;margin:0 .03em .02em}
+.brand .logo .inf svg{display:block;width:100%;height:100%}
+
+/* Hero result card */
+.hero{background:linear-gradient(135deg,#4E5743,#3A4131);
+  border-radius:22px;color:#fff;padding:16px 18px 14px;box-shadow:0 12px 30px rgba(78,87,67,.30);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;
+  background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%)}
+.hero .lbl{font-size:12.5px;opacity:.9;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.note-big{display:flex;align-items:baseline;gap:14px;margin-top:2px}
+.note-big .n{font-size:42px;font-weight:850;line-height:1}
+.note-big .sub{font-size:15px;opacity:.95;font-weight:600}
+.hero .meta{display:flex;gap:18px;margin-top:14px;flex-wrap:wrap}
+.hero .meta div{font-size:13px}
+.hero .meta b{font-size:18px;display:block;font-weight:800}
+.progress{height:9px;border-radius:9px;background:rgba(255,255,255,.28);margin-top:14px;overflow:hidden}
+.progress > i{display:block;height:100%;background:#fff;border-radius:9px;transition:width .5s}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;
+  padding:4px 10px;border-radius:20px;margin-top:12px}
+.badge.ok{background:rgba(31,191,156,.22);color:#defff5}
+.badge.no{background:rgba(255,93,126,.25);color:#ffe1e8}
+.badge.prog{background:rgba(255,255,255,.22);color:#fff}
+
+/* Tabs */
+.tabs{display:flex;gap:6px;margin:18px 0 14px;background:#ECEDE6;padding:5px;border-radius:16px;
+  overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:1 0 auto;white-space:nowrap;padding:9px 14px;border-radius:12px;font-size:14px;
+  font-weight:700;color:var(--muted)}
+.tabs button.active{background:#fff;color:var(--primary);box-shadow:var(--shadow-sm)}
+
+.card{background:var(--card);border-radius:var(--r);padding:18px;box-shadow:var(--shadow-sm);margin-bottom:14px}
+.card h2{font-size:17px;margin-bottom:3px}
+.card .hint{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+.section-title{display:flex;align-items:center;justify-content:space-between;margin:2px 0 12px}
+
+/* Subject rows */
+.subj{border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;background:#fff}
+.subj .top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.subj input.name{flex:1;font-size:15px;font-weight:700;border:none;background:#f6f6fc;
+  padding:9px 11px;border-radius:11px;color:var(--ink);min-width:0}
+.subj select.kat{font-size:12.5px;font-weight:600;border:none;background:#EDEEE8;color:var(--primary);
+  padding:9px 8px;border-radius:11px;-webkit-appearance:none;text-align:center}
+.subj select.fachsel{flex:1;font-size:15px;font-weight:700;border:none;background:#f6f6fc;
+  padding:9px 11px;border-radius:11px;color:var(--ink);min-width:0;-webkit-appearance:none}
+.abi select.aname{border:none;background:#f6f6fc;padding:8px 10px;border-radius:10px;font-weight:700;
+  font-size:14px;min-width:0;-webkit-appearance:none;color:var(--ink)}
+.subj .del{color:var(--rose);font-size:20px;padding:4px 8px;font-weight:700;line-height:1}
+.hjl-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.hjl{display:flex;flex-direction:column;gap:3px}
+.hjl span{font-size:10.5px;color:var(--muted);text-align:center;font-weight:700}
+.hjl input{width:100%;text-align:center;font-size:16px;font-weight:700;padding:9px 0;border-radius:11px;
+  border:1.5px solid var(--line);background:#fff;color:var(--ink)}
+.hjl input:focus{outline:none;border-color:var(--primary);background:#f8fbff}
+.flag{display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:8px;
+  background:#EDEEE8;color:var(--primary);margin-left:6px;vertical-align:middle}
+
+/* Abitur exam rows */
+.abi{display:grid;grid-template-columns:1fr 86px 70px;gap:8px;align-items:center;
+  border:1px solid var(--line);border-radius:14px;padding:9px 11px;margin-bottom:8px}
+.abi input.aname{border:none;background:#f6f6fc;padding:8px 10px;border-radius:10px;font-weight:700;font-size:14px;min-width:0}
+.abi input.apkt{text-align:center;font-size:16px;font-weight:800;padding:8px 0;border-radius:10px;
+  border:1.5px solid var(--line);background:#fff}
+.abi input.apkt:focus{outline:none;border-color:var(--accent)}
+.abi .gew{font-size:12px;color:var(--muted);text-align:right;font-weight:700}
+.abi.lf{border-color:#D9DACE;background:#F4F4EE}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:15px;
+  padding:13px 20px;border-radius:16px;background:var(--grad);color:#fff;box-shadow:0 8px 20px rgba(78,87,67,.28);
+  transition:transform .12s ease,box-shadow .12s ease}
+.btn:active{transform:translateY(1px) scale(.99);box-shadow:0 4px 12px rgba(78,87,67,.22)}
+.btn.ghost{background:#EDEEE8;color:var(--primary);box-shadow:none}
+.btn.accent{background:var(--grad-warm);box-shadow:0 8px 20px rgba(255,93,126,.26)}
+.btn.block{width:100%}
+.btn.sm{padding:9px 14px;font-size:13px;border-radius:13px;box-shadow:none}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Block breakdown */
+.blocks{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.block{background:#F4F4EE;border:1px solid var(--line);border-radius:16px;padding:14px}
+.block .bl-lbl{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.block .bl-val{font-size:28px;font-weight:850;margin:3px 0}
+.block .bl-val small{font-size:14px;color:var(--muted);font-weight:700}
+.mini-bar{height:7px;border-radius:7px;background:#e3eaf5;overflow:hidden;margin-top:6px}
+.mini-bar > i{display:block;height:100%;border-radius:7px}
+
+/* What-if & goal */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--ink)}
+.field input,.field select{width:100%;padding:11px 12px;border-radius:12px;border:1.5px solid var(--line);
+  font-size:15px;font-weight:600;background:#fff;color:var(--ink);font-family:inherit}
+.field input:focus{outline:none;border-color:var(--primary)}
+.result-line{padding:13px 15px;border-radius:14px;background:#f0fbf8;border:1px solid #c7efe5;
+  font-size:14.5px;font-weight:700;color:#0c7a63;line-height:1.55;margin-top:6px}
+.result-line.warn{background:#fff6e9;border-color:#fbe2b4;color:#9a6a12}
+.result-line.bad{background:#fff0f3;border-color:#ffd4de;color:#b3324f}
+.slider-val{font-size:30px;font-weight:850;color:var(--primary);text-align:center;margin:4px 0}
+input[type=range]{width:100%;accent-color:var(--primary);height:30px}
+
+.list-sel{font-size:13px;color:var(--muted);line-height:1.7}
+.chip{display:inline-block;background:#EDEEE8;color:var(--primary);font-size:11.5px;font-weight:700;
+  padding:3px 9px;border-radius:9px;margin:2px 3px 2px 0}
+.chip.low{background:#fff0f3;color:var(--rose)}
+
+.note-foot{font-size:11.5px;color:var(--muted);text-align:center;line-height:1.6;margin-top:22px}
+.note-foot a{color:var(--primary)}
+details.src{margin-top:10px}
+details.src summary{font-size:12.5px;color:var(--primary);font-weight:700;cursor:pointer}
+details.src div{font-size:11.5px;color:var(--muted);line-height:1.7;margin-top:8px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(40px);opacity:0;
+  background:var(--ink);color:#fff;padding:11px 18px;border-radius:13px;font-size:13.5px;font-weight:700;
+  box-shadow:var(--shadow);transition:.3s;z-index:50;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.hide{display:none!important}
+
+/* Heute / Plan / Loops */
+.nextlbl{font-size:12.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.nextbig{font-size:23px;font-weight:800;margin:5px 0 2px;letter-spacing:-.02em}
+.days{display:inline-block;background:#EDEEE8;color:var(--primary);font-weight:800;border-radius:10px;padding:4px 11px;font-size:13px;margin:8px 8px 0 0}
+.scopebadge{display:inline-block;background:#f6f8fc;color:var(--muted);font-weight:700;border-radius:10px;padding:4px 11px;font-size:12.5px;margin-top:8px}
+.up-row{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);font-size:14px;font-weight:700}
+.up-row .dt{flex:0 0 92px;color:var(--primary);font-size:13px}
+.up-row .what{flex:1;min-width:0}
+.up-row .what small{display:block;color:var(--muted);font-weight:600;font-size:12px}
+.up-row .in{font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap}
+.fach-head{font-size:14.5px;font-weight:800;margin:14px 0 8px}
+.exam-row{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:14px;padding:9px 11px;margin-bottom:8px;flex-wrap:wrap;background:#fff}
+.exam-row .ab{font-size:12px;font-weight:800;color:var(--primary);background:#EDEEE8;border-radius:8px;padding:5px 9px;flex:0 0 auto}
+.exam-row input[type=date]{border:1.5px solid var(--line);border-radius:10px;padding:7px 8px;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink);background:#fff}
+.exam-row input.scope{flex:1;min-width:140px;border:none;background:#f6f8fc;border-radius:10px;padding:9px 10px;font-size:13px;font-weight:600;color:var(--ink)}
+.exam-row input.kname{flex:0 1 120px;min-width:90px;border:none;background:#f6f8fc;border-radius:10px;padding:9px 10px;font-size:13px;font-weight:700;color:var(--ink)}
+.exam-row select.kfach{font-size:12.5px;font-weight:700;border:none;background:#EDEEE8;color:var(--primary);padding:8px;border-radius:10px;-webkit-appearance:none}
+.mtoggle{font-size:12px;font-weight:800;padding:7px 10px;border-radius:10px;background:#f6f8fc;color:var(--muted);flex:0 0 auto}
+.lft{font-size:11px;font-weight:800;padding:8px 9px;border-radius:10px;background:#f6f8fc;color:var(--muted);flex:0 0 auto}
+.lft.on{background:#EDEEE8;color:var(--primary)}
+.abt{font-size:11px;font-weight:800;padding:8px 9px;border-radius:10px;background:#f6f8fc;color:var(--muted);flex:0 0 auto}
+.abt.on{background:#F2EAD5;color:var(--accent-d)}
+.abirow{display:flex;align-items:center;gap:10px;margin:2px 0 4px;font-size:13px;font-weight:700;color:var(--ink)}
+.abirow span{flex:1}
+.abirow input.apkt2{width:74px;text-align:center;font-size:16px;font-weight:800;padding:8px 0;border-radius:10px;border:1.5px solid var(--line);background:#fff}
+.abirow input.apkt2:focus{outline:none;border-color:var(--accent)}
+.mtoggle.on{background:#F2EAD5;color:var(--accent-d)}
+.cov{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.cov button{font-size:12.5px;font-weight:700;padding:9px 12px;border-radius:11px;background:#f1f5fb;color:var(--muted);border:1.5px solid var(--line)}
+.cov button.done{background:#e7f8f2;color:#0c7a63;border-color:#bfe9db}
+.loop-next{font-size:13.5px;font-weight:700;color:var(--ink);background:#EDEEE8;border-radius:12px;padding:10px 13px;margin:10px 0;line-height:1.5}
+.loop-soon{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:10px;line-height:1.5}
+.kiinput{width:100%;padding:11px 12px;border-radius:12px;border:1.5px solid var(--line);font-size:14px;font-weight:600;font-family:inherit;background:#fff;color:var(--ink)}
+.muster{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;font-size:13.5px;background:#fff;line-height:1.5}
+.muster b{display:block;font-size:14px;margin:2px 0}
+.muster .kat{display:inline-block;font-size:11px;font-weight:800;color:var(--primary);background:#EDEEE8;border-radius:8px;padding:2px 8px}
+.muster.unsicher{border-color:#fbe2b4;background:#fffaf0}
+.aufgabe{border:1.5px solid #D9DACE;border-radius:14px;padding:14px;background:#F4F4EE;margin-top:10px;font-size:14px;line-height:1.6}
+.aufgabe h3{font-size:15px;margin-bottom:6px}
+.simq{background:#EDEEE8;border-radius:12px;padding:10px 13px;margin:8px 0;font-weight:700;font-size:14px;line-height:1.5;color:var(--ink)}
+.rec{font-size:13px;font-weight:800;padding:9px 12px;border-radius:11px;background:#F2EAD5;color:var(--accent-d)}
+.rec.on{background:var(--accent);color:#fff}
+textarea.say{width:100%;min-height:88px;border:1.5px solid var(--line);border-radius:12px;padding:11px;font-family:inherit;font-size:14px;background:#fff;color:var(--ink);resize:vertical;margin-top:4px}
+textarea.say:focus{outline:none;border-color:var(--primary)}
+.tchips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.tchip{font-size:12px;font-weight:700;padding:8px 11px;border-radius:11px;background:#f1f5fb;color:var(--muted);border:1.5px solid var(--line);text-align:left;line-height:1.25;max-width:100%}
+.tchip.on{background:#EDEEE8;color:var(--primary);border-color:#D9DACE}
+.nextstrip{display:flex;align-items:center;gap:11px;background:var(--card);border-radius:16px;box-shadow:var(--shadow-sm);padding:12px 14px;margin:12px 0 2px}
+.nextstrip .ic{font-size:18px;flex:0 0 auto;width:38px;height:38px;border-radius:12px;background:#EDEEE8;display:flex;align-items:center;justify-content:center}
+.nextstrip .tx{flex:1;min-width:0}
+.nextstrip .tx b{font-size:14.5px;display:block;letter-spacing:-.01em}
+.nextstrip .tx small{color:var(--muted);font-weight:600;font-size:12.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nextstrip .cta{flex:0 0 auto}
+.busy{display:inline-block;width:14px;height:14px;border:2.5px solid #D9DACE;border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:7px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:520px){.blocks{grid-template-columns:1fr}.note-big .n{font-size:54px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand">
+    <div>
+      <div class="logo-pre">Antons</div>
+      <h1 class="logo" aria-label="Antons AbiTool">Ab<span class="iwrap"><span class="cap"><svg viewBox="0 0 40 30" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="#232A1E" stroke-width="3" stroke-linecap="round"><path d="M20 29 C 21 22 24 20 24 12"/><path d="M22 20 C 25 19 27 18 30 17"/><path d="M24 15 C 25 12 26 10 28 8"/><path d="M20 29 C 19 22 16 20 16 12"/><path d="M18 20 C 15 19 13 18 10 17"/><path d="M16 15 C 15 12 14 10 12 8"/></svg></span>ı</span>Tool</h1>
+      <div class="tag">Auf die Pirsch zum Abi</div>
+    </div>
+  </div>
+
+  <!-- HERO RESULT -->
+  <div class="hero" id="hero">
+    <div class="lbl">Voraussichtlicher Schnitt</div>
+    <div class="note-big"><span class="n" id="heroNote">–</span><span class="sub" id="heroSub">noch keine Daten</span></div>
+    <div class="meta">
+      <div><b id="heroPunkte">0</b><span style="opacity:.9">von 900 Punkten</span></div>
+      <div><b id="heroBlockI">0</b><span style="opacity:.9">Block I (max 600)</span></div>
+      <div><b id="heroBlockII">0</b><span style="opacity:.9">Block II (max 300)</span></div>
+    </div>
+    <div class="progress"><i id="heroBar" style="width:0%"></i></div>
+    <span class="badge prog" id="heroBadge">Prognose</span>
+  </div>
+
+  <!-- IMMER SICHTBAR: nächste Prüfung (Schülersicht: „was kommt als Nächstes?") -->
+  <div id="nextStrip"></div>
+
+  <!-- TABS -->
+  <div class="tabs" id="tabs">
+    <button data-tab="heute" class="active">Heute</button>
+    <button data-tab="loops">Loops</button>
+    <button data-tab="plan">Prüfungsplan</button>
+    <button data-tab="daten">Meine Daten</button>
+    <button data-tab="ergebnis">Ergebnis</button>
+    <button data-tab="wenndann">Was-wäre-wenn</button>
+    <button data-tab="ziel">Zielnote</button>
+    <button data-tab="lohnt">Lohnt sich Üben?</button>
+  </div>
+
+  <!-- ===== TAB: HEUTE (Metaebene) ===== -->
+  <div class="tab" id="tab-heute">
+    <div class="card" id="nextExamCard"></div>
+    <div class="card">
+      <h2>Demnächst</h2>
+      <div class="hint">Deine nächsten Prüfungen über alle Fächer – von Schulaufgabe zu Schulaufgabe.</div>
+      <div id="upcomingList"></div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: LOOPS ===== -->
+  <div class="tab hide" id="tab-loops">
+    <div id="loopsList"></div>
+  </div>
+
+  <!-- ===== TAB: PRÜFUNGSPLAN ===== -->
+  <div class="tab hide" id="tab-plan">
+    <div class="card">
+      <h2>Prüfungsplan</h2>
+      <div class="hint">Die Schulaufgaben-Slots kommen automatisch aus deiner Fächerwahl: Deutsch, Mathe und dein Leistungsfach in allen vier Abschnitten, alle übrigen Fächer in 12/1, 12/2 und 13/1. Du trägst nur Termin und Stoffumfang ein. In der fortgeführten Fremdsprache ist genau eine Schulaufgabe mündlich – stelle sie mit dem Knopf um.</div>
+      <div id="planList"></div>
+      <div class="row-btns" style="margin-top:8px">
+        <button class="btn ghost sm" onclick="addKlein()">+ kleine Prüfung (Ausfrage / Test)</button>
+        <button class="btn ghost sm" onclick="exportICS()">In Kalender übernehmen (.ics)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: DATEN ===== -->
+  <div class="tab hide" id="tab-daten">
+    <div class="card">
+      <div class="section-title">
+        <div><h2>Meine Fächer</h2><div class="hint">Wähle deine Fächer und trag die Halbjahres-Notenpunkte (0–15) ein. Markiere mit „Abi" deine 5 Abiturprüfungsfächer und mit „LF" dein Leistungsfach – beim Abiturfach erscheint ein Feld für das Abiturergebnis.</div></div>
+      </div>
+      <div id="abiHint" class="result-line warn hide" style="margin-bottom:12px"></div>
+      <div id="subjList"></div>
+      <div class="row-btns" style="margin-top:6px">
+        <button class="btn ghost sm" onclick="addSubject()">+ Fach hinzufügen</button>
+        <button class="btn ghost sm" onclick="loadBeispiel()">Beispiel laden</button>
+        <button class="btn ghost sm" onclick="clearProfile()">Leeren</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Claude als Motor – einmal einrichten</h2>
+      <div class="hint">AbiTool nutzt Claude als „Motor" für die Übungen, den Mündlich-Simulator und die Fehler-Analyse. Dafür richtest du einmal einen Anthropic-Schlüssel ein – er bleibt nur auf diesem Gerät. Tipp für Eltern: Schlüssel einmal hinterlegen, dann nutzt dein Kind die App einfach, ohne sich je um Bezahlung kümmern zu müssen. Fotos werden nur zur Analyse gesendet und nicht gespeichert.</div>
+      <div class="field"><label>Anthropic API-Schlüssel</label>
+        <input class="kiinput" type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off"></div>
+      <div class="row-btns">
+        <button class="btn ghost sm" onclick="testKey()">Verbindung testen</button>
+        <button class="btn ghost sm" onclick="document.getElementById('shotInput').click()">Punkte aus Screenshots übernehmen</button>
+      </div>
+      <input type="file" id="shotInput" accept="image/*" multiple style="display:none">
+      <div id="kiStatus" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: ERGEBNIS ===== -->
+  <div class="tab hide" id="tab-ergebnis">
+    <div class="card">
+      <h2>Gesamtqualifikation</h2>
+      <div class="hint">Block I = 40 Halbjahresleistungen × max 15 = 600 · Block II = 5 Prüfungen × 4-fach = 300 · gesamt max 900.</div>
+      <div class="blocks">
+        <div class="block">
+          <div class="bl-lbl">Block I · Halbjahre</div>
+          <div class="bl-val"><span id="bIpkt">0</span><small> / 600</small></div>
+          <div class="mini-bar"><i id="bIbar" style="width:0%;background:var(--primary)"></i></div>
+          <div class="muted" style="font-size:12px;margin-top:7px" id="bIinfo">0 von 40 HJL eingebracht</div>
+        </div>
+        <div class="block">
+          <div class="bl-lbl">Block II · Abitur</div>
+          <div class="bl-val"><span id="bIIpkt">0</span><small> / 300</small></div>
+          <div class="mini-bar"><i id="bIIbar" style="width:0%;background:var(--accent)"></i></div>
+          <div class="muted" style="font-size:12px;margin-top:7px" id="bIIinfo">0 von 5 Prüfungen erfasst</div>
+        </div>
+      </div>
+      <div id="bestehenBox" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card">
+      <h2>Eingebrachte Halbjahresleistungen</h2>
+      <div class="hint">Diese 40 (beste zulässige Auswahl) zählen für Block I. Schwache, die du noch hebeln kannst, sind rot.</div>
+      <div class="list-sel" id="selList">—</div>
+      <div class="result-line warn hide" id="selWarn"></div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: WAS-WÄRE-WENN ===== -->
+  <div class="tab hide" id="tab-wenndann">
+    <div class="card">
+      <h2>Was-wäre-wenn</h2>
+      <div class="hint">Spiel eine kommende Abiturprüfung durch und sieh sofort, wie sich dein Schnitt bewegt.</div>
+      <div class="field">
+        <label>Welche Prüfung?</label>
+        <select id="wfFach"></select>
+      </div>
+      <div class="field">
+        <label>Angenommenes Ergebnis: <span id="wfVal" style="color:var(--primary);font-weight:800">11</span> Punkte</label>
+        <input type="range" id="wfRange" min="0" max="15" value="11" step="1">
+      </div>
+      <div class="result-line" id="wfResult">Wähle eine Prüfung.</div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: ZIELNOTE ===== -->
+  <div class="tab hide" id="tab-ziel">
+    <div class="card">
+      <h2>Zielnoten-Rückrechnung</h2>
+      <div class="hint">Was brauchst du in den noch offenen Abiturprüfungen im Schnitt, um deine Wunschnote zu erreichen?</div>
+      <div class="slider-val" id="zielVal">2,0</div>
+      <input type="range" id="zielRange" min="10" max="40" value="20" step="1">
+      <div class="result-line" id="zielResult" style="margin-top:14px">—</div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: LOHNT SICH ÜBEN ===== -->
+  <div class="tab hide" id="tab-lohnt">
+    <div class="card">
+      <h2>Wo sich Üben (nicht) lohnt</h2>
+      <div class="hint">Clever lernen statt viel lernen: Wo bringt 1 Punkt mehr noch eine bessere Note – und wo ändert es praktisch nichts?</div>
+      <div id="lohntBox"></div>
+    </div>
+  </div>
+
+  <div class="note-foot">
+    Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v2.3 · Jagd</b>
+    <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
+      <div>
+        Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
+        gymnasiale-oberstufe.bayern.de → Qualifikationssystem (Allgemeines, Einbringungsverpflichtung, Besonderheiten bei der Einbringung) und Abiturprüfung → Erwerb der allgemeinen Hochschulreife.<br><br>
+        <b>Bitte gegenprüfen:</b> Die Einbringungs-Optimierung (welche 40 HJL) ist ein transparentes Modell und sollte bei der finalen Fächerwahl mit der Oberstufenkoordination bzw. einem handgerechneten Fall validiert werden.<br><br>
+        Die Bestehensprüfung prüft die abgesicherten Bedingungen: ≥300 gesamt, Block I ≥200, Block II ≥100, mind. 3 Abiturprüfungen ≥20 Punkte (4-fach), keine eingebrachte HJL und keine Abiturprüfung mit 0 Punkten. <b>Bewusst nicht hart geprüft</b> (bitte final gegen die GSO bzw. „wichtige Voraussetzungen" der KM abgleichen): die Sub-Klausel „darunter Leistungsfach/Deutsch/Mathematik" sowie eine etwaige Höchstzahl an Unterpunktungen in Block I.
+      </div>
+    </details>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="scanInput" accept="image/*" multiple style="display:none">
+
+<script>
+/* ===== Engine (inline, identisch zu abiloop-engine.js) ===== */
+const Engine = (function(){
+  function punkteZuNote(P){
+    if(P==null||isNaN(P))return null;P=Math.round(P);
+    if(P<300)return null;if(P>=823)return 1.0;if(P===300)return 4.0;
+    return Math.round((1.1+0.1*Math.floor((822-P)/18))*10)/10;
+  }
+  const PFLICHT_ALLE4=['pruefung','d','m','fs','nw'];
+  function istPflicht(f){return f.istAbiturfach||PFLICHT_ALLE4.indexOf(f.kategorie)!==-1;}
+  function waehleBlockI(faecher){
+    const ZIEL=40;let pflicht=[],optBest=[],rest=[];
+    faecher.forEach(f=>{
+      let hjl=[];['12/1','12/2','13/1','13/2'].forEach((ab,i)=>{
+        let p=f.hjl&&f.hjl[i];if(p===''||p==null||isNaN(p))return;
+        hjl.push({fid:f.id,fach:f.name,abschnitt:ab,punkte:+p});});
+      if(!hjl.length)return;
+      if(istPflicht(f)){pflicht=pflicht.concat(hjl);}
+      else{let s=hjl.slice().sort((a,b)=>b.punkte-a.punkte);
+        optBest=optBest.concat(s.slice(0,3));rest=rest.concat(s.slice(3));}
+    });
+    let basis=pflicht.concat(optBest),ausgew,hinweis='';
+    if(basis.length<=ZIEL){rest.sort((a,b)=>b.punkte-a.punkte);
+      ausgew=basis.concat(rest.slice(0,Math.max(0,ZIEL-basis.length)));}
+    else{let ov=basis.length-ZIEL;
+      if(ov>1)hinweis='Rechnerisch mehr als 41 Pflichteinbringungen – bitte mit Oberstufenkoordination prüfen.';
+      optBest.sort((a,b)=>a.punkte-b.punkte);
+      ausgew=pflicht.concat(optBest.slice(ov));
+      if(ausgew.length>ZIEL){ausgew.sort((a,b)=>a.punkte-b.punkte);ausgew=ausgew.slice(ausgew.length-ZIEL);}}
+    let summe=ausgew.reduce((s,h)=>s+h.punkte,0);
+    return{hjl:ausgew,anzahl:ausgew.length,summe,punkte:summe,vollstaendig:ausgew.length>=ZIEL,hinweis};
+  }
+  function rechneBlockII(af){
+    let detail=af.map(a=>{let p=(a.ergebnis===''||a.ergebnis==null||isNaN(a.ergebnis))?null:+a.ergebnis;
+      return{name:a.name,roh:p,gewertet:p==null?null:p*4};});
+    let erf=detail.filter(d=>d.roh!=null);
+    return{detail,punkte:erf.reduce((s,d)=>s+d.gewertet,0),anzahlErfasst:erf.length,
+      vollstaendig:erf.length===5&&af.length===5};
+  }
+  function pruefeBestehen(bI,bII){
+    let gesamt=bI.punkte+bII.punkte;
+    let drei20=(bII.detail||[]).filter(d=>d.gewertet!=null&&d.gewertet>=20).length;
+    let nullHjl=(bI.hjl||[]).some(h=>h.punkte===0);
+    let nullAbi=(bII.detail||[]).some(d=>d.roh===0);
+    let b=[{label:'Gesamtpunktzahl ≥ 300',erfuellt:gesamt>=300},
+      {label:'Block I ≥ 200',erfuellt:bI.punkte>=200},
+      {label:'Block II ≥ 100',erfuellt:bII.punkte>=100},
+      {label:'Mind. 3 Abiturprüfungen ≥ 20 Punkte (4-fach)',erfuellt:drei20>=3},
+      {label:'Keine eingebrachte Halbjahresleistung mit 0 Punkten',erfuellt:!nullHjl},
+      {label:'Keine Abiturprüfung mit 0 Punkten',erfuellt:!nullAbi}];
+    return{bestanden:b.every(x=>x.erfuellt),bedingungen:b,drei20};
+  }
+  function berechne(st){
+    let bI=waehleBlockI(st.faecher||[]),bII=rechneBlockII(st.abiturfaecher||[]);
+    let g=bI.punkte+bII.punkte;
+    return{blockI:bI,blockII:bII,gesamtpunkte:g,maxPunkte:900,note:punkteZuNote(g),
+      bestehen:pruefeBestehen(bI,bII),vollstaendig:bI.vollstaendig&&bII.vollstaendig};
+  }
+  function zielnote(st,zn){
+    let bI=waehleBlockI(st.faecher||[]),bII=rechneBlockII(st.abiturfaecher||[]);
+    let offene=(st.abiturfaecher||[]).filter(a=>a.ergebnis===''||a.ergebnis==null||isNaN(a.ergebnis)).length;
+    if(offene===0)return{moeglich:false,grund:'Alle Abiturprüfungen sind bereits erfasst.'};
+    let need=null;for(let P=300;P<=900;P++){let n=punkteZuNote(P);if(n!=null&&n<=zn+1e-9){need=P;break;}}
+    if(need==null)return{moeglich:false,grund:'Zielnote nicht erreichbar.'};
+    let fehlt=need-(bI.punkte+bII.punkte),roh=(fehlt/offene)/4;
+    return{moeglich:roh<=15+1e-9,benoetigtGesamt:need,fehltGesamt:Math.max(0,fehlt),
+      offenePruefungen:offene,rohSchnitt:roh,schonErreicht:fehlt<=0};
+  }
+  function naechsteSchwelle(g){let a=punkteZuNote(g);
+    for(let P=g+1;P<=900;P++){let n=punkteZuNote(P);if(n!=null&&n<a)return{punkte:P,abstand:P-g,note:n};}return null;}
+  return{punkteZuNote,waehleBlockI,rechneBlockII,pruefeBestehen,berechne,zielnote,naechsteSchwelle};
+})();
+
+/* ===== State & Persistenz (nur lokal) ===== */
+const KEY='abiloop.state.v2';
+const KEY_V1='abiloop.state.v1';
+var DEMO=false; /* Demo-Modus: nur Ansicht, speichert nichts */
+const KAT=[['other','Sonstiges'],['pruefung','Abiturfach'],['d','Deutsch'],['m','Mathe'],
+  ['fs','einzige FS'],['nw','einzige NW']];
+/* Auswahlliste echter Oberstufenfächer (Bayern) inkl. sinnvoller Default-Kategorie */
+const FAECHER=[['Deutsch','d'],['Englisch','fs'],['Mathematik','m'],
+  ['Französisch','fs'],['Spanisch','fs'],['Italienisch','fs'],['Latein','fs'],['Griechisch','fs'],['Russisch','fs'],
+  ['Physik','nw'],['Chemie','nw'],['Biologie','nw'],['Informatik','other'],
+  ['Geschichte','other'],['Sozialkunde / Politik u. Gesellschaft','other'],['Geographie','other'],['Wirtschaft und Recht','other'],
+  ['Katholische Religionslehre','other'],['Evangelische Religionslehre','other'],['Ethik','other'],
+  ['Kunst','other'],['Musik','other'],['Sport','other'],['Psychologie','other']];
+function inFaecher(n){return FAECHER.some(s=>s[0]===n);}
+function fachOptions(sel){
+  return '<option value="">Fach auswählen</option>'+
+    FAECHER.map(s=>'<option value="'+esc(s[0])+'"'+(sel===s[0]?' selected':'')+'>'+esc(s[0])+'</option>').join('');
+}
+let state=load()||emptyState();
+
+// Neutrales Startprofil – der Schüler legt seine Prüfungsfächer selbst fest (generisch, für alle).
+function emptyState(){
+  const mk=(name,kat,abi,lf)=>({id:id(),name,kategorie:kat,istAbiturfach:abi,istLF:!!lf,hjl:['','','',''],abiErgebnis:''});
+  return {
+    pruefungen:[],coverage:{},
+    abiturfaecher:[
+      {name:'Leistungsfach',ergebnis:'',lf:true},
+      {name:'2. Abiturfach',ergebnis:''},
+      {name:'3. Abiturfach',ergebnis:''},
+      {name:'4. Abiturfach',ergebnis:''},
+      {name:'5. Abiturfach',ergebnis:''}
+    ],
+    faecher:[
+      mk('Leistungsfach','pruefung',true,true),
+      mk('2. Abiturfach','pruefung',true),
+      mk('3. Abiturfach','pruefung',true),
+      mk('4. Abiturfach','pruefung',true),
+      mk('5. Abiturfach','pruefung',true),
+      mk('weiteres Fach','other',false)
+    ]
+  };
+}
+
+// Beispiel-Konstellation (frei änderbar) – nur als Demo per Knopf, nicht fest verbaut.
+function beispielState(){
+  return {
+    pruefungen:[],coverage:{},
+    abiturfaecher:[
+      {name:'Englisch (LF)',ergebnis:'',lf:true},
+      {name:'Deutsch (mündl.)',ergebnis:''},
+      {name:'Mathematik',ergebnis:''},
+      {name:'Wirtschaft/Recht',ergebnis:''},
+      {name:'Religion',ergebnis:''}
+    ],
+    faecher:[
+      {id:id(),name:'Englisch',kategorie:'fs',istAbiturfach:true,istLF:true,hjl:['','','','']},
+      {id:id(),name:'Deutsch',kategorie:'d',istAbiturfach:true,hjl:['','','','']},
+      {id:id(),name:'Mathematik',kategorie:'m',istAbiturfach:true,hjl:['','','','']},
+      {id:id(),name:'Wirtschaft/Recht',kategorie:'pruefung',istAbiturfach:true,hjl:['','','','']},
+      {id:id(),name:'Religion',kategorie:'pruefung',istAbiturfach:true,hjl:['','','','']},
+      {id:id(),name:'Geschichte+Sozialk.',kategorie:'other',istAbiturfach:false,hjl:['','','','']},
+      {id:id(),name:'Biologie',kategorie:'nw',istAbiturfach:false,hjl:['','','','']},
+      {id:id(),name:'Geographie',kategorie:'other',istAbiturfach:false,hjl:['','','','']}
+    ]
+  };
+}
+function id(){return 'f'+Math.random().toString(36).slice(2,8);}
+function load(){
+  try{
+    let s=JSON.parse(localStorage.getItem(KEY));
+    if(!s){s=JSON.parse(localStorage.getItem(KEY_V1));}
+    return s?migrate(s):null;
+  }catch(e){return null;}
+}
+function migrate(s){
+  s.pruefungen=s.pruefungen||[];
+  s.coverage=s.coverage||{};
+  s.muster=s.muster||{};
+  (s.faecher||[]).forEach(f=>{if(typeof f.istLF!=='boolean')f.istLF=false;if(f.abiErgebnis==null)f.abiErgebnis='';});
+  return s;
+}
+function save(){if(DEMO)return;try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+
+/* ===== Render ===== */
+function renderAbi(){
+  const c=document.getElementById('abiList');c.innerHTML='';
+  state.abiturfaecher.forEach((af,i)=>{
+    const d=document.createElement('div');d.className='abi'+(af.lf?' lf':'');
+    const gew=(af.ergebnis===''||isNaN(af.ergebnis))?'–':(af.ergebnis*4)+' P';
+    const aSel=inFaecher(af.name)?af.name:'';
+    d.innerHTML=`<select class="aname" data-i="${i}" data-k="name">${fachOptions(aSel,false)}</select>
+      <input class="apkt" type="number" inputmode="numeric" min="0" max="15" placeholder="–"
+        value="${af.ergebnis}" data-i="${i}" data-k="ergebnis">
+      <div class="gew">×4 = <b>${gew}</b></div>`;
+    c.appendChild(d);
+  });
+  c.querySelectorAll('input,select').forEach(el=>el.addEventListener(el.tagName==='SELECT'?'change':'input',e=>{
+    const i=+e.target.dataset.i,k=e.target.dataset.k;let v=e.target.value;
+    if(k==='ergebnis'){v=clamp(v);if(v!==e.target.value&&v!=='')e.target.value=v;}
+    state.abiturfaecher[i][k]=v;save();recompute();
+  }));
+}
+function renderSubj(){
+  const c=document.getElementById('subjList');c.innerHTML='';
+  state.faecher.forEach((f,i)=>{
+    const d=document.createElement('div');d.className='subj';
+    const opts=KAT.map(k=>`<option value="${k[0]}" ${f.kategorie===k[0]?'selected':''}>${k[1]}</option>`).join('');
+    const flag=isPflicht(f)?'<span class="flag">alle 4 zählen</span>':'<span class="flag" style="background:#fff0e9;color:#d9663a">1 streichbar</span>';
+    const isCustom=!!f._custom||(f.name!==''&&!inFaecher(f.name));
+    d.innerHTML=`<div class="top">
+        <select class="fachsel" data-i="${i}">${fachOptions(isCustom?'__custom__':(f.name||''),true)}</select>
+        <select class="kat" data-i="${i}" data-k="kategorie">${opts}</select>
+        <button class="abt${f.istAbiturfach?' on':''}" data-i="${i}" title="Abiturprüfungsfach">Abi</button>
+        <button class="lft${f.istLF?' on':''}" data-i="${i}" title="Leistungsfach">LF</button>
+        <button class="del" data-i="${i}" title="löschen">×</button>
+      </div>
+      ${isCustom?`<input class="name" value="${esc(f.name)}" data-i="${i}" placeholder="Fachname eingeben" style="width:100%;margin:2px 0 8px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:9px 11px;border-radius:11px;color:var(--ink)">`:''}
+      <div style="margin:-4px 0 8px 2px">${flag}</div>
+      <div class="hjl-row">
+        ${['12/1','12/2','13/1','13/2'].map((ab,j)=>`<label class="hjl"><span>${ab}</span>
+          <input type="number" inputmode="numeric" min="0" max="15" placeholder="–"
+            value="${f.hjl[j]}" data-i="${i}" data-j="${j}"></label>`).join('')}
+      </div>
+      ${f.istAbiturfach?`<div class="abirow"><span>Abiturprüfung (×4)</span><input class="apkt2" type="number" inputmode="numeric" min="0" max="15" placeholder="–" value="${esc(f.abiErgebnis||'')}" data-i="${i}"></div>`:''}`;
+    c.appendChild(d);
+  });
+  c.querySelectorAll('select.fachsel').forEach(s=>s.addEventListener('change',e=>{
+    const i=+e.target.dataset.i,val=e.target.value;
+    if(val==='__custom__'){state.faecher[i]._custom=true;state.faecher[i].name='';save();renderAll();return;}
+    state.faecher[i]._custom=false;state.faecher[i].name=val;
+    const m=FAECHER.find(x=>x[0]===val);if(m)state.faecher[i].kategorie=m[1];
+    save();renderAll();}));
+  c.querySelectorAll('input.name').forEach(inp=>inp.addEventListener('input',e=>{
+    state.faecher[+e.target.dataset.i].name=e.target.value;save();renderAll(false);}));
+  c.querySelectorAll('select.kat').forEach(s=>s.addEventListener('change',e=>{
+    state.faecher[+e.target.dataset.i].kategorie=e.target.value;save();renderAll();}));
+  c.querySelectorAll('.lft').forEach(b=>b.addEventListener('click',e=>{
+    const i=+e.currentTarget.dataset.i;const was=state.faecher[i].istLF;
+    state.faecher.forEach(f=>f.istLF=false);state.faecher[i].istLF=!was;
+    if(state.faecher[i].istLF)state.faecher[i].istAbiturfach=true;
+    save();renderAll();}));
+  c.querySelectorAll('.abt').forEach(b=>b.addEventListener('click',e=>{
+    const i=+e.currentTarget.dataset.i;state.faecher[i].istAbiturfach=!state.faecher[i].istAbiturfach;
+    save();renderAll();}));
+  c.querySelectorAll('input.apkt2').forEach(inp=>inp.addEventListener('input',e=>{
+    let v=clamp(e.target.value);if(v!==e.target.value&&v!=='')e.target.value=v;
+    state.faecher[+e.target.dataset.i].abiErgebnis=v;save();recompute();}));
+  c.querySelectorAll('.hjl input').forEach(inp=>inp.addEventListener('input',e=>{
+    let v=clamp(e.target.value);if(v!==e.target.value&&v!=='')e.target.value=v;
+    state.faecher[+e.target.dataset.i].hjl[+e.target.dataset.j]=v;save();recompute();}));
+  c.querySelectorAll('.del').forEach(b=>b.addEventListener('click',e=>{
+    state.faecher.splice(+e.target.dataset.i,1);save();renderAll();}));
+}
+function isPflicht(f){return f.istAbiturfach||['pruefung','d','m','fs','nw'].indexOf(f.kategorie)!==-1;}
+
+/* ===== Recompute & hero ===== */
+function recompute(){
+  syncAbi();
+  const r=Engine.berechne(state);
+  const noteStr=r.note!=null?fmt(r.note):'–';
+  document.getElementById('heroNote').textContent=noteStr;
+  document.getElementById('heroPunkte').textContent=r.gesamtpunkte;
+  document.getElementById('heroBlockI').textContent=r.blockI.punkte;
+  document.getElementById('heroBlockII').textContent=r.blockII.punkte;
+  document.getElementById('heroBar').style.width=(r.gesamtpunkte/900*100)+'%';
+  const sub=document.getElementById('heroSub');
+  const badge=document.getElementById('heroBadge');
+  if(r.gesamtpunkte===0){sub.textContent='noch keine Daten';}
+  else if(r.vollstaendig){sub.textContent='Endstand (alle Daten erfasst)';}
+  else{sub.textContent='Prognose mit aktuellen Eingaben';}
+  if(r.gesamtpunkte===0){badge.className='badge prog';badge.textContent='Prognose';}
+  else if(!r.vollstaendig){badge.className='badge prog';badge.textContent='Prognose – noch nicht alle Daten';}
+  else{badge.className='badge '+(r.bestehen.bestanden?'ok':'no');
+    badge.textContent=r.bestehen.bestanden?'✓ Abitur bestanden':'✗ nicht bestanden';}
+
+  // Ergebnis-Tab
+  document.getElementById('bIpkt').textContent=r.blockI.punkte;
+  document.getElementById('bIIpkt').textContent=r.blockII.punkte;
+  document.getElementById('bIbar').style.width=(r.blockI.punkte/600*100)+'%';
+  document.getElementById('bIIbar').style.width=(r.blockII.punkte/300*100)+'%';
+  document.getElementById('bIinfo').textContent=r.blockI.anzahl+' von 40 HJL eingebracht'+(r.blockI.anzahl<40?' (Prognose)':'');
+  document.getElementById('bIIinfo').textContent=r.blockII.anzahlErfasst+' von 5 Prüfungen erfasst';
+  const nAbi=(state.faecher||[]).filter(f=>f.istAbiturfach).length;
+  const ah=document.getElementById('abiHint');
+  if(ah){if(nAbi!==5){ah.classList.remove('hide');ah.textContent='Fürs bayerische Abitur genau 5 Abiturprüfungsfächer mit „Abi" markieren – aktuell sind es '+nAbi+'.';}else{ah.classList.add('hide');}}
+
+  // Bestehen
+  const bb=document.getElementById('bestehenBox');
+  bb.innerHTML=r.bestehen.bedingungen.map(c=>
+    `<div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:700;padding:7px 0;border-bottom:1px solid var(--line)">
+      <span>${c.erfuellt?'✓':'○'} ${c.label}</span></div>`).join('');
+
+  // eingebrachte HJL
+  const sl=document.getElementById('selList');
+  if(r.blockI.hjl.length===0){sl.innerHTML='Noch keine Halbjahresleistungen erfasst.';}
+  else{const sorted=r.blockI.hjl.slice().sort((a,b)=>a.punkte-b.punkte);
+    sl.innerHTML=sorted.map(h=>`<span class="chip ${h.punkte<=6?'low':''}">${esc(h.fach)} ${h.abschnitt}: ${h.punkte}</span>`).join('');}
+  const sw=document.getElementById('selWarn');
+  if(r.blockI.hinweis){sw.classList.remove('hide');sw.textContent=r.blockI.hinweis;}else sw.classList.add('hide');
+
+  renderWennDann(r);renderZiel();renderLohnt(r);
+  return r;
+}
+
+/* ===== Was-wäre-wenn ===== */
+function renderWennDann(r){
+  const sel=document.getElementById('wfFach');
+  const offen=state.abiturfaecher.map((a,i)=>({a,i})).filter(o=>o.a.ergebnis===''||isNaN(o.a.ergebnis));
+  const prev=sel.value;
+  sel.innerHTML=offen.length?offen.map(o=>`<option value="${o.i}">${esc(o.a.name)}</option>`).join('')
+    :'<option value="">Alle Prüfungen schon erfasst</option>';
+  if(prev&&[...sel.options].some(o=>o.value===prev))sel.value=prev;
+  computeWennDann();
+}
+function computeWennDann(){
+  const sel=document.getElementById('wfFach'),box=document.getElementById('wfResult');
+  const range=document.getElementById('wfRange'),v=+range.value;
+  document.getElementById('wfVal').textContent=v;
+  if(sel.value===''){box.textContent='Es sind bereits alle Prüfungen erfasst – nutze „Was-wäre-wenn" über die Halbjahresleistungen.';box.className='result-line warn';return;}
+  const i=+sel.value;
+  const base=Engine.berechne(state);
+  const clone=JSON.parse(JSON.stringify(state));clone.abiturfaecher[i].ergebnis=v;
+  const after=Engine.berechne(clone);
+  const dn=after.note!=null?fmt(after.note):'–';
+  const diff=after.gesamtpunkte-base.gesamtpunkte;
+  box.className='result-line';
+  box.innerHTML=`Mit <b>${v} Punkten</b> in „${esc(state.abiturfaecher[i].name)}" (×4 = ${v*4} P):<br>
+    Schnitt <b>${dn}</b> · Gesamt <b>${after.gesamtpunkte}</b> P (${diff>=0?'+':''}${diff}).`;
+}
+
+/* ===== Zielnote ===== */
+function renderZiel(){
+  const r=document.getElementById('zielRange'),zn=(+r.value)/10;
+  document.getElementById('zielVal').textContent=fmt(zn);
+  const box=document.getElementById('zielResult');
+  const res=Engine.zielnote(state,zn);
+  if(!res.moeglich&&res.grund){box.className='result-line warn';box.textContent=res.grund;return;}
+  if(res.schonErreicht){box.className='result-line';
+    box.innerHTML=`Schnitt <b>${fmt(zn)}</b> ist mit den bisherigen Eingaben bereits gesichert. 🎀`;return;}
+  if(!res.moeglich){box.className='result-line bad';
+    box.innerHTML=`Für <b>${fmt(zn)}</b> wären im Schnitt mehr als 15 Punkte je Prüfung nötig – mit den aktuellen Halbjahres-Daten nicht erreichbar.`;return;}
+  box.className='result-line';
+  box.innerHTML=`Für Schnitt <b>${fmt(zn)}</b> brauchst du in den <b>${res.offenePruefungen}</b> offenen Abiturprüfungen
+    im Schnitt noch <b>${res.rohSchnitt.toFixed(1)} Punkte</b> (von 15) je Prüfung.`;
+}
+
+/* ===== Lohnt sich Üben ===== */
+function renderLohnt(r){
+  const box=document.getElementById('lohntBox');
+  if(r.gesamtpunkte===0){box.innerHTML='<div class="result-line warn">Trag erst ein paar Punkte ein, dann zeige ich dir, wo der Hebel sitzt.</div>';return;}
+  const sw=Engine.naechsteSchwelle(r.gesamtpunkte);
+  let html='';
+  if(!sw){html+=`<div class="result-line">Bestnote 1,0 erreicht – besser geht der Schnitt nicht. 🎀</div>`;}
+  else{
+    const abiPruef=Math.ceil(sw.abstand/4), hjlPkt=sw.abstand;
+    html+=`<div class="result-line">Nächste bessere Note <b>${fmt(sw.note)}</b> ab <b>${sw.punkte}</b> Punkten – das sind <b>${sw.abstand}</b> Gesamtpunkte mehr.<br>
+      Über eine Abiturprüfung: ca. <b>${abiPruef}</b> Notenpunkte (zählt ×4). Über Halbjahresleistungen: <b>${hjlPkt}</b> Punkte verteilt.</div>`;
+  }
+  // Schwächste eingebrachte HJL = größter Hebel mit kleinstem Aufwand
+  const schwach=r.blockI.hjl.slice().sort((a,b)=>a.punkte-b.punkte).slice(0,3).filter(h=>h.punkte<13);
+  if(schwach.length){
+    html+=`<div class="card" style="box-shadow:none;border:1px solid var(--line);margin-top:12px">
+      <b style="font-size:14px">Größter Hebel zuerst</b>
+      <div class="hint" style="margin:6px 0 10px">Diese eingebrachten Leistungen sind am niedrigsten – hier bringt jeder Punkt am meisten:</div>
+      ${schwach.map(h=>`<div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:700;padding:6px 0;border-bottom:1px solid var(--line)">
+        <span>${esc(h.fach)} ${h.abschnitt}</span><span style="color:var(--rose)">${h.punkte} P</span></div>`).join('')}
+    </div>`;
+  }
+  // Reine Block-II-Hebelinfo
+  html+=`<div class="hint" style="margin-top:12px">Faustregel: 1 Notenpunkt mehr in einer <b>Abiturprüfung</b> = +4 Gesamtpunkte, in einer <b>Halbjahresleistung</b> = +1 Gesamtpunkt. Eine bessere Note gibt es nur alle 18 Punkte – knapp darunter lohnt der letzte Punkt am meisten, knapp darüber kaum.</div>`;
+  box.innerHTML=html;
+}
+
+/* ===== Helpers ===== */
+function fmt(n){return n.toFixed(1).replace('.',',');}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function clamp(v){if(v==='')return '';let n=Math.round(+v);if(isNaN(n))return '';return String(Math.max(0,Math.min(15,n)));}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800);}
+function addSubject(){state.faecher.push({id:id(),name:'',kategorie:'other',istAbiturfach:false,istLF:false,hjl:['','','',''],abiErgebnis:''});save();renderAll();}
+function loadBeispiel(){
+  if(!confirm('Beispiel laden? Aktuelle Eingaben werden ersetzt.'))return;
+  state=beispielState();
+  const vals=[[13,12],[9,10],[7,8],[11,12],[13,14]];
+  state.faecher.forEach(function(f,i){const v=vals[i];if(v)f.hjl=[String(v[0]),String(v[1]),'',''];});
+  syncPlan();
+  const eng=state.faecher.find(f=>fachKey(f)==='englisch');
+  function slot(fid,ab){return state.pruefungen.find(p=>p.art==='sa'&&p.fid===fid&&p.abschnitt===ab);}
+  if(eng){
+    const s1=slot(eng.id,'12/1');if(s1){s1.datum='2026-03-12';s1.muendlich=false;s1.scope='The American Dream – analysis + comment';}   // schon geschrieben
+    const s2=slot(eng.id,'12/2');if(s2){s2.datum='2026-06-26';s2.muendlich=true;s2.scope='Going green / sustainability';s2.themen=['sci'];}   // nächste Prüfung = mündlich, Thema vorgewählt
+    state.muster=state.muster||{};
+    state.muster[eng.id]=[                                                  // aus der 12/1-SA „erkannte" Muster (statt Scan)
+      {kategorie:'Grammatik / Sprachrichtigkeit',label:'if-clauses Typ II/III',datum:'2026-03-14'},
+      {kategorie:'Vokabular / Register',label:'zu umgangssprachliches Register',datum:'2026-03-14'},
+      {kategorie:'Argumentation / Textaufbau',label:'These ohne Beleg',datum:'2026-03-14'}
+    ];
+    state.coverage[eng.id]={hv:true,lv:true,ta:true,sm:true};               // schriftliche Typen aus 12/1 schon geübt
+  }
+  const deu=state.faecher.find(f=>fachKey(f)==='deutsch');
+  if(deu){
+    const s=slot(deu.id,'12/2');if(s){s.datum='2026-06-17';s.muendlich=false;s.scope='Drama (Pflichtlektüre) + Erörterung';s.themen=['drama','eroe'];}   // nächste echte SA: Mittwoch
+  }
+  save();renderAll();switchTab('heute');toast('Beispiel geladen – tippe oben „Üben"');
+}
+function clearProfile(){if(confirm('Neues, leeres Profil anlegen? Aktuelle Eingaben werden ersetzt.')){state=emptyState();save();renderAll();toast('Neues Profil');}}
+function renderAll(full=true){if(full){renderSubj();}syncPlan();save();renderPlan();renderHeute();renderNextStrip();renderLoops();recompute();}
+function syncAbi(){
+  state.abiturfaecher=(state.faecher||[]).filter(f=>f.istAbiturfach).map(f=>({
+    name:f.name||'(Fach)',ergebnis:(f.abiErgebnis==null?'':f.abiErgebnis),lf:!!f.istLF}));
+}
+function renderNextStrip(){
+  const el=document.getElementById('nextStrip');if(!el)return;
+  const needsSetup=!state.faecher.some(f=>fachCfg(f));
+  if(needsSetup){
+    el.innerHTML='<div class="nextstrip" style="background:linear-gradient(135deg,#EDEEE8,#ffffff)"><span class="ic">👋</span><div class="tx"><b>Willkommen bei Antons AbiTool!</b><small>Schritt 1: Wähle zuerst deine Fächer aus</small></div><button class="btn sm cta" onclick="switchTab(\'daten\')">Fächer wählen</button></div>';
+    return;}
+  const k=kommende();
+  if(!k.length){
+    el.innerHTML='<div class="nextstrip"><span class="ic">📅</span><div class="tx"><b>Noch keine Prüfung eingetragen</b><small>Trag im Prüfungsplan deinen nächsten Termin ein</small></div><button class="btn sm cta" onclick="switchTab(\'plan\')">Eintragen</button></div>';
+    return;}
+  const x=k[0],f=fachById(x.p.fid),cfg=f?fachCfg(f):null;
+  el.innerHTML='<div class="nextstrip"><span class="ic">⏳</span><div class="tx"><b>'+esc(f?f.name:'?')+' · '+esc(artLabel(x.p))+'</b>'+
+    '<small>'+inWorten(tageBis(x.d))+' · '+fmtDat(x.d)+(x.p.scope?' · '+esc(x.p.scope):'')+'</small></div>'+
+    ((cfg&&cfg.aktiv)?'<button class="btn sm cta" onclick="switchTab(\'loops\')">Pirsch</button>':'<button class="btn ghost sm cta" onclick="switchTab(\'plan\')">Plan</button>')+'</div>';
+}
+
+/* ===== Fach-Katalog: konfigurationsgetrieben — ein Fach = ein Eintrag =====
+   Grundgerüst für ALLE Oberstufenfächer. Die Maschine (Abdeckung + Fehler-Loop)
+   ist fachunabhängig; pro Fach nur zwei Config-Blöcke: Fehler-Raster + Aufgabentypen.
+   "aktiv:true" schaltet ein Fach frei – erst wenn sein Katalog fachlich (ISB/LehrplanPLUS)
+   geprüft ist. Englisch ist das erste vollständige Fach. */
+const RASTER={
+  sprache:['Grammatik / Sprachrichtigkeit','Vokabular / Register','Argumentation / Textaufbau','Operator-Handling','inhaltliches Missverständnis'],
+  text:['Fachwissen / inhaltliche Richtigkeit','Argumentation / Struktur','Operator-Handling','Beleg- / Materialbezug','Fachsprache / Darstellung'],
+  mathnw:['Ansatz / Strategie','Rechnung / Umformung','Begründung / Herleitung','Einheiten / Genauigkeit','Fachbegriffe / Notation','Flüchtigkeitsfehler']
+};
+/* typen[].modus: 's' = schriftlich · 'm' = mündlich */
+const KATALOG={
+  englisch:{label:'Englisch',aktiv:true,match:['engl'],raster:RASTER.sprache,
+    fach:'Englisch (G9, Profil- und Leistungsstufe, Niveau B2+; Abitur in Bayern ab 2026)',
+    hinweise:'Aufgaben entstehen durch Transformation typischer ISB-/IQB-/Abiturformate (kein untypisches freies Erfinden). Operatoren nach ISB je Anforderungsbereich: AFB I (outline, summarize, describe), AFB II (analyse, examine, explain, compare, characterise), AFB III (discuss, comment, evaluate, assess, justify, write/design). Schriftliche SA: Hörverstehen 20 %, Schreiben 55 %, Sprachmittlung 25 %. Mündliche SA: zweiteilig (monologische Kurzpräsentation + dialogische Diskussion), Inhalt : Sprache = 40 : 60.',
+    typen:[
+      {id:'hv',n:'Hörverstehen / Hör-Seh-Verstehen',modus:'s'},
+      {id:'lv',n:'Lese- / Textverstehen',modus:'s'},
+      {id:'ta',n:'Textanalyse (analysis)',modus:'s'},
+      {id:'st',n:'Stellungnahme / gestaltendes Schreiben (comment/creative)',modus:'s'},
+      {id:'sm',n:'Sprachmittlung (mediation, DE → EN)',modus:'s'},
+      {id:'mon',n:'Sprechen: monologisch (Kurzpräsentation)',modus:'m'},
+      {id:'dia',n:'Sprechen: dialogisch (Diskussion)',modus:'m'}],
+    themen:[
+      {id:'ire',n:'Irland (Troubles, Brexit, Perspektiven)'},
+      {id:'afas',n:'Anglophones afrikanisches/asiatisches Land'},
+      {id:'cult',n:'Kulturelles Leben in UK & USA (Theater, Film, Musik, Kunst; popular culture)'},
+      {id:'sci',n:'Wissenschaft, Technologie & Umwelt (z. B. nachhaltige Energie)'},
+      {id:'eth',n:'Zusammenleben ethnischer Gruppen (Einwanderung, American Dream, Black Britain, Hispanics)'},
+      {id:'pol',n:'Politik: Systeme UK/USA, internationale Beziehungen, Brexit'},
+      {id:'idn',n:'Regionale & soziale Identitäten (education, social classes)'},
+      {id:'rel',n:'Religion, Werte und Normen'},
+      {id:'med',n:'Medien in der Informationsgesellschaft (media literacy)'},
+      {id:'eliz',n:'Theater & Gesellschaft im Elisabethanischen Zeitalter'},
+      {id:'cur',n:'Aktuelle Ereignisse und Entwicklungen'},
+      {id:'lit',n:'Literatur & Medien (Roman, Drama, Shakespeare, Gedichte, short stories, Film)'}],
+    quelle:'ISB-Leitfaden Leistungsnachweise PuLSt mod. Fremdsprachen (04/2025); LehrplanPLUS Englisch 12/13 (grundlegendes Anforderungsniveau), Lernbereich 5 Themengebiete.'},
+
+  deutsch:{label:'Deutsch',aktiv:true,match:['deutsch'],raster:RASTER.sprache,
+    fach:'Deutsch (G9, Profil- und Leistungsstufe; Abitur in Bayern ab 2026)',
+    hinweise:'Schreibformate des bayerischen Deutsch-Abiturs ab 2026 (KMK): Interpretation literarischer Texte (Lyrik/Drama/Epik), Analyse pragmatischer Texte, Erörterung pragmatischer Texte, materialgestütztes Verfassen argumentierender Texte. Aufgaben durch Transformation typischer ISB-/Abiturformate, kein freies Erfinden. Operatoren nach AFB I–III; Bezug zu den ländergemeinsamen Themenfeldern und Pflichtlektüren.',
+    typen:[
+      {id:'il',n:'Interpretation literarischer Texte (Lyrik/Drama/Epik)',modus:'s'},
+      {id:'ap',n:'Analyse pragmatischer Texte',modus:'s'},
+      {id:'ep',n:'Erörterung pragmatischer Texte',modus:'s'},
+      {id:'ma',n:'Materialgestütztes Verfassen argumentierender Texte',modus:'s'}],
+    themen:[
+      {id:'um1900',n:'Umbrüche um 1900 (Naturalismus–Expressionismus)'},
+      {id:'erz',n:'Neue Formen des Erzählens & lyrischen Sprechens'},
+      {id:'drama',n:'Drama (Pflichtlektüre)'},
+      {id:'epik',n:'Epik / Roman'},
+      {id:'lyrik',n:'Lyrik (Epochen & Motive)'},
+      {id:'sach',n:'Pragmatische Texte / Sachtextanalyse'},
+      {id:'eroe',n:'Erörterung (textbezogen/pragmatisch)'},
+      {id:'mat',n:'Materialgestütztes Schreiben'},
+      {id:'sprache',n:'Sprache & Sprachgebrauch reflektieren (Sprachwandel, Varietäten)'},
+      {id:'medien',n:'Medien & Medienkritik'}],
+    quelle:'ISB Deutsch-Abitur ab 2026 (Aufgabenarten IL/AP/EP/MA); LehrplanPLUS Deutsch 12/13 und ländergemeinsame Themenfelder/Lektüren (deutschabitur.bayern.de).'},
+
+  /* --- weitere Oberstufenfächer: Erkennung + Raster bereits da, fachliche Freischaltung folgt --- */
+  fremdsprache:{label:'Fremdsprache',aktiv:false,match:['franz','frz','spanisch','italien','latein','griech','russ'],raster:RASTER.sprache,
+    fach:'moderne oder klassische Fremdsprache (G9)',hinweise:'',typen:[],
+    quelle:'Aufgabentypen je Sprache nach ISB/LehrplanPLUS – bei Freischaltung ergänzt.'},
+  mathematik:{label:'Mathematik',aktiv:false,match:['mathe'],raster:RASTER.mathnw,
+    fach:'Mathematik (G9)',hinweise:'',typen:[],
+    quelle:'Aufgabentypen/AFB nach ISB Mathematik – bei Freischaltung ergänzt.'},
+  nawi:{label:'Naturwissenschaft',aktiv:false,match:['physik','chemie','biolog','nawi','natur'],raster:RASTER.mathnw,
+    fach:'Naturwissenschaft (Physik/Chemie/Biologie, G9)',hinweise:'',typen:[],
+    quelle:'Aufgabentypen/AFB nach ISB – bei Freischaltung ergänzt.'},
+  informatik:{label:'Informatik',aktiv:false,match:['informat'],raster:RASTER.mathnw,
+    fach:'Informatik (G9)',hinweise:'',typen:[],quelle:'nach ISB – bei Freischaltung ergänzt.'},
+  gesellschaft:{label:'Gesellschaftswissenschaft',aktiv:false,match:['geschichte','sozial','geo','wirtschaft','recht','politik','gesellschaft'],raster:RASTER.text,
+    fach:'gesellschaftswissenschaftliches Fach (Geschichte/Sozialkunde/Geographie/Wirtschaft+Recht, G9)',hinweise:'',typen:[],
+    quelle:'Aufgabentypen/AFB nach ISB – bei Freischaltung ergänzt.'},
+  wertefach:{label:'Religion / Ethik',aktiv:false,match:['religion','reli','ethik'],raster:RASTER.text,
+    fach:'Religionslehre oder Ethik (G9)',hinweise:'',typen:[],
+    quelle:'Aufgabentypen/AFB nach ISB – bei Freischaltung ergänzt.'},
+  kunstmusik:{label:'Kunst / Musik',aktiv:false,match:['kunst','musik'],raster:RASTER.text,
+    fach:'Kunst oder Musik (G9)',hinweise:'',typen:[],
+    quelle:'Aufgabentypen/AFB nach ISB – bei Freischaltung ergänzt.'}
+};
+function fachKey(f){const n=((f&&f.name)||'').toLowerCase();
+  for(const key in KATALOG){if(KATALOG[key].match.some(m=>n.indexOf(m)>-1))return key;}
+  return null;}
+function loopKey(f){return fachKey(f);}            /* Alias (Abwärtskompatibilität) */
+function fachCfg(f){const key=fachKey(f);return key?KATALOG[key]:null;}
+
+/* ===== Prüfungsplan: SA-Slots automatisch aus der Fächerwahl ===== */
+const ABS=['12/1','12/2','13/1','13/2'];
+function saAbschnitte(f){return (f.kategorie==='d'||f.kategorie==='m'||f.istLF)?ABS:ABS.slice(0,3);}
+function syncPlan(){
+  const want=[];
+  state.faecher.forEach(f=>saAbschnitte(f).forEach(ab=>want.push(f.id+'|'+ab)));
+  state.pruefungen=state.pruefungen.filter(p=>p.art!=='sa'||want.indexOf(p.fid+'|'+p.abschnitt)>-1);
+  want.forEach(w=>{const parts=w.split('|'),fid=parts[0],ab=parts[1];
+    if(!state.pruefungen.some(p=>p.art==='sa'&&p.fid===fid&&p.abschnitt===ab))
+      state.pruefungen.push({id:id(),fid:fid,art:'sa',abschnitt:ab,datum:'',muendlich:false,scope:''});});
+  state.pruefungen=state.pruefungen.filter(p=>state.faecher.some(f=>f.id===p.fid));
+}
+function fachById(fid){return state.faecher.find(f=>f.id===fid)||null;}
+function artLabel(p){
+  if(p.art==='sa')return (p.muendlich?'Mündliche Schulaufgabe':'Schulaufgabe')+' · '+p.abschnitt;
+  return p.name||'Kleine Prüfung';
+}
+function kommende(){
+  const t=new Date();t.setHours(0,0,0,0);
+  return state.pruefungen.filter(p=>p.datum)
+    .map(p=>({p:p,d:new Date(p.datum+'T00:00:00')}))
+    .filter(x=>!isNaN(x.d)&&x.d>=t)
+    .sort((a,b)=>a.d-b.d);
+}
+function tageBis(d){const t=new Date();t.setHours(0,0,0,0);return Math.round((d-t)/86400000);}
+function fmtDat(d){return d.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});}
+function inWorten(n){return n===0?'heute':(n===1?'morgen':'in '+n+' Tagen');}
+
+function renderHeute(){
+  const card=document.getElementById('nextExamCard');
+  const list=document.getElementById('upcomingList');
+  const needsSetup=!state.faecher.some(f=>fachCfg(f));
+  if(needsSetup){
+    card.innerHTML='<div style="display:flex;align-items:center;gap:16px"><div style="flex:0 0 auto">'+frischling(86)+'</div><div>'+
+      '<div class="nextlbl">Willkommen, Anton 🌿</div>'+
+      '<div class="nextbig">In 2 Schritten startklar</div>'+
+      '<div class="hint" style="margin:6px 0 12px">1. Unter „Meine Daten" deine Fächer anlegen (z. B. Englisch, Deutsch …) und die Kategorie wählen.<br>2. Im Prüfungsplan Termin und Stoff deiner nächsten Schulaufgabe eintragen.<br>Dann zeigt dir AbiTool hier immer, was als Nächstes dran ist – und übt gezielt dafür.</div>'+
+      '<button class="btn" onclick="switchTab(\'daten\')">Schritt 1: Fächer wählen</button></div></div>';
+    list.innerHTML='<div class="hint">Sobald Fächer und Termine stehen, erscheinen hier deine nächsten Prüfungen.</div>';
+    return;
+  }
+  const k=kommende();
+  if(!k.length){
+    card.innerHTML='<div class="nextlbl">Deine nächste Prüfung</div>'+
+      '<div class="nextbig">Noch kein Termin eingetragen</div>'+
+      '<div class="hint" style="margin:6px 0 12px">Trag im Prüfungsplan die Termine deiner Schulaufgaben ein – dann zeigt dir AbiTool hier immer, was als Nächstes kommt.</div>'+
+      '<button class="btn" onclick="switchTab(\'plan\')">Zum Prüfungsplan</button>';
+    list.innerHTML='<div class="hint">Noch keine Termine.</div>';
+    return;
+  }
+  const x=k[0],f=fachById(x.p.fid),lk=f?loopKey(f):null;
+  card.innerHTML='<div class="nextlbl">Deine nächste Prüfung</div>'+
+    '<div class="nextbig">'+esc(f?f.name:'?')+' · '+artLabel(x.p)+'</div>'+
+    '<div><span class="days">'+inWorten(tageBis(x.d))+'</span><span class="days" style="background:#f6f8fc;color:var(--muted)">'+fmtDat(x.d)+'</span></div>'+
+    (x.p.scope?'<div class="scopebadge">Stoff: '+esc(x.p.scope)+'</div>'
+      :'<div class="scopebadge">Stoffumfang noch offen – 10 Sekunden im Prüfungsplan</div>')+
+    '<div class="row-btns" style="margin-top:14px">'+
+    (lk?'<button class="btn" onclick="switchTab(\'loops\')">Zum '+esc(f.name)+'-Revier</button>':'')+
+    '<button class="btn ghost" onclick="switchTab(\'plan\')">Plan ansehen</button></div>';
+  list.innerHTML=k.slice(0,6).map(function(x){const f=fachById(x.p.fid);
+    return '<div class="up-row"><span class="dt">'+fmtDat(x.d)+'</span>'+
+      '<span class="what">'+esc(f?f.name:'?')+'<small>'+artLabel(x.p)+(x.p.scope?' · '+esc(x.p.scope):'')+'</small></span>'+
+      '<span class="in">'+inWorten(tageBis(x.d))+'</span></div>';}).join('');
+}
+
+function renderPlan(){
+  const c=document.getElementById('planList');let html='';
+  state.faecher.forEach(function(f){
+    const slots=state.pruefungen.filter(p=>p.fid===f.id)
+      .sort((a,b)=>(a.art==='sa'?ABS.indexOf(a.abschnitt):9)-(b.art==='sa'?ABS.indexOf(b.abschnitt):9));
+    if(!slots.length)return;
+    html+='<div class="fach-head">'+esc(f.name)+(f.istLF?' <span class="flag">Leistungsfach</span>':'')+'</div>';
+    slots.forEach(function(p){
+      if(p.art==='sa'){
+        html+='<div class="exam-row"><span class="ab">'+p.abschnitt+'</span>'+
+          (f.kategorie==='fs'?'<button class="mtoggle'+(p.muendlich?' on':'')+'" data-pid="'+p.id+'" data-k="muendlich">'+(p.muendlich?'mündlich':'schriftlich')+'</button>':'')+
+          '<input type="date" value="'+(p.datum||'')+'" data-pid="'+p.id+'" data-k="datum">'+
+          '<input class="scope" placeholder="Stoffumfang (z. B. Units 3–4, Mediation + Comment)" value="'+esc(p.scope||'')+'" data-pid="'+p.id+'" data-k="scope"></div>';
+      }else{
+        html+='<div class="exam-row">'+
+          '<input class="kname" value="'+esc(p.name||'Ausfrage')+'" data-pid="'+p.id+'" data-k="name">'+
+          '<select class="kfach" data-pid="'+p.id+'" data-k="fid">'+state.faecher.map(ff=>'<option value="'+ff.id+'"'+(ff.id===p.fid?' selected':'')+'>'+esc(ff.name)+'</option>').join('')+'</select>'+
+          '<input type="date" value="'+(p.datum||'')+'" data-pid="'+p.id+'" data-k="datum">'+
+          '<input class="scope" placeholder="Stoff (z. B. letzte 2 Stunden)" value="'+esc(p.scope||'')+'" data-pid="'+p.id+'" data-k="scope">'+
+          '<button class="del" data-pid="'+p.id+'" data-k="del">×</button></div>';
+      }
+    });
+    if(f.kategorie==='fs'&&!slots.some(p=>p.art==='sa'&&p.muendlich)){
+      html+='<div class="hint" style="margin:-2px 0 8px">In der fortgeführten Fremdsprache ist genau eine Schulaufgabe mündlich (Partner- oder Gruppenprüfung, 15–25 Min.) – stelle den passenden Slot um.</div>';
+    }
+  });
+  c.innerHTML=html||'<div class="hint">Leg zuerst unter „Meine Daten" deine Fächer an.</div>';
+  c.querySelectorAll('[data-pid]').forEach(function(el){
+    const ev=el.tagName==='BUTTON'?'click':(el.tagName==='SELECT'?'change':'input');
+    el.addEventListener(ev,function(e){
+      const t=e.currentTarget,p=state.pruefungen.find(x=>x.id===t.dataset.pid);if(!p)return;
+      const k=t.dataset.k;
+      if(k==='del'){state.pruefungen=state.pruefungen.filter(x=>x.id!==p.id);save();renderPlan();renderHeute();renderNextStrip();return;}
+      if(k==='muendlich'){const was=p.muendlich;
+        state.pruefungen.forEach(x=>{if(x.fid===p.fid&&x.art==='sa')x.muendlich=false;});
+        p.muendlich=!was;save();renderPlan();renderHeute();renderNextStrip();renderLoops();return;}
+      p[k]=t.value;save();renderHeute();renderNextStrip();renderLoops();
+      if(k==='fid')renderPlan();
+    });
+  });
+}
+function addKlein(){
+  if(!state.faecher.length){toast('Lege zuerst Fächer an');return;}
+  state.pruefungen.push({id:id(),fid:state.faecher[0].id,art:'klein',name:'Ausfrage',datum:'',muendlich:true,scope:''});
+  save();renderPlan();
+}
+function exportICS(){
+  const mit=state.pruefungen.filter(p=>p.datum);
+  if(!mit.length){toast('Trag erst Termine ein');return;}
+  let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//AbiTool//DE\r\nCALSCALE:GREGORIAN\r\n';
+  mit.forEach(function(p){const f=fachById(p.fid);const d=p.datum.replace(/-/g,'');
+    ics+='BEGIN:VEVENT\r\nUID:'+p.id+'@abiloop\r\nDTSTART;VALUE=DATE:'+d+'\r\n'+
+      'SUMMARY:'+((f?f.name:'')+' – '+artLabel(p)).replace(/[\n,;]/g,' ')+'\r\n'+
+      (p.scope?'DESCRIPTION:Stoff: '+p.scope.replace(/[\n,;]/g,' ')+'\r\n':'')+'END:VEVENT\r\n';});
+  ics+='END:VCALENDAR\r\n';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));
+  a.download='AbiTool-Pruefungen.ics';document.body.appendChild(a);a.click();a.remove();
+  toast('Kalenderdatei erstellt');
+}
+
+function frischling(size){
+  const s=size||72;
+  return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 150 150" aria-hidden="true" style="flex:0 0 auto;display:block">'+
+    '<ellipse cx="75" cy="124" rx="48" ry="26" fill="#454E3C"/>'+
+    '<rect x="54" y="126" width="13" height="18" rx="6.5" fill="#3A4131"/><rect x="83" y="126" width="13" height="18" rx="6.5" fill="#3A4131"/>'+
+    '<path d="M38 46 Q26 18 54 32 Q50 46 38 46 Z" fill="#3A4131"/><path d="M112 46 Q124 18 96 32 Q100 46 112 46 Z" fill="#3A4131"/>'+
+    '<path d="M60 24 l-3 -12 M75 21 l0 -13 M90 24 l4 -12" stroke="#3A4131" stroke-width="3.4" stroke-linecap="round"/>'+
+    '<ellipse cx="75" cy="68" rx="47" ry="43" fill="#4E5743"/>'+
+    '<circle cx="56" cy="60" r="9.5" fill="#FBFBF7"/><circle cx="94" cy="60" r="9.5" fill="#FBFBF7"/>'+
+    '<circle cx="57.5" cy="62" r="4.8" fill="#232A1E"/><circle cx="95.5" cy="62" r="4.8" fill="#232A1E"/>'+
+    '<circle cx="55.6" cy="60" r="1.6" fill="#fff"/><circle cx="93.6" cy="60" r="1.6" fill="#fff"/>'+
+    '<ellipse cx="75" cy="88" rx="25" ry="19" fill="#3A4131"/>'+
+    '<ellipse cx="66" cy="88" rx="2.6" ry="4.6" fill="#ECEDE6"/><ellipse cx="84" cy="88" rx="2.6" ry="4.6" fill="#ECEDE6"/>'+
+    '<path d="M64 102 q11 8 22 0" stroke="#262C20" stroke-width="2.6" fill="none" stroke-linecap="round"/>'+
+    '<path d="M57 99 q-5 5 -1 -8" stroke="#D8C07A" stroke-width="3.6" fill="none" stroke-linecap="round"/>'+
+    '<path d="M93 99 q5 5 1 -8" stroke="#D8C07A" stroke-width="3.6" fill="none" stroke-linecap="round"/>'+
+    '</svg>';
+}
+function ring(pct,label,sub){
+  pct=Math.max(0,Math.min(100,pct||0));
+  const r=26,C=2*Math.PI*r,fill=(C*pct/100);
+  return '<svg class="ring" viewBox="0 0 64 64" width="58" height="58" aria-hidden="true">'+
+    '<circle cx="32" cy="32" r="'+r+'" fill="none" stroke="#E4E3D9" stroke-width="7"/>'+
+    '<circle cx="32" cy="32" r="'+r+'" fill="none" style="stroke:var(--primary)" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+fill.toFixed(1)+' '+C.toFixed(1)+'" transform="rotate(-90 32 32)"/>'+
+    '<text x="32" y="34" text-anchor="middle" font-size="15" font-weight="800" style="fill:var(--ink)">'+esc(label)+'</text>'+
+    (sub?'<text x="32" y="46" text-anchor="middle" font-size="9" font-weight="700" style="fill:var(--muted)">'+esc(sub)+'</text>':'')+
+    '</svg>';
+}
+function renderLoops(){
+  const c=document.getElementById('loopsList');let html='';
+  const k=kommende();let any=false;
+  const bald=[];
+  state.faecher.forEach(function(f){
+    const cfg=fachCfg(f);if(!cfg)return;
+    if(!(cfg.aktiv && (cfg.typen||[]).length)){bald.push(esc(f.name));return;}
+    any=true;
+    const nx=k.find(x=>x.p.fid===f.id);
+    const modus=nx?(nx.p.muendlich?'m':'s'):null;               /* Modus der nächsten Prüfung */
+    const modusLbl=modus==='m'?'mündliche':(modus==='s'?'schriftliche':'');
+    const typenAll=cfg.typen||[];
+    const typen=modus?typenAll.filter(t=>t.modus===modus):typenAll;   /* nur die für die nächste Prüfung relevanten */
+    const cov=state.coverage[f.id]||{};
+    const done=typen.filter(t=>cov[t.id]).length;
+    const offen=typen.filter(t=>!cov[t.id]);
+    const mu=((state.muster||{})[f.id]||[]).slice(-3);
+
+    html+='<div class="card"><h2>Dein Revier · '+esc(f.name)+'</h2>'+
+      (nx?'<div class="loop-next">Nächste Prüfung: <b>'+artLabel(nx.p)+'</b> · '+inWorten(tageBis(nx.d))+' ('+fmtDat(nx.d)+')'+(nx.p.scope?'<br>Stoff: '+esc(nx.p.scope):'')+'</div>'
+         :'<div class="loop-next">Noch kein Termin im Prüfungsplan – trag ihn ein, dann richtet sich dein Loop nach deiner nächsten Prüfung.</div>');
+
+    if(cfg.aktiv && typenAll.length){
+      /* KERN: Antizipation / Abdeckung – immer verfügbar, auch ohne je geschriebene Arbeit */
+      html+='<div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">'+
+        ring(typen.length?Math.round(done/typen.length*100):0, done+'/'+typen.length, 'Strecke')+
+        '<div class="hint" style="margin:0"><b style="color:var(--ink)">Strecke'+(modusLbl?' · '+modusLbl+' SA':'')+':</b> '+done+' von '+typen.length+' Aufgabentypen erlegt'+
+        (offen.length?' – frische Fährte: <b>'+esc(offen[0].n)+'</b>':' – alles erlegt, stark! 🎀')+'</div></div>'+
+        '<div class="cov">'+typen.map(t=>'<button class="'+(cov[t.id]?'done':'')+'" onclick="uebenTyp(\''+f.id+'\',\''+t.id+'\')" title="Übung zu diesem Aufgabentyp">'+(cov[t.id]?'✓ ':'')+esc(t.n)+'</button>').join('')+'</div>'+'<div class="hint" style="margin:6px 0 0;font-size:12px">Tippe einen Aufgabentyp, um gezielt dafür zu üben – das Häkchen kommt nach „Bearbeitet – abhaken".</div>'+
+        ((nx&&cfg.themen)?'<div class="hint" style="margin-top:14px"><b style="color:var(--ink)">Stoff der nächsten Prüfung</b> – hak ab, was die Lehrkraft angesagt hat (LehrplanPLUS):</div><div class="tchips">'+cfg.themen.map(t=>{const on=(nx.p.themen||[]).indexOf(t.id)>-1;return '<button class="tchip'+(on?' on':'')+'" data-pid="'+nx.p.id+'" data-theme="'+t.id+'">'+(on?'✓ ':'')+esc(t.n)+'</button>';}).join('')+'</div>':'')+
+        '<div class="row-btns" style="margin-top:12px">'+
+        (modus==='m'
+          ?'<button class="btn" onclick="muendlichStart(\''+f.id+'\')">Mündliche Pirsch (Simulator)</button><button class="btn ghost" onclick="uebenStart(\''+f.id+'\')">Schriftliche Pirsch</button>'
+          :'<button class="btn" onclick="uebenStart(\''+f.id+'\')">Auf die Pirsch</button>'+(typenAll.some(t=>t.modus==='m')?'<button class="btn ghost" onclick="muendlichStart(\''+f.id+'\')">Mündliche Pirsch</button>':''))+
+        '</div>';
+      /* SCHICHT: Individualisierung über die eigenen Fehler */
+      html+='<div class="hint" style="margin-top:14px">'+
+        (mu.length?'Deine Übungen zielen gerade zusätzlich auf: '+mu.map(m=>'<span class="chip">'+esc(m.label)+'</span>').join(' ')
+          :'Schon eine korrigierte Arbeit zurück? Scanne sie – dann zielen die Übungen zusätzlich auf deine wiederkehrenden Schwachstellen.')+'</div>'+
+        '<div class="row-btns" style="margin-top:6px"><button class="btn ghost" onclick="scanStart(\''+f.id+'\')">Korrigierte Arbeit scannen</button></div>'+
+        '<div class="hint" style="margin-top:10px">'+(cfg.vorlaeufig?'Aufgabentypen vorläufig. ':'')+'Quelle: '+esc(cfg.quelle)+'</div>';
+    }
+    html+='<div id="flow-'+f.id+'"></div></div>';
+  });
+  if(bald.length)html+='<div class="card"><h2>Weitere Fächer</h2><div class="loop-soon">'+bald.join(', ')+' – die Loops folgen Schritt für Schritt. Die Maschine dahinter ist dieselbe; jedes Fach wird freigeschaltet, sobald sein Aufgabenkatalog fachlich gegen ISB/LehrplanPLUS geprüft ist. Wir starten mit Englisch.</div></div>';
+  if(!any && !bald.length)html='<div class="card"><div class="hint">Leg unter „Meine Daten" deine Fächer an – dann bekommt jedes Fach hier seinen Loop. Wir starten mit Englisch als erstem fertigen Fach.</div></div>';
+  c.innerHTML=html;
+  c.querySelectorAll('.cov button[data-fid]').forEach(b=>b.addEventListener('click',function(e){
+    const fid=e.currentTarget.dataset.fid,tid=e.currentTarget.dataset.tid;
+    state.coverage[fid]=state.coverage[fid]||{};
+    state.coverage[fid][tid]=!state.coverage[fid][tid];
+    save();renderLoops();
+  }));
+  c.querySelectorAll('.tchip[data-pid]').forEach(b=>b.addEventListener('click',function(e){
+    const pid=e.currentTarget.dataset.pid,th=e.currentTarget.dataset.theme;
+    const p=state.pruefungen.find(x=>x.id===pid);if(!p)return;
+    p.themen=p.themen||[];
+    const i=p.themen.indexOf(th);if(i>-1)p.themen.splice(i,1);else p.themen.push(th);
+    save();renderLoops();
+  }));
+}
+
+/* ===== KI-Anbindung (Hybrid: nur Analyse & Transformation via API, Rest lokal) ===== */
+const API_MODEL='claude-sonnet-4-6';
+const JSONRULE=' Gib AUSSCHLIESSLICH gültiges, kompaktes JSON aus – kein Markdown, kein Text davor oder danach. Schreibe Zeilenumbrüche in Texten als \\n und verwende im Fließtext einfache Anführungszeichen statt doppelter.';
+function getKey(){try{return localStorage.getItem('abiloop.apikey')||'';}catch(e){return '';}}
+(function(){const i=document.getElementById('apiKey');if(!i)return;i.value=getKey();
+  i.addEventListener('change',function(){try{localStorage.setItem('abiloop.apikey',i.value.trim());}catch(e){}toast('Schlüssel gespeichert');});})();
+async function claude(messages,system,maxTokens){
+  const k=getKey();if(!k)throw new Error('Kein API-Schlüssel hinterlegt – trag ihn unter „Meine Daten" ein.');
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+    headers:{'content-type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:API_MODEL,max_tokens:maxTokens||2500,system:system||'',messages:messages})});
+  if(!r.ok)throw new Error('Verbindung fehlgeschlagen ('+r.status+')'+(r.status===401?' – Schlüssel prüfen.':r.status===429?' – kurz warten, dann nochmal.':''));
+  const d=await r.json();
+  return (d.content||[]).map(c=>c.text||'').join('');
+}
+function parseJson(t){
+  if(!t)throw new Error('Leere Antwort – bitte nochmal versuchen.');
+  let s=String(t).trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
+  const m=s.match(/\{[\s\S]*\}/);
+  if(!m)throw new Error('Antwort war nicht lesbar – bitte nochmal versuchen.');
+  const j=m[0];
+  try{return JSON.parse(j);}catch(e){}
+  try{return JSON.parse(j.replace(/,\s*([}\]])/g,'$1'));}catch(e){}
+  throw new Error('Antwort war nicht im richtigen Format – tippe bitte „Andere Aufgabe".');
+}
+function fileToB64(f){return new Promise(function(res,rej){const r=new FileReader();
+  r.onload=function(){res({media:f.type||'image/jpeg',data:String(r.result).split(',')[1]});};
+  r.onerror=rej;r.readAsDataURL(f);});}
+async function imgParts(files){const out=[];for(const f of files){const b=await fileToB64(f);
+  out.push({type:'image',source:{type:'base64',media_type:b.media,data:b.data}});}return out;}
+async function testKey(){const s=document.getElementById('kiStatus');
+  s.innerHTML='<div class="result-line"><span class="busy"></span>Teste Verbindung …</div>';
+  try{await claude([{role:'user',content:'Antworte nur mit: OK'}],'',16);
+    s.innerHTML='<div class="result-line">Verbindung steht – Scan, Training und Import sind bereit.</div>';}
+  catch(e){s.innerHTML='<div class="result-line bad">'+esc(e.message)+'</div>';}}
+
+/* ===== Screenshot-Import: Punkte aus bisheriger Notenrechner-App ===== */
+(function(){const inp=document.getElementById('shotInput');if(!inp)return;
+inp.addEventListener('change',async function(e){
+  const files=Array.from(e.target.files);e.target.value='';if(!files.length)return;
+  const s=document.getElementById('kiStatus');
+  s.innerHTML='<div class="result-line"><span class="busy"></span>Lese '+files.length+' Screenshot(s) … (Bilder werden nicht gespeichert)</div>';
+  try{
+    const imgs=await imgParts(files);
+    const sys='Du liest Screenshots einer Notenrechner-App eines bayerischen Oberstufenschülers (G9). Extrahiere pro Fach die Halbjahres-Notenpunkte (ganze Zahlen 0–15) der Ausbildungsabschnitte 12/1, 12/2, 13/1, 13/2. Antworte NUR mit JSON, kein anderer Text: {"faecher":[{"name":"Fachname","hjl":[12,9,null,null]}]} – nutze null für nicht erkennbare oder leere Werte. Erfinde nichts.';
+    const out=await claude([{role:'user',content:imgs.concat([{type:'text',text:'Bitte auslesen.'}])}],sys,1500);
+    const j=parseJson(out);importCheck(j.faecher||[]);
+  }catch(err){s.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}
+});})();
+function importCheck(list){
+  const s=document.getElementById('kiStatus');
+  if(!list.length){s.innerHTML='<div class="result-line warn">Keine Punkte erkannt – probier schärfere Screenshots.</div>';return;}
+  window._import=list;
+  s.innerHTML='<div class="result-line warn">Erkannt – bitte kurz prüfen, dann übernehmen:</div>'+
+    list.map(x=>'<div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:700;padding:6px 0;border-bottom:1px solid var(--line)"><span>'+esc(x.name||'?')+'</span><span>'+(x.hjl||[]).map(v=>v==null?'–':v).join(' · ')+'</span></div>').join('')+
+    '<div class="row-btns" style="margin-top:10px"><button class="btn sm" onclick="importApply()">Übernehmen</button>'+
+    '<button class="btn ghost sm" onclick="document.getElementById(\'kiStatus\').innerHTML=\'\'">Verwerfen</button></div>';
+}
+function importApply(){
+  (window._import||[]).forEach(function(x){
+    let f=state.faecher.find(f=>f.name.toLowerCase().trim()===String(x.name||'').toLowerCase().trim());
+    if(!f){f={id:id(),name:String(x.name||'Fach'),kategorie:'other',istAbiturfach:false,istLF:false,hjl:['','','','']};state.faecher.push(f);}
+    (x.hjl||[]).forEach(function(v,i){if(v!=null&&!isNaN(v)&&i<4)f.hjl[i]=String(Math.max(0,Math.min(15,Math.round(v))));});
+  });
+  window._import=null;save();renderAll();
+  document.getElementById('kiStatus').innerHTML='<div class="result-line">Übernommen. Vergleich im Zweifel kurz mit der alten App – dann bist du sicher.</div>';
+  toast('Punkte importiert');
+}
+
+/* ===== Scan-Coach Englisch: Scan → Fehlermuster (Mensch im Loop) → eine Aufgabe ===== */
+var scanFid=null;
+function scanStart(fid){
+  if(!getKey()){const b=document.getElementById('flow-'+fid);
+    if(b)b.innerHTML='<div class="result-line warn">Zum Auslesen einer korrigierten Arbeit nutzt AbiTool Claude als Motor (Foto → abstrakte Fehlermuster, danach verworfen). Richte den Schlüssel einmal unter „Meine Daten → Claude als Motor" ein.</div>';
+    return;}
+  scanFid=fid;document.getElementById('scanInput').click();
+}
+(function(){const inp=document.getElementById('scanInput');if(!inp)return;
+inp.addEventListener('change',async function(e){
+  const files=Array.from(e.target.files);e.target.value='';if(!files.length||!scanFid)return;
+  const box=document.getElementById('flow-'+scanFid);if(!box)return;
+  const f=fachById(scanFid),cfg=fachCfg(f);
+  const kat=((cfg&&cfg.raster)||RASTER.sprache).join(' | ');
+  box.innerHTML='<div class="result-line"><span class="busy"></span>Ich schaue mir deine Schulaufgabe an … (Bilder werden nach der Analyse verworfen)</div>';
+  try{
+    const imgs=await imgParts(files);
+    const sys='Du bist Lern-Coach für einen bayerischen Oberstufenschüler, Fach '+((cfg&&cfg.fach)||(f&&f.name)||'(unbekannt)')+'. Du siehst Fotos seiner korrigierten Schulaufgabe. STRIKTE REGELN: Du benotest NIEMALS nach, nennst NIEMALS Punkte oder Noten, kommentierst NIEMALS die Korrektur der Lehrkraft, machst keine Vorwürfe. Deine einzige Aufgabe: Finde die maximal 3 wichtigsten WIEDERKEHRENDEN, punkterelevanten Fehlermuster in SEINEM Text. Kategorien: '+kat+'. Antworte NUR mit JSON, kein anderer Text: {"muster":[{"kategorie":"…","label":"kurzer prägnanter Name des Musters","beleg":"ein kurzes anonymisiertes Beispiel aus der Arbeit","unsicher":false}]} – setze "unsicher":true, wenn Handschrift oder Korrektur mehrdeutig sind.'+JSONRULE;
+    const out=await claude([{role:'user',content:imgs.concat([{type:'text',text:'Bitte analysieren – feed-forward, fürs nächste Mal.'}])}],sys,1500);
+    const j=parseJson(out);renderMusterCheck(scanFid,(j.muster||[]).slice(0,3));
+  }catch(err){box.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}
+});})();
+function renderMusterCheck(fid,muster){
+  const box=document.getElementById('flow-'+fid);
+  if(!muster.length){box.innerHTML='<div class="result-line warn">Keine klaren Muster erkannt – probier es mit schärferen, gut ausgeleuchteten Fotos.</div>';return;}
+  window._muster={fid:fid,list:muster};
+  box.innerHTML='<div class="hint" style="margin-top:12px"><b style="color:var(--ink)">Stimmt das so?</b> Wirf raus, was nicht passt – du kennst deine Arbeit am besten:</div>'+
+    muster.map(function(m,i){return '<div class="muster'+(m.unsicher?' unsicher':'')+'" id="mu-'+i+'" data-mi="'+i+'"><span class="kat">'+esc(m.kategorie||'')+(m.unsicher?' · unsicher?':'')+'</span><b>'+esc(m.label||'')+'</b>'+esc(m.beleg||'')+'<div style="margin-top:7px"><button class="btn ghost sm" onclick="document.getElementById(\'mu-'+i+'\').remove()">passt nicht ✕</button></div></div>';}).join('')+
+    '<div class="row-btns" style="margin-top:10px"><button class="btn" onclick="musterApply()">Passt – merken & Aufgabe dazu holen</button></div>';
+}
+function musterApply(){
+  const mm=window._muster;if(!mm)return;
+  const keep=mm.list.filter(function(m,i){return document.getElementById('mu-'+i);});
+  state.muster=state.muster||{};
+  state.muster[mm.fid]=((state.muster[mm.fid]||[]).concat(keep.map(function(m){return {kategorie:m.kategorie,label:m.label,datum:new Date().toISOString().slice(0,10)};}))).slice(-9);
+  window._muster=null;save();uebenStart(mm.fid);
+}
+function themenLabels(cfg,p){
+  if(!cfg||!cfg.themen||!p||!p.themen)return [];
+  return cfg.themen.filter(t=>p.themen.indexOf(t.id)>-1).map(t=>t.n);
+}
+function uebenTyp(fid,tid){
+  const f=fachById(fid),cfg=fachCfg(f);if(!cfg)return;
+  const t=(cfg.typen||[]).find(x=>x.id===tid);
+  if(t&&t.modus==='m')return muendlichStart(fid);
+  uebenStart(fid,tid);
+}
+async function uebenStart(fid,forcedTid){
+  const f=fachById(fid);if(!f)return;
+  const cfg=fachCfg(f);
+  const box=document.getElementById('flow-'+fid);if(!box)return;
+  if(!cfg||!cfg.aktiv||!(cfg.typen||[]).length){box.innerHTML='<div class="result-line warn">Dieses Fach ist noch in Vorbereitung – der Aufgabenkatalog wird fachlich freigeschaltet.</div>';return;}
+  if(!getKey()){box.innerHTML='<div class="result-line warn">AbiTool nutzt Claude als Motor, um deine Übung zu erstellen. Richte den Schlüssel einmal unter „Meine Daten → Claude als Motor" ein – dann geht\'s los.</div>';return;}
+  const nx=kommende().find(x=>x.p.fid===fid);
+  const themen=themenLabels(cfg,nx&&nx.p);
+  const modus=nx?(nx.p.muendlich?'m':'s'):null;
+  const typenAll=cfg.typen;
+  const pool=modus?typenAll.filter(t=>t.modus===modus):typenAll;
+  const auswahl=pool.length?pool:typenAll;
+  const cov=state.coverage[fid]||{};
+  let ziel=null;
+  if(forcedTid)ziel=typenAll.find(t=>t.id===forcedTid)||null;
+  if(!ziel){const offen=auswahl.filter(t=>!cov[t.id]);ziel=offen.length?offen[0]:auswahl[Math.floor(Math.random()*auswahl.length)];}
+  const mu=((state.muster||{})[fid]||[]).slice(-3);
+  const istM=ziel.modus==='m';
+  box.innerHTML='<div class="result-line"><span class="busy"></span>Ich baue dir eine Aufgabe – Typ: '+esc(ziel.n)+' …</div>';
+  try{
+    const sys='Du erzeugst GENAU EINE Übungsaufgabe für einen bayerischen Oberstufenschüler, Fach '+cfg.fach+'. '
+      +(cfg.hinweise?cfg.hinweise+' ':'')
+      +'Aufgabentyp: '+ziel.n+'. '
+      +(themen.length?'Themengebiet(e) der nächsten Prüfung nach LehrplanPLUS: '+themen.join('; ')+'. Die Aufgabe MUSS thematisch dazu passen. ':'')
+      +(nx&&nx.p.scope?'Stoffumfang/Hinweis der Lehrkraft: '+nx.p.scope+'. ':'')
+      +(mu.length?'Baue die Aufgabe so, dass sie diese Fehlermuster im frischen Kontext fordert (ohne sie zu erwähnen): '+mu.map(m=>m.label).join('; ')+'. ':'')
+      +(istM?'Es ist eine MÜNDLICHE Aufgabe: formuliere eine Sprechaufgabe (Impuls bzw. Diskussionsfragen), keinen zu schreibenden Text. '
+            :'Bei Textaufgaben: liefere den Ausgangstext mit (300–450 Wörter, selbst verfasst im Stil authentischer Prüfungstexte). ')
+      +'Antworte NUR mit JSON, kein anderer Text: {"titel":"…","operator":"Operator","afb":"I|II|III","angabe":"vollständige Aufgabenstellung'+(cfg.label==='Englisch'?' auf Englisch':'')+', inkl. Material","erwartung":["Kernpunkt 1","Kernpunkt 2","…"],"fokus":"1 ermutigender Satz auf Deutsch: worauf es für ihn ankommt"}'+JSONRULE;
+    const out=await claude([{role:'user',content:'Bitte eine Aufgabe.'}],sys,4096);
+    const a=parseJson(out);
+    box.innerHTML='<div class="aufgabe"><h3>'+esc(a.titel||'Deine Aufgabe')+'</h3>'+
+      '<div style="margin-bottom:8px"><span class="chip">'+esc(ziel.n)+'</span><span class="chip">Operator: '+esc(a.operator||'–')+'</span><span class="chip">AFB '+esc(a.afb||'–')+'</span></div>'+
+      '<div style="white-space:pre-wrap">'+esc(a.angabe||'')+'</div>'+
+      (a.fokus?'<div class="result-line" style="margin-top:10px">'+esc(a.fokus)+'</div>':'')+
+      '<details style="margin-top:10px"><summary style="font-weight:700;color:var(--primary);cursor:pointer">Erwartungshorizont – erst nach dem Bearbeiten öffnen</summary><ul style="margin:8px 0 0;padding-left:20px">'+(a.erwartung||[]).map(x=>'<li style="margin-bottom:5px">'+esc(x)+'</li>').join('')+'</ul></details>'+
+      '<div class="row-btns" style="margin-top:12px">'+
+      '<button class="btn sm" onclick="hakAb(\''+fid+'\',\''+ziel.id+'\')">Bearbeitet – abhaken</button>'+
+      '<button class="btn ghost sm" onclick="uebenStart(\''+fid+'\')">Andere Aufgabe</button></div></div>';
+  }catch(err){box.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}
+}
+function hakAb(fid,tid){
+  state.coverage[fid]=state.coverage[fid]||{};state.coverage[fid][tid]=true;
+  save();renderLoops();toast('Erlegt – zur Strecke gebracht! 🎀');
+}
+
+/* ===== Mündlich-Simulator (Englisch): zweiteilig wie die echte mündliche SA =====
+   Format nach ISB-Leitfaden PuLSt: Teil 1 monologisch (Kurzpräsentation), Teil 2 dialogisch
+   (Diskussion); Bewertung Inhalt : Sprache = 40 : 60. Ton bleibt on-device (nur Transkript
+   wird ausgewertet), keine Notenpunkte fürs Üben, feed-forward. */
+let MDL=null, MDLREC=null;
+function speak(text){
+  try{
+    if(!('speechSynthesis' in window)||!text)return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    const vs=speechSynthesis.getVoices();
+    const en=vs.find(v=>/en[-_]GB/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang));
+    if(en)u.voice=en;u.lang=(en&&en.lang)||'en-GB';u.rate=.95;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function stopSpeak(){try{speechSynthesis.cancel();}catch(e){}}
+function mdlSpeak(){if(MDL&&MDL.spoken)speak(MDL.spoken);}
+function makeRec(onText){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return null;
+  const r=new SR();r.lang='en-GB';r.continuous=true;r.interimResults=true;
+  let fin='';
+  r.onresult=function(e){let intr='';
+    for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;
+      if(e.results[i].isFinal)fin+=t+' ';else intr+=t;}
+    onText((fin+intr).trim());};
+  return r;
+}
+function mdlAnswerUI(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  return '<div class="row-btns" style="margin:10px 0 4px"><button class="btn ghost sm" onclick="mdlSpeak()">🔊 Nochmal vorlesen</button>'+
+    (SR?'<button class="rec" id="mdlRec" onclick="mdlToggleRec()">🎤 Aufnehmen</button>':'')+'</div>'+
+    '<textarea class="say" id="mdlSay" placeholder="'+(SR?'Sprich – dein Text erscheint hier. Du kannst auch tippen.':'Tippe oder diktiere deine Antwort (Mikrofontaste der Tastatur).')+'"></textarea>';
+}
+function mdlToggleRec(){
+  const btn=document.getElementById('mdlRec'),ta=document.getElementById('mdlSay');
+  if(MDLREC){try{MDLREC.stop();}catch(e){}MDLREC=null;if(btn){btn.classList.remove('on');btn.textContent='🎤 Aufnehmen';}return;}
+  const base=(ta&&ta.value)?ta.value.trim()+' ':'';
+  MDLREC=makeRec(function(t){if(ta)ta.value=base+t;});
+  if(!MDLREC)return;
+  try{MDLREC.start();}catch(e){}
+  if(btn){btn.classList.add('on');btn.textContent='⏺ Stop';}
+}
+function muendlichStart(fid){
+  const f=fachById(fid),cfg=fachCfg(f),box=document.getElementById('flow-'+fid);if(!box)return;
+  if(!cfg||!cfg.aktiv){box.innerHTML='<div class="result-line warn">Dieses Fach ist noch in Vorbereitung.</div>';return;}
+  if(!getKey()){box.innerHTML='<div class="result-line warn">Der Mündlich-Simulator nutzt Claude als Motor für Aufgaben und Feedback. Richte den Schlüssel einmal unter „Meine Daten → Claude als Motor" ein.</div>';return;}
+  const nx=kommende().find(x=>x.p.fid===fid);
+  const themen=themenLabels(cfg,nx&&nx.p);
+  const topic=[themen.join('; '),(nx&&nx.p.scope)||''].filter(Boolean).join(' · ');
+  MDL={fid:fid,topic:topic,transcript:[],spoken:''};
+  box.innerHTML='<div class="aufgabe"><h3>Mündliche Schulaufgabe – Simulator</h3>'+
+    '<div class="hint" style="margin-bottom:8px">Wie echt: <b>Teil 1</b> Kurzpräsentation (monologisch), <b>Teil 2</b> Diskussion (dialogisch). Bewertung Inhalt : Sprache = 40 : 60. Dein Ton bleibt auf dem Gerät – nur dein Text wird ausgewertet. Keine Note – nur ein Tipp fürs nächste Mal.</div>'+
+    (MDL.topic?'<div><span class="chip">Stoff: '+esc(MDL.topic)+'</span></div>':'')+
+    '<div class="row-btns" style="margin-top:12px"><button class="btn" onclick="mdlPart1()">Los geht\'s – Teil 1</button>'+
+    '<button class="btn ghost sm" onclick="document.getElementById(\'flow-'+fid+'\').innerHTML=\'\'">Abbrechen</button></div></div>';
+}
+async function mdlPart1(){
+  const fid=MDL.fid,box=document.getElementById('flow-'+fid);
+  box.innerHTML='<div class="result-line"><span class="busy"></span>Die Prüferin überlegt sich dein Thema …</div>';
+  try{
+    const sys='Du bist eine freundliche, faire Prüferin einer mündlichen Englisch-Schulaufgabe (bayerische Oberstufe, Niveau B2+). Teil 1 ist eine monologische Kurzpräsentation. '
+      +(MDL.topic?'Themenbereich: '+MDL.topic+'. ':'')
+      +'Formuliere GENAU EINEN Präsentations-Impuls (1–2 Sätze auf Englisch), der zum freien Sprechen einlädt, plus eine knappe deutsche Regieanweisung. Antworte NUR mit JSON: {"impuls":"…","regie":"z. B. kurz einstimmen, dann ca. 2–3 Min. frei sprechen"}'+JSONRULE;
+    const a=parseJson(await claude([{role:'user',content:'Teil 1 bitte.'}],sys,500));
+    MDL.p1=a.impuls||'';MDL.spoken=MDL.p1;
+    box.innerHTML='<div class="aufgabe"><h3>Teil 1 · Kurzpräsentation</h3>'+
+      '<div class="simq">🗣️ '+esc(MDL.p1)+'</div>'+
+      '<div class="hint">'+esc(a.regie||'Erst kurz einstimmen, dann frei sprechen.')+'</div>'+
+      mdlAnswerUI()+
+      '<div class="row-btns" style="margin-top:10px"><button class="btn" onclick="mdlPart2()">Weiter zu Teil 2</button></div></div>';
+    speak(MDL.p1);
+  }catch(err){box.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}
+}
+async function mdlPart2(){
+  const fid=MDL.fid,box=document.getElementById('flow-'+fid);
+  const ans=(document.getElementById('mdlSay')||{}).value||'';
+  MDL.transcript.push({teil:1,antwort:ans});
+  if(MDLREC){try{MDLREC.stop();}catch(e){}MDLREC=null;}
+  stopSpeak();
+  box.innerHTML='<div class="result-line"><span class="busy"></span>Die Prüferin hört zu und überlegt Nachfragen …</div>';
+  try{
+    const sys='Du bist Prüferin der mündlichen Englisch-SA, jetzt Teil 2 (dialogisch). Stelle 3 kurze, aufeinander aufbauende Diskussionsfragen auf Englisch, die an die Präsentation anknüpfen und zum Argumentieren auffordern. '
+      +(MDL.topic?'Themenbereich: '+MDL.topic+'. ':'')
+      +'Antworte NUR mit JSON: {"fragen":["…","…","…"]}'+JSONRULE;
+    const a=parseJson(await claude([{role:'user',content:'Teil 1 des Schülers:\n'+(ans||'(wenig gesagt)')+'\n\nGib die Nachfragen.'}],sys,600));
+    MDL.fragen=a.fragen||[];MDL.spoken=(MDL.fragen||[]).join('. ');
+    box.innerHTML='<div class="aufgabe"><h3>Teil 2 · Diskussion</h3>'+
+      (MDL.fragen||[]).map(q=>'<div class="simq">💬 '+esc(q)+'</div>').join('')+
+      mdlAnswerUI()+
+      '<div class="row-btns" style="margin-top:10px"><button class="btn" onclick="mdlFeedback()">Feedback ansehen</button></div></div>';
+    speak(MDL.spoken);
+  }catch(err){box.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}
+}
+async function mdlFeedback(){
+  const fid=MDL.fid,box=document.getElementById('flow-'+fid);
+  const ans=(document.getElementById('mdlSay')||{}).value||'';
+  MDL.transcript.push({teil:2,antwort:ans});
+  if(MDLREC){try{MDLREC.stop();}catch(e){}MDLREC=null;}
+  stopSpeak();
+  box.innerHTML='<div class="result-line"><span class="busy"></span>Ich werte dein Transkript aus (nur Text, kein Ton) …</div>';
+  try{
+    const mu=((state.muster||{})[fid]||[]).slice(-3).map(m=>m.label);
+    const sys='Du gibst feed-forward-Feedback zu einer GEÜBTEN mündlichen Englisch-SA (bayerische Oberstufe). ISB-Bewertungsdimensionen: Inhalt (40 %) und Sprache (60 %: Aussprache/Flüssigkeit, Wortschatz/Register, Grammatik, Interaktion). STRIKTE REGELN: KEINE Note, KEINE Punkte, keine Vorwürfe. Gib genau: 1 echte Stärke, 1 konkreten nächsten Schritt (das Wichtigste fürs nächste Mal), 1 kurzen Hinweis zum zweiteiligen Ablauf. Ermutigend, auf Deutsch, knapp. '
+      +(mu.length?'Beziehe wenn passend die bekannten Schwachstellen ein: '+mu.join('; ')+'. ':'')
+      +'Antworte NUR mit JSON: {"staerke":"…","schritt":"…","form":"…"}'+JSONRULE;
+    const t=MDL.transcript.map(x=>x.teil===1?('Teil 1 (Präsentation): '+(x.antwort||'')):('Teil 2 (Diskussion): '+(x.antwort||''))).join('\n\n');
+    const a=parseJson(await claude([{role:'user',content:t||'(kaum gesprochen)'}],sys,700));
+    box.innerHTML='<div class="aufgabe"><h3>Dein Feedback</h3>'+
+      '<div class="result-line"><b>Stärke:</b> '+esc(a.staerke||'')+'</div>'+
+      '<div class="result-line warn" style="margin-top:8px"><b>Nächster Schritt:</b> '+esc(a.schritt||'')+'</div>'+
+      (a.form?'<div class="hint" style="margin-top:8px"><b>Zum Ablauf:</b> '+esc(a.form)+'</div>':'')+
+      '<div class="row-btns" style="margin-top:12px"><button class="btn sm" onclick="mdlDone(\''+fid+'\')">Geübt – abhaken</button>'+
+      '<button class="btn ghost sm" onclick="muendlichStart(\''+fid+'\')">Nochmal üben</button></div></div>';
+  }catch(err){box.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}
+}
+function mdlDone(fid){
+  state.coverage[fid]=state.coverage[fid]||{};
+  state.coverage[fid].mon=true;state.coverage[fid].dia=true;
+  save();renderLoops();toast('Mündlich erlegt – stark! 🎀');
+}
+
+/* ===== Tabs ===== */
+function switchTab(name){
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('active',x.dataset.tab===name));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.add('hide'));
+  const el=document.getElementById('tab-'+name);if(el)el.classList.remove('hide');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('tabs').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;switchTab(b.dataset.tab);
+});
+document.getElementById('wfFach').addEventListener('change',computeWennDann);
+document.getElementById('wfRange').addEventListener('input',computeWennDann);
+document.getElementById('zielRange').addEventListener('input',renderZiel);
+
+/* ===== Demo-Modus: index.html#demo[-tab] zeigt Beispieldaten, speichert nichts ===== */
+(function(){
+  if((location.hash||'').indexOf('#demo')!==0)return;
+  DEMO=true;
+  state=beispielState();
+  state.muster={};
+  const vals=[[13,12],[9,10],[7,8],[11,12],[13,14]];
+  state.faecher.forEach(function(f,i){const v=vals[i];if(v)f.hjl=[String(v[0]),String(v[1]),'',''];});
+  syncPlan();
+  function slot(fid,ab){return state.pruefungen.find(p=>p.art==='sa'&&p.fid===fid&&p.abschnitt===ab);}
+  const eng=state.faecher.find(f=>fachKey(f)==='englisch');
+  const deu=state.faecher.find(f=>fachKey(f)==='deutsch');
+  if(eng){const s1=slot(eng.id,'12/1');if(s1){s1.datum='2026-03-12';s1.scope='The American Dream – analysis + comment';}
+    const s2=slot(eng.id,'12/2');if(s2){s2.datum='2026-06-26';s2.muendlich=true;s2.scope='Going green / sustainability';s2.themen=['sci'];}
+    state.muster[eng.id]=[{kategorie:'Grammatik / Sprachrichtigkeit',label:'if-clauses Typ II/III',datum:'2026-03-14'},{kategorie:'Vokabular / Register',label:'zu umgangssprachliches Register',datum:'2026-03-14'},{kategorie:'Argumentation / Textaufbau',label:'These ohne Beleg',datum:'2026-03-14'}];
+    state.coverage[eng.id]={hv:true,lv:true,ta:true,sm:true};}
+  if(deu){const s=slot(deu.id,'12/2');if(s){s.datum='2026-06-17';s.scope='Drama (Pflichtlektüre) + Erörterung';s.themen=['drama','eroe'];}}
+})();
+
+/* ===== Boot ===== */
+renderAll();
+if(DEMO){switchTab((location.hash.split('-')[1]||'heute'));}
+
+/* ===== PWA: Service Worker (offline) inline registrieren ===== */
+if('serviceWorker' in navigator){
+  /* network-first: online IMMER die neueste Version, offline aus dem Cache.
+     Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
+  const sw=`
+    const C='abiloop-v3';
+    self.addEventListener('install',e=>self.skipWaiting());
+    self.addEventListener('activate',e=>e.waitUntil((async()=>{
+      const keys=await caches.keys();
+      await Promise.all(keys.filter(k=>k!==C).map(k=>caches.delete(k)));
+      await self.clients.claim();
+    })()));
+    self.addEventListener('fetch',e=>{
+      if(e.request.method!=='GET')return;
+      e.respondWith((async()=>{
+        try{
+          const resp=await fetch(e.request);
+          const c=await caches.open(C);
+          if(resp&&resp.ok)c.put(e.request,resp.clone());
+          return resp;
+        }catch(err){
+          const c=await caches.open(C);
+          const r=await c.match(e.request);
+          return r||c.match('./index.html');
+        }
+      })());
+    });`;
+  const url=URL.createObjectURL(new Blob([sw],{type:'text/javascript'}));
+  navigator.serviceWorker.register(url).catch(()=>{});
+}
+</script>
+</body>
+</html>
