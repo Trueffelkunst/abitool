@@ -262,17 +262,6 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <!-- ===== TAB: LOOPS ===== -->
   <div class="tab hide" id="tab-loops">
-    <div class="card" id="vorschauCard">
-      <h2>Fach-Vorschau (zum Prüfen)</h2>
-      <div class="hint">Jedes freigeschaltete Fach ansehen und eine Beispielaufgabe erzeugen – ohne es in Antons Profil einzutragen. Ideal zum fachlichen Gegenchecken (z. B. Psychologie).</div>
-      <div class="row-btns" style="gap:8px;flex-wrap:wrap;margin-top:4px">
-        <select id="vorschauFach" onchange="renderVorschau()" style="flex:1;min-width:140px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"></select>
-        <select id="vorschauTyp" style="flex:1;min-width:140px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"></select>
-      </div>
-      <div class="row-btns" style="margin-top:10px"><button class="btn" onclick="vorschauStart()">Beispielaufgabe erzeugen</button></div>
-      <div id="vorschauInfo" class="hint" style="margin-top:8px"></div>
-      <div id="vorschauBox" style="margin-top:12px"></div>
-    </div>
     <div id="loopsList"></div>
     <div class="card" id="karikCard" style="display:none">
       <h2>Karikatur-Trainer</h2>
@@ -285,6 +274,17 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       <div class="row-btns" style="margin-top:10px"><button class="btn" onclick="karikStart()">Karikatur-Aufgabe erzeugen</button></div>
       <div id="karikBox" style="margin-top:12px"></div>
       <details style="margin-top:12px"><summary style="font-weight:700;color:var(--primary);cursor:pointer">Geprüfte Karikatur-Quellen zum Aussuchen</summary><div id="karikQuellen" style="margin-top:8px"></div></details>
+    </div>
+    <div class="card" id="vorschauCard">
+      <h2>Fach-Vorschau (für Lehrkräfte – zum Prüfen)</h2>
+      <div class="hint">Jedes freigeschaltete Fach ansehen und eine Beispielaufgabe erzeugen – ohne es in Antons Profil einzutragen. Gedacht zum fachlichen Gegenchecken, nicht für den Schüleralltag.</div>
+      <div class="row-btns" style="gap:8px;flex-wrap:wrap;margin-top:4px">
+        <select id="vorschauFach" onchange="renderVorschau()" style="flex:1;min-width:140px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"></select>
+        <select id="vorschauTyp" style="flex:1;min-width:140px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"></select>
+      </div>
+      <div class="row-btns" style="margin-top:10px"><button class="btn ghost" onclick="vorschauStart()">Beispielaufgabe erzeugen</button></div>
+      <div id="vorschauInfo" class="hint" style="margin-top:8px"></div>
+      <div id="vorschauBox" style="margin-top:12px"></div>
     </div>
   </div>
 
@@ -350,7 +350,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       <h2>Daten sichern &amp; laden</h2>
       <div class="hint">Alle Eingaben bleiben lokal auf diesem Gerät. Hier kannst du sie als Datei sichern (Backup oder Übertrag aufs iPad) oder eine vorbereitete Datei laden – so bleiben die Noten privat, nichts wird ins Netz geladen.</div>
       <div class="row-btns"><button class="btn ghost sm" onclick="exportData()">Daten sichern (Datei)</button><button class="btn ghost sm" onclick="document.getElementById('dataImport').click()">Daten laden (Datei)</button></div>
-      <input type="file" id="dataImport" accept="application/json,.json" style="display:none">
+      <input type="file" id="dataImport" style="display:none">
       <div id="dataStatus" style="margin-top:8px"></div>
     </div>
 
@@ -451,7 +451,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v4.1 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v4.3 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -1501,23 +1501,25 @@ function renderLoops(){
 
     if(cfg.aktiv && typenAll.length){
       /* KERN: Antizipation / Abdeckung – immer verfügbar, auch ohne je geschriebene Arbeit */
-      html+='<div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">'+
+      /* PRIMÄR: genau das üben, was drankommt (Freitext – wird am häufigsten genutzt) */
+      html+='<div style="margin-top:6px;background:#eef3ee;border:1px solid var(--line);border-radius:13px;padding:12px 13px">'+
+        '<div class="hint" style="margin:0 0 6px"><b style="color:var(--ink)">Genau das üben, was drankommt</b> – trag Aufgabenform und Thema deiner nächsten Schulaufgabe ein (z. B. eine Rede):</div>'+
+        '<input id="frei-form-'+f.id+'" placeholder="Aufgabenform (z. B. Rede schreiben)" style="width:100%;margin-bottom:6px;font-size:13px;border:none;background:#fff;padding:9px 11px;border-radius:9px;color:var(--ink)">'+
+        '<input id="frei-thema-'+f.id+'" placeholder="Thema / Stoff (z. B. Faust I – Schuld und Verantwortung)" style="width:100%;font-size:13px;border:none;background:#fff;padding:9px 11px;border-radius:9px;color:var(--ink)">'+
+        '<div class="row-btns" style="margin-top:8px"><button class="btn sm" onclick="uebenRadar(\''+f.id+'\')">Was könnte drankommen?</button><button class="btn ghost sm" onclick="uebenFrei(\''+f.id+'\')">Direkt dafür üben</button></div></div>';
+      /* SEKUNDÄR: gezielt nach Aufgabentyp (Abdeckung) + Pirsch */
+      html+='<div style="display:flex;align-items:center;gap:14px;margin:16px 0 8px">'+
         ring(typen.length?Math.round(done/typen.length*100):0, done+'/'+typen.length, 'Strecke')+
-        '<div class="hint" style="margin:0"><b style="color:var(--ink)">Strecke'+(modusLbl?' · '+modusLbl+' SA':'')+':</b> '+done+' von '+typen.length+' Aufgabentypen erlegt'+
+        '<div class="hint" style="margin:0"><b style="color:var(--ink)">Oder gezielt nach Aufgabentyp</b>'+(modusLbl?' ('+modusLbl+' SA)':'')+': '+done+' von '+typen.length+' erlegt'+
         (offen.length?' – frische Fährte: <b>'+esc(offen[0].n)+'</b>':' – alles erlegt, stark! 🎀')+'</div></div>'+
         '<div class="cov">'+typen.map(t=>'<button class="'+(cov[t.id]?'done':'')+'" onclick="uebenTyp(\''+f.id+'\',\''+t.id+'\')" title="Übung zu diesem Aufgabentyp">'+(cov[t.id]?'✓ ':'')+esc(t.n)+'</button>').join('')+'</div>'+'<div class="hint" style="margin:6px 0 0;font-size:12px">Tippe einen Aufgabentyp, um gezielt dafür zu üben – das Häkchen kommt nach „Bearbeitet – abhaken".</div>'+
         ((cfg.cartoons&&cfg.cartoons.length)?'<div class="hint" style="margin-top:14px"><b style="color:var(--ink)">Karikatur-Antizipation</b> – diese Motive kommen zu deinem Fach erfahrungsgemäß dran (echte Karikatur selbst beilegen, Urheberrecht):</div><div class="tchips">'+cfg.cartoons.map(c=>'<span class="tchip" style="cursor:default;background:#F2EAD5;color:#836A38;border-color:#E6D9B6"><b>'+esc(c.t)+':</b> '+esc(c.m)+'</span>').join('')+'</div>':'')+
         ((nx&&cfg.themen)?'<div class="hint" style="margin-top:14px"><b style="color:var(--ink)">Stoff der nächsten Prüfung</b> – hak ab, was die Lehrkraft angesagt hat (LehrplanPLUS):</div><div class="tchips">'+cfg.themen.map(t=>{const on=(nx.p.themen||[]).indexOf(t.id)>-1;return '<button class="tchip'+(on?' on':'')+'" data-pid="'+nx.p.id+'" data-theme="'+t.id+'">'+(on?'✓ ':'')+esc(t.n)+'</button>';}).join('')+'</div>':'')+
         '<div class="row-btns" style="margin-top:12px">'+
         (modus==='m'
-          ?'<button class="btn" onclick="muendlichStart(\''+f.id+'\')">Mündliche Pirsch (Simulator)</button><button class="btn ghost" onclick="uebenStart(\''+f.id+'\')">Schriftliche Pirsch</button>'
-          :'<button class="btn" onclick="uebenStart(\''+f.id+'\')">Auf die Pirsch</button>'+(typenAll.some(t=>t.modus==='m')?'<button class="btn ghost" onclick="muendlichStart(\''+f.id+'\')">Mündliche Pirsch</button>':''))+
-        '</div>'+
-        '<div style="margin-top:12px;background:#f6f6fc;border-radius:11px;padding:11px 12px">'+
-        '<div class="hint" style="margin:0 0 6px"><b style="color:var(--ink)">Genau das üben, was drankommt</b> – trag Aufgabenform und Thema deiner nächsten Schulaufgabe ein (z. B. eine Rede):</div>'+
-        '<input id="frei-form-'+f.id+'" placeholder="Aufgabenform (z. B. Rede schreiben)" style="width:100%;margin-bottom:6px;font-size:13px;border:none;background:#fff;padding:9px 11px;border-radius:9px;color:var(--ink)">'+
-        '<input id="frei-thema-'+f.id+'" placeholder="Thema / Stoff (z. B. Faust I – Schuld und Verantwortung)" style="width:100%;font-size:13px;border:none;background:#fff;padding:9px 11px;border-radius:9px;color:var(--ink)">'+
-        '<div class="row-btns" style="margin-top:8px"><button class="btn sm" onclick="uebenRadar(\''+f.id+'\')">Was könnte drankommen?</button><button class="btn ghost sm" onclick="uebenFrei(\''+f.id+'\')">Direkt dafür üben</button></div></div>';
+          ?'<button class="btn ghost" onclick="muendlichStart(\''+f.id+'\')">Mündliche Pirsch (Simulator)</button><button class="btn ghost" onclick="uebenStart(\''+f.id+'\')">Schriftliche Pirsch</button>'
+          :'<button class="btn ghost" onclick="uebenStart(\''+f.id+'\')">Auf die Pirsch</button>'+(typenAll.some(t=>t.modus==='m')?'<button class="btn ghost" onclick="muendlichStart(\''+f.id+'\')">Mündliche Pirsch</button>':''))+
+        '</div>';
       /* SCHICHT: Individualisierung über die eigenen Fehler */
       html+='<div class="hint" style="margin-top:14px">'+
         (mu.length?'Deine Übungen zielen gerade zusätzlich auf: '+mu.map(m=>'<span class="chip">'+esc(m.label)+'</span>').join(' ')
@@ -2156,7 +2158,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v17';
+    const C='abiloop-v19';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
