@@ -333,6 +333,20 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       </div>
     </div>
 
+    <div class="card" id="noteCard">
+      <h2>Neue Note eintragen</h2>
+      <div class="hint">Sobald Anton eine Note zurückbekommt, hier eintragen – Halbjahresleistung und voraussichtlicher Schnitt aktualisieren sich automatisch. Schulaufgabe/Klausur = großer, mündlich/Stegreif = kleiner Leistungsnachweis (1:1 gewichtet).</div>
+      <div class="row-btns" style="gap:8px;flex-wrap:wrap;margin-top:4px">
+        <select id="noteFach" onchange="renderNoteList()" style="flex:1;min-width:130px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"></select>
+        <select id="noteHj" onchange="renderNoteList()" style="font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"><option value="0">12/1</option><option value="1">12/2</option><option value="2">13/1</option><option value="3">13/2</option></select>
+        <select id="noteArt" style="font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"><option value="sa">Schulaufgabe</option><option value="klein">mündlich / klein</option></select>
+        <input id="noteWert" type="number" inputmode="numeric" min="0" max="15" placeholder="0–15" style="width:84px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)">
+        <input id="noteNotiz" placeholder="Notiz, z. B. Referat (optional)" style="flex:1;min-width:150px;font-size:13px;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)">
+        <button class="btn sm" onclick="noteAdd()">Hinzufügen</button>
+      </div>
+      <div id="noteList" style="margin-top:8px"></div>
+    </div>
+
     <div class="card" id="wsemCard">
       <h2>W-Seminar &amp; Seminararbeit</h2>
       <div class="hint">Das W-Seminar bringt <b>4 der 40 Halbjahresleistungen</b> ein: die Kursleistung in 12/1 und 12/2 sowie das <b>Gesamtergebnis der Seminararbeit</b> (zählt als 2 HJL). Gesamtergebnis = (schriftliche Arbeit ×3 + Präsentation/Prüfungsgespräch ×1) ⁄ 2, max. 30 Punkte.</div>
@@ -451,7 +465,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v4.5 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v4.9 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -807,13 +821,24 @@ function recompute(){
   /* Hochrechnung: aktueller Schnitt der Halbjahresleistungen → auf 40 HJL + 5 Abiturprüfungen projiziert */
   let proj=null;
   (function(){
-    const hjl=r.blockI.hjl||[];if(!hjl.length)return;
-    const avg=hjl.reduce((s,h)=>s+h.punkte,0)/hjl.length;            /* Ø Halbjahresleistung 0–15 */
-    const projBI=Math.min(600,Math.round(avg*40));                   /* Block I auf alle 40 HJL */
-    const det=r.blockII.detail||[];let summe=0,cnt=0;
-    det.forEach(d=>{summe+=(d.roh!=null?d.roh:avg);cnt++;});          /* erfasste Prüfungen nutzen, Rest = Ø */
-    while(cnt<5){summe+=avg;cnt++;}
-    const projBII=Math.min(300,Math.round(summe*4));                 /* 5 Prüfungen ×4 */
+    const avgOf=hjl=>{const v=(hjl||[]).filter(x=>x!==''&&x!=null&&!isNaN(x)).map(Number);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;};
+    /* Jedes Fach auf 4 Halbjahre bei seinem aktuellen Schnitt hochrechnen … */
+    const full=(state.faecher||[]).map(f=>{const m=avgOf(f.hjl);if(m==null)return null;
+      return {id:f.id,name:f.name,kategorie:f.kategorie,istAbiturfach:f.istAbiturfach,istLF:f.istLF,
+        hjl:(f.hjl||['','','','']).map(v=>(v===''||v==null||isNaN(v))?m:Number(v))};}).filter(Boolean);
+    if(!full.length)return;
+    /* … dann die besten 40 wählen (Streichen wird berücksichtigt) */
+    const bI=Engine.waehleBlockI(full);if(!bI.anzahl)return;
+    const avgSel=bI.summe/bI.anzahl;
+    const projBI=Math.min(600,Math.round(bI.summe+(bI.anzahl<40?(40-bI.anzahl)*avgSel:0)));
+    /* Block II: je Abiturprüfung erwartete Note (falls eingetragen) sonst Schnitt des jeweiligen Abiturfachs */
+    let summe=0,cnt=0;
+    (state.abiturfaecher||[]).forEach(a=>{
+      let v=(a.ergebnis!==''&&a.ergebnis!=null&&!isNaN(a.ergebnis))?Number(a.ergebnis):null;
+      if(v==null){const f=(state.faecher||[]).find(x=>x.name===a.name);v=f?avgOf(f.hjl):null;}
+      summe+=(v==null?avgSel:v);cnt++;});
+    while(cnt<5){summe+=avgSel;cnt++;}
+    const projBII=Math.min(300,Math.round(summe*4));
     const total=projBI+projBII;
     proj={note:Engine.punkteZuNote(total),total:total,bi:projBI,bii:projBII};
   })();
@@ -1044,7 +1069,54 @@ inp.addEventListener('change',function(e){
   }catch(err){st.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}};
   r.readAsText(file);
 });})();
-function renderAll(full=true){if(full){renderSubj();}syncPlan();save();renderPlan();renderHeute();renderNextStrip();renderLoops();recompute();}
+function renderAll(full=true){if(full){renderSubj();}syncPlan();save();renderPlan();renderHeute();renderNextStrip();renderLoops();recompute();renderNoteFach();}
+/* ===== Neue Note eintragen (laufende Noteneingabe) ===== */
+function renderNoteFach(){
+  const s=document.getElementById('noteFach');if(!s)return;
+  const fa=(state.faecher||[]).filter(f=>f.kategorie!=='wsem');
+  const prev=s.value;
+  s.innerHTML=fa.map(f=>'<option value="'+f.id+'">'+esc(f.name)+'</option>').join('');
+  if(prev&&fa.some(f=>f.id===prev))s.value=prev;
+  renderNoteList();
+}
+function renderNoteList(){
+  const fs=document.getElementById('noteFach'),hs=document.getElementById('noteHj'),box=document.getElementById('noteList');
+  if(!fs||!hs||!box)return;
+  const f=fachById(fs.value);if(!f){box.innerHTML='';return;}
+  const i=+hs.value,ABK=['12/1','12/2','13/1','13/2'];
+  const nt=(Array.isArray(f.noten)&&f.noten[i])||{};
+  let html='';
+  if(nt.sa!==''&&nt.sa!=null&&!isNaN(nt.sa))html+='<span class="chip">Schulaufgabe: '+nt.sa+' <a href="#" onclick="noteDel(\''+f.id+'\','+i+',\'sa\',0);return false" style="color:var(--rose);text-decoration:none;font-weight:800">✕</a></span> ';
+  (nt.klein||[]).forEach((k,j)=>{if(k!==''&&k!=null&&!isNaN(k)){
+    const nz=(nt.kleinNotiz&&nt.kleinNotiz[j])?' · '+esc(nt.kleinNotiz[j]):'';
+    html+='<span class="chip">klein: '+k+nz+' <a href="#" onclick="noteDel(\''+f.id+'\','+i+',\'klein\','+j+');return false" style="color:var(--rose);text-decoration:none;font-weight:800">✕</a></span> ';}});
+  const hjl=computeHJL(f,i,nt);
+  box.innerHTML=(html||'<span class="hint" style="margin:0">Noch keine Einzelnoten in '+ABK[i]+'.</span>')+
+    '<div class="hint" style="margin-top:6px">Halbjahresleistung '+ABK[i]+': <b style="color:var(--ink)">'+(hjl===''?'–':hjl)+'</b></div>';
+}
+function noteAdd(){
+  const fs=document.getElementById('noteFach'),hs=document.getElementById('noteHj'),as=document.getElementById('noteArt'),ws=document.getElementById('noteWert');
+  if(!fs||!hs||!as||!ws)return;
+  const f=fachById(fs.value);if(!f){return;}
+  const i=+hs.value,w=clamp(ws.value);
+  if(w===''){document.getElementById('noteList').innerHTML='<div class="result-line warn">Bitte Punkte (0–15) eintragen.</div>';return;}
+  if(!Array.isArray(f.noten)||f.noten.length!==4)f.noten=[{},{},{},{}];
+  if(!f.noten[i]||typeof f.noten[i]!=='object')f.noten[i]={};
+  const notizEl=document.getElementById('noteNotiz');const notiz=notizEl?notizEl.value.trim():'';
+  if(as.value==='sa'){f.noten[i].sa=+w;}
+  else{
+    if(!Array.isArray(f.noten[i].klein))f.noten[i].klein=[];
+    if(!Array.isArray(f.noten[i].kleinNotiz))f.noten[i].kleinNotiz=[];
+    f.noten[i].klein.push(+w);f.noten[i].kleinNotiz.push(notiz);
+  }
+  ws.value='';if(notizEl)notizEl.value='';save();renderAll();renderNoteList();toast('Note eingetragen');
+}
+function noteDel(fid,i,art,j){
+  const f=fachById(fid);if(!f||!Array.isArray(f.noten)||!f.noten[i])return;
+  if(art==='sa'){f.noten[i].sa='';}
+  else if(Array.isArray(f.noten[i].klein)){f.noten[i].klein.splice(j,1);if(Array.isArray(f.noten[i].kleinNotiz))f.noten[i].kleinNotiz.splice(j,1);}
+  save();renderAll();renderNoteList();
+}
 function syncAbi(){
   state.abiturfaecher=(state.faecher||[]).filter(f=>f.istAbiturfach).map(f=>({
     name:f.name||'(Fach)',ergebnis:(f.abiErgebnis==null?'':f.abiErgebnis),lf:!!f.istLF}));
@@ -1549,6 +1621,9 @@ function renderLoops(){
         '<div class="hint" style="margin:0 0 6px"><b style="color:var(--ink)">Genau das üben, was drankommt</b> – trag Aufgabenform und Thema deiner nächsten Schulaufgabe ein (z. B. eine Rede):</div>'+
         '<input id="frei-form-'+f.id+'" placeholder="Aufgabenform (z. B. Rede schreiben)" style="width:100%;margin-bottom:6px;font-size:13px;border:none;background:#fff;padding:9px 11px;border-radius:9px;color:var(--ink)">'+
         '<input id="frei-thema-'+f.id+'" placeholder="Thema / Stoff (z. B. Faust I – Schuld und Verantwortung)" style="width:100%;font-size:13px;border:none;background:#fff;padding:9px 11px;border-radius:9px;color:var(--ink)">'+
+        '<div class="row-btns" style="margin-top:6px"><button class="btn ghost sm" onclick="document.getElementById(\'heft-'+f.id+'\').click()">📷 Heft-Fotos hinzufügen</button><span id="heftc-'+f.id+'" class="hint" style="margin:0">'+((window._heft&&window._heft[f.id]&&window._heft[f.id].length)?window._heft[f.id].length+' Foto(s) angehängt':'')+'</span></div>'+
+        '<input type="file" id="heft-'+f.id+'" accept="image/*" multiple style="display:none" onchange="heftSet(\''+f.id+'\',this)">'+
+        '<div class="hint" style="margin:4px 0 0;font-size:11.5px">Tipp: Heft-Einträge fotografieren – dann passt die Übung genau auf euren durchgenommenen Stoff.</div>'+
         '<div class="row-btns" style="margin-top:8px"><button class="btn sm" onclick="uebenRadar(\''+f.id+'\')">Was könnte drankommen?</button><button class="btn ghost sm" onclick="uebenFrei(\''+f.id+'\')">Direkt dafür üben</button></div></div>';
       /* SEKUNDÄR: gezielt nach Aufgabentyp (Abdeckung) + Pirsch */
       html+='<div style="display:flex;align-items:center;gap:14px;margin:16px 0 8px">'+
@@ -1820,9 +1895,20 @@ inp.addEventListener('change',async function(e){
 });})();
 function impFaecherApply(){
   const list=window._impF||[];if(!list.length)return;
-  state.faecher=list.map(f=>({id:id(),name:String(f.name||'Fach'),kategorie:(['d','m','fs','nw','pruefung','other'].indexOf(f.kategorie)>-1?f.kategorie:'other'),istAbiturfach:!!f.istAbiturfach,istLF:!!f.istLF,hjl:['','','',''],abiErgebnis:''}));
+  const norm=s=>String(s||'').toLowerCase().trim();
+  const KATOK=['d','m','fs','nw','pruefung','other','vk','sport','zusatz'];
+  let added=0,kept=0;
+  list.forEach(f=>{
+    const name=String(f.name||'Fach');
+    const ex=(state.faecher||[]).find(x=>norm(x.name)===norm(name));
+    if(ex){kept++;return;}   /* vorhandenes Fach behalten – Noten & Markierungen bleiben erhalten */
+    state.faecher.push({id:id(),name:name,
+      kategorie:(KATOK.indexOf(f.kategorie)>-1?f.kategorie:(typeof guessKat==='function'?guessKat(name):'other')),
+      istAbiturfach:!!f.istAbiturfach,istLF:!!f.istLF,hjl:['','','',''],noten:[{},{},{},{}],abiErgebnis:''});
+    added++;
+  });
   window._impF=null;save();renderAll();
-  document.getElementById('stFaecher').innerHTML='<div class="result-line">Übernommen. Prüf in „Meine Daten" kurz Kategorie, LF und Abi.</div>';toast('Fächer übernommen');
+  document.getElementById('stFaecher').innerHTML='<div class="result-line">'+added+' Fach/Fächer ergänzt, '+kept+' vorhandene behalten (Noten bleiben erhalten).</div>';toast('Fächer ergänzt');
 }
 
 (function(){const inp=document.getElementById('impNoten');if(!inp)return;
@@ -1945,6 +2031,10 @@ function uebenTyp(fid,tid){
   if(t&&t.modus==='m')return muendlichStart(fid);
   uebenStart(fid,tid);
 }
+function heftSet(fid,inp){
+  window._heft=window._heft||{};window._heft[fid]=Array.from((inp&&inp.files)||[]);
+  const c=document.getElementById('heftc-'+fid);if(c)c.textContent=window._heft[fid].length?(window._heft[fid].length+' Foto(s) angehängt'):'';
+}
 function uebenFrei(fid){
   const fEl=document.getElementById('frei-form-'+fid),tEl=document.getElementById('frei-thema-'+fid);
   const n=fEl?fEl.value.trim():'',thema=tEl?tEl.value.trim():'';
@@ -1965,8 +2055,12 @@ async function uebenRadar(fid){
       +(cfg.hinweise?cfg.hinweise+' ':'')
       +'Erstelle für den angegebenen Stoff eine VIELFÄLTIGE Liste von 6 realistisch möglichen Prüfungs-/Schulaufgaben-Varianten, die dazu drankommen könnten. Variiere bewusst Aufgabenform, Operator und Anforderungsbereich – AFB I, II und III sollen alle vertreten sein. Verwende nur Aufgabenformen, die in diesem Fach in Bayern tatsächlich üblich sind'+(form?'; berücksichtige besonders die erwartete Form „'+form+'"':'')+'. '
       +'Stoff: '+stoff+'. '
-      +'Antworte NUR mit JSON: {"varianten":[{"form":"Aufgabenform","operator":"Operator","afb":"I|II|III","fokus":"konkreter inhaltlicher Schwerpunkt in 1 Satz"}]}'+JSONRULE;
-    const out=await claude([{role:'user',content:'Bitte die Varianten.'}],sys,2500);
+      +'Antworte NUR mit JSON: {"varianten":[{"form":"Aufgabenform","operator":"Operator","afb":"I|II|III","fokus":"konkreter inhaltlicher Schwerpunkt in 1 Satz"}]}'+JSONRULE
+      +(((window._heft||{})[fid]||[]).length?' Dir liegen Fotos der Heft-Einträge/des durchgenommenen Stoffs vor – richte die Varianten genau danach aus.':'');
+    const _heftF=((window._heft||{})[fid])||[];
+    let _content='Bitte die Varianten.';
+    if(_heftF.length){const _p=await imgParts(_heftF);_content=_p.concat([{type:'text',text:'Bitte die Varianten – beziehe sie genau auf die gezeigten Heft-Einträge/den Stoff.'}]);}
+    const out=await claude([{role:'user',content:_content}],sys,2500);
     const j=parseJson(out),vs=(j.varianten||[]).slice(0,8);
     if(!vs.length){box.innerHTML='<div class="result-line warn">Keine Varianten erkannt – bitte nochmal versuchen.</div>';return;}
     window._radar=window._radar||{};window._radar[fid]={stoff:stoff,vs:vs};
@@ -2018,8 +2112,12 @@ async function uebenStart(fid,forcedTid,frei){
             :'Bei Textaufgaben: liefere den Ausgangstext mit (300–450 Wörter, selbst verfasst im Stil authentischer Prüfungstexte). ')
       +((frei&&frei.n)?'WICHTIG: Die Aufgabenform ist exakt „'+frei.n+'" – halte dich strikt daran und weiche nicht auf ein anderes Format aus. Wenn die Form ein eigenes Verfassen verlangt (z. B. Rede, Brief, Kommentar, Erörterung, gestaltendes/materialgestütztes Schreiben), formuliere einen klaren Schreibauftrag mit Situierung (Anlass, Adressat, Ziel) und – wo passend – einem kurzen Materialimpuls, statt einen fertigen Text vorzugeben. ':'')
       +(vorlage?'Dir liegt eine ECHTE Beispielaufgabe vor. Erzeuge die neue Übung durch TRANSFORMATION dieser Vorlage: Kontext, Namen, Zahlen und Material variieren, aber Format, Operator, Anforderungsbereich und Schwierigkeitsgrad beibehalten. Erfinde NICHT frei. VORLAGE-ANGABE: <<<'+vorlage.angabe+'>>>'+(vorlage.erwartung?' VORLAGE-ERWARTUNGSHORIZONT: <<<'+vorlage.erwartung+'>>>':'')+'. ':'')
-      +'Antworte NUR mit JSON, kein anderer Text: {"titel":"…","operator":"Operator","afb":"I|II|III","angabe":"vollständige Aufgabenstellung'+(cfg.label==='Englisch'?' auf Englisch':'')+', inkl. Material","erwartung":["Kernpunkt 1","Kernpunkt 2","…"],"fokus":"1 ermutigender Satz auf Deutsch: worauf es für ihn ankommt"}'+JSONRULE;
-    const out=await claude([{role:'user',content:'Bitte eine Aufgabe.'}],sys,4096);
+      +'Antworte NUR mit JSON, kein anderer Text: {"titel":"…","operator":"Operator","afb":"I|II|III","angabe":"vollständige Aufgabenstellung'+(cfg.label==='Englisch'?' auf Englisch':'')+', inkl. Material","erwartung":["Kernpunkt 1","Kernpunkt 2","…"],"fokus":"1 ermutigender Satz auf Deutsch: worauf es für ihn ankommt"}'+JSONRULE
+      +(((window._heft||{})[fid]||[]).length?' Dir liegen Fotos von Heft-Einträgen bzw. dem durchgenommenen Unterrichtsstoff vor. Die Aufgabe MUSS sich genau auf diesen Stoff beziehen (Begriffe, Beispiele und Schwerpunkte daraus aufgreifen).':'');
+    const _heftF=((window._heft||{})[fid])||[];
+    let _content='Bitte eine Aufgabe.';
+    if(_heftF.length){const _p=await imgParts(_heftF);_content=_p.concat([{type:'text',text:'Bitte eine Aufgabe – beziehe sie genau auf die gezeigten Heft-Einträge/den Stoff.'}]);}
+    const out=await claude([{role:'user',content:_content}],sys,4096);
     const a=parseJson(out);
     box.innerHTML='<div class="aufgabe"><h3>'+esc(a.titel||'Deine Aufgabe')+'</h3>'+
       '<div style="margin-bottom:8px"><span class="chip">'+esc(ziel.n)+'</span><span class="chip">Operator: '+esc(a.operator||'–')+'</span><span class="chip">AFB '+esc(a.afb||'–')+'</span><span class="chip" style="background:'+(vorlage?'#E3F0E8':'#F2EAD5')+';color:'+(vorlage?'#1A5A3E':'#836A38')+'">'+prov+'</span></div>'+
@@ -2201,7 +2299,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v21';
+    const C='abiloop-v25';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
