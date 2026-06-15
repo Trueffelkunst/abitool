@@ -327,6 +327,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       <div id="subjList"></div>
       <div class="row-btns" style="margin-top:6px">
         <button class="btn ghost sm" onclick="addSubject()">+ Fach hinzufügen</button>
+        <button class="btn ghost sm" onclick="loadAnton()">Antons Profil</button>
         <button class="btn ghost sm" onclick="loadBeispiel()">Beispiel laden</button>
         <button class="btn ghost sm" onclick="clearProfile()">Leeren</button>
       </div>
@@ -343,6 +344,14 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
         <label class="hjl"><span>Präsent. ×1</span><input type="number" inputmode="numeric" min="0" max="15" placeholder="–" id="wsemPra" oninput="wsemSet('praes',this)"></label>
       </div>
       <div id="wsemOut" class="result-line warn" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card">
+      <h2>Daten sichern &amp; laden</h2>
+      <div class="hint">Alle Eingaben bleiben lokal auf diesem Gerät. Hier kannst du sie als Datei sichern (Backup oder Übertrag aufs iPad) oder eine vorbereitete Datei laden – so bleiben die Noten privat, nichts wird ins Netz geladen.</div>
+      <div class="row-btns"><button class="btn ghost sm" onclick="exportData()">Daten sichern (Datei)</button><button class="btn ghost sm" onclick="document.getElementById('dataImport').click()">Daten laden (Datei)</button></div>
+      <input type="file" id="dataImport" accept="application/json,.json" style="display:none">
+      <div id="dataStatus" style="margin-top:8px"></div>
     </div>
 
     <div class="card">
@@ -395,6 +404,12 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       <div class="list-sel" id="selList">—</div>
       <div class="result-line warn hide" id="selWarn"></div>
     </div>
+
+    <div class="card">
+      <h2>Einbringen &amp; Streichen – wo lohnt sich Mühe?</h2>
+      <div class="hint">Jede Halbjahresleistung wird geprüft: zählt sie in die besten 40, oder wird sie gestrichen? Bei gestrichenen, an denen sich auch mit Verbesserung nichts ändert, musst du dir keine Mühe mehr geben.</div>
+      <div id="streichBox" style="margin-top:10px">—</div>
+    </div>
   </div>
 
   <!-- ===== TAB: WAS-WÄRE-WENN ===== -->
@@ -436,7 +451,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v3.4 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v4.1 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -603,9 +618,43 @@ function migrate(s){
   s.coverage=s.coverage||{};
   s.muster=s.muster||{};
   s.archiv=s.archiv||[];
-  (s.faecher||[]).forEach(f=>{if(typeof f.istLF!=='boolean')f.istLF=false;if(f.abiErgebnis==null)f.abiErgebnis='';});
+  (s.faecher||[]).forEach(f=>{if(typeof f.istLF!=='boolean')f.istLF=false;if(f.abiErgebnis==null)f.abiErgebnis='';
+    if(!Array.isArray(f.noten)||f.noten.length!==4)f.noten=[{},{},{},{}];});
   return s;
 }
+/* ===== Halbjahresleistung aus Einzelnoten (offizielle Regel, gymnasiale-oberstufe.bayern.de, Stand 17.11.2025) =====
+   12/1–13/1: (Schulaufgabe + Durchschnitt der kleinen LN) im Verhältnis 1:1.
+   13/2: nur Deutsch/Mathe/Leistungsfach mit Schulaufgabe; sonst nur Durchschnitt der kleinen LN. */
+function rundeP(x){return Math.max(0,Math.min(15,Math.round(x)));}
+function hatSchulaufgabe(f,i){
+  if(f.kategorie==='wsem')return false;
+  if(i<3)return true;                                   /* 12/1, 12/2, 13/1 */
+  return f.kategorie==='d'||f.kategorie==='m'||f.istLF;  /* 13/2 nur D/M/LF */
+}
+function computeHJL(f,i,nt){
+  if(!nt)return '';
+  const klein=(nt.klein||[]).filter(v=>v!==''&&v!=null&&!isNaN(v)).map(Number);
+  const meanK=klein.length?klein.reduce((a,b)=>a+b,0)/klein.length:null;
+  const saV=(nt.sa===''||nt.sa==null||isNaN(nt.sa))?null:Number(nt.sa);
+  if(hatSchulaufgabe(f,i)){
+    if(saV!=null&&meanK!=null)return rundeP((saV+meanK)/2);
+    if(saV!=null)return rundeP(saV);
+    if(meanK!=null)return rundeP(meanK);   /* Prognose, solange Schulaufgabe fehlt */
+    return '';
+  }
+  return meanK!=null?rundeP(meanK):'';      /* 13/2 ohne Schulaufgabe */
+}
+function notenVorhanden(nt){return !!(nt&&((nt.sa!==''&&nt.sa!=null&&!isNaN(nt.sa))||((nt.klein||[]).some(v=>v!==''&&v!=null&&!isNaN(v)))));}
+/* Aus den Einzelnoten die Halbjahresleistungen ableiten (nur wo Einzelnoten vorliegen) */
+function recomputeNoten(){
+  (state.faecher||[]).forEach(function(f){
+    if(!Array.isArray(f.noten))return;
+    f.noten.forEach(function(nt,i){
+      if(i<4&&notenVorhanden(nt)){const h=computeHJL(f,i,nt);if(h!=='')f.hjl[i]=String(h);}
+    });
+  });
+}
+function guessKat(name){const m=(FAECHER||[]).find(s=>s[0].toLowerCase()===String(name||'').toLowerCase().trim());return m?m[1]:'other';}
 function save(){if(DEMO)return;try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
 
 /* ===== Render ===== */
@@ -719,6 +768,7 @@ function renderWsem(){
 
 /* ===== Recompute & hero ===== */
 function recompute(){
+  recomputeNoten();
   syncWsem();
   syncAbi();
   const r=Engine.berechne(state);
@@ -773,8 +823,42 @@ function recompute(){
   const sw=document.getElementById('selWarn');
   if(r.blockI.hinweis){sw.classList.remove('hide');sw.textContent=r.blockI.hinweis;}else sw.classList.add('hide');
 
-  renderWennDann(r);renderZiel();renderLohnt(r);
+  renderWennDann(r);renderZiel();renderLohnt(r);renderStreich(r);
   return r;
+}
+/* ===== Einbringen & Streichen: Szenarien per Durchrechnen über die geprüfte Engine ===== */
+function renderStreich(){
+  const box=document.getElementById('streichBox');if(!box)return;
+  const base=Engine.waehleBlockI(state.faecher||[]);
+  const baseSum=base.punkte,baseN=base.anzahl;
+  const sel={};(base.hjl||[]).forEach(function(h){sel[h.fid+'|'+h.abschnitt]=true;});
+  const ABS2=['12/1','12/2','13/1','13/2'];
+  function simSum(fid,i,val){
+    const cl=(state.faecher||[]).map(function(f){return {id:f.id,name:f.name,kategorie:f.kategorie,istAbiturfach:f.istAbiturfach,istLF:f.istLF,hjl:f.hjl.slice()};});
+    const t=cl.find(function(f){return f.id===fid;});if(t)t.hjl[i]=String(val);
+    return Engine.waehleBlockI(cl).punkte;
+  }
+  let rows='';
+  (state.faecher||[]).filter(function(f){return f.kategorie!=='wsem';}).forEach(function(f){
+    let cells='';
+    ABS2.forEach(function(lbl,i){
+      const raw=f.hjl[i];if(raw===''||raw==null||isNaN(raw))return;
+      const p=+raw,drin=!!sel[f.id+'|'+lbl];let tag,col;
+      if(drin){tag='zählt';col=['#E3F0E8','#1A5A3E'];}
+      else{
+        const maxGain=simSum(f.id,i,15)-baseSum;
+        if(maxGain<=0){tag='gestrichen – keine Mühe nötig';col=['#EDEDE6','#7A7F73'];}
+        else{let schwelle=null;for(let v=p+1;v<=15;v++){if(simSum(f.id,i,v)-baseSum>0){schwelle=v;break;}}
+          tag=schwelle!=null?('zählt erst ab '+schwelle+' P'):'gestrichen';col=['#FBEFD9','#8A6D2E'];}
+      }
+      cells+='<div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:3px 0"><span>'+lbl+': <b>'+p+' P</b></span><span style="background:'+col[0]+';color:'+col[1]+';border-radius:7px;padding:1px 8px;font-size:11px;font-weight:700">'+tag+'</span></div>';
+    });
+    if(cells)rows+='<div style="padding:7px 0;border-bottom:1px solid var(--line)"><div style="font-weight:700;font-size:13px;margin-bottom:2px">'+esc(f.name)+'</div>'+cells+'</div>';
+  });
+  if(!rows){box.innerHTML='<div class="hint" style="margin:0">Trag Halbjahresleistungen ein – dann zeige ich dir, welche zählen und wo sich Mühe lohnt.</div>';return;}
+  box.innerHTML=rows+'<div class="hint" style="margin-top:8px">'+(baseN>=40
+    ?'„gestrichen – keine Mühe nötig" heißt: Diese Leistung zählt nicht für den Schnitt, und auch eine bessere Note dort würde nichts ändern. „zählt erst ab X" heißt: erst ab dieser Punktzahl käme sie in die Wertung.'
+    :'Erst '+baseN+' von 40 möglichen Einbringungen erfasst – noch wird nichts gestrichen, jede Leistung zählt.')+'</div>';
 }
 
 /* ===== Was-wäre-wenn ===== */
@@ -879,6 +963,44 @@ function loadBeispiel(){
   save();renderAll();switchTab('heute');toast('Beispiel geladen – tippe oben „Üben"');
 }
 function clearProfile(){if(confirm('Neues, leeres Profil anlegen? Aktuelle Eingaben werden ersetzt.')){state=emptyState();save();renderAll();toast('Neues Profil');}}
+/* Antons fertiges Profil: 5 Abiturfächer (Englisch=LF, Deutsch, Mathe, Wirtschaft/Recht, Religion) + W-Seminar (Leitfach Englisch). Noten kommen per Screenshot-Import (bleiben lokal). */
+function loadAnton(){
+  if(!confirm('Antons Profil laden (5 Abiturfächer + W-Seminar)? Die aktuelle Fächerliste wird ersetzt. Noten importierst du danach per Screenshot.'))return;
+  const mk=function(name,kat,lf){return {id:id(),name:name,kategorie:kat,istAbiturfach:true,istLF:!!lf,hjl:['','','',''],noten:[{},{},{},{}],abiErgebnis:''};};
+  state.faecher=[
+    mk('Englisch','fs',true),
+    mk('Deutsch','d',false),
+    mk('Mathematik','m',false),
+    mk('Wirtschaft und Recht','pruefung',false),
+    mk('Katholische Religionslehre','pruefung',false)
+  ];
+  state.wsem={leitfach:'Englisch',ws1:'',ws2:'',arbeit:'',praes:''};
+  state.coverage=state.coverage||{};
+  syncPlan();save();renderAll();
+  toast('Antons Profil geladen – jetzt Noten per Screenshot importieren');
+}
+/* ===== Daten sichern/laden als lokale Datei (bleibt privat, nichts geht ins Netz) ===== */
+function exportData(){
+  try{
+    const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download='antons-abitool-daten.json';document.body.appendChild(a);a.click();a.remove();
+    toast('Daten gesichert');
+  }catch(e){toast('Sichern fehlgeschlagen');}
+}
+(function(){const inp=document.getElementById('dataImport');if(!inp)return;
+inp.addEventListener('change',function(e){
+  const file=e.target.files[0];e.target.value='';if(!file)return;
+  const st=document.getElementById('dataStatus');
+  const r=new FileReader();
+  r.onload=function(){try{
+    const obj=JSON.parse(r.result);
+    if(!obj||!Array.isArray(obj.faecher))throw new Error('Diese Datei enthält keine gültigen AbiTool-Daten.');
+    state=migrate(obj);save();renderAll();
+    st.innerHTML='<div class="result-line">Daten geladen: '+state.faecher.length+' Fächer übernommen.</div>';toast('Daten geladen');
+  }catch(err){st.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}};
+  r.readAsText(file);
+});})();
 function renderAll(full=true){if(full){renderSubj();}syncPlan();save();renderPlan();renderHeute();renderNextStrip();renderLoops();recompute();}
 function syncAbi(){
   state.abiturfaecher=(state.faecher||[]).filter(f=>f.istAbiturfach).map(f=>({
@@ -1390,7 +1512,12 @@ function renderLoops(){
         (modus==='m'
           ?'<button class="btn" onclick="muendlichStart(\''+f.id+'\')">Mündliche Pirsch (Simulator)</button><button class="btn ghost" onclick="uebenStart(\''+f.id+'\')">Schriftliche Pirsch</button>'
           :'<button class="btn" onclick="uebenStart(\''+f.id+'\')">Auf die Pirsch</button>'+(typenAll.some(t=>t.modus==='m')?'<button class="btn ghost" onclick="muendlichStart(\''+f.id+'\')">Mündliche Pirsch</button>':''))+
-        '</div>';
+        '</div>'+
+        '<div style="margin-top:12px;background:#f6f6fc;border-radius:11px;padding:11px 12px">'+
+        '<div class="hint" style="margin:0 0 6px"><b style="color:var(--ink)">Genau das üben, was drankommt</b> – trag Aufgabenform und Thema deiner nächsten Schulaufgabe ein (z. B. eine Rede):</div>'+
+        '<input id="frei-form-'+f.id+'" placeholder="Aufgabenform (z. B. Rede schreiben)" style="width:100%;margin-bottom:6px;font-size:13px;border:none;background:#fff;padding:9px 11px;border-radius:9px;color:var(--ink)">'+
+        '<input id="frei-thema-'+f.id+'" placeholder="Thema / Stoff (z. B. Faust I – Schuld und Verantwortung)" style="width:100%;font-size:13px;border:none;background:#fff;padding:9px 11px;border-radius:9px;color:var(--ink)">'+
+        '<div class="row-btns" style="margin-top:8px"><button class="btn sm" onclick="uebenRadar(\''+f.id+'\')">Was könnte drankommen?</button><button class="btn ghost sm" onclick="uebenFrei(\''+f.id+'\')">Direkt dafür üben</button></div></div>';
       /* SCHICHT: Individualisierung über die eigenen Fehler */
       html+='<div class="hint" style="margin-top:14px">'+
         (mu.length?'Deine Übungen zielen gerade zusätzlich auf: '+mu.map(m=>'<span class="chip">'+esc(m.label)+'</span>').join(' ')
@@ -1574,29 +1701,54 @@ inp.addEventListener('change',async function(e){
   s.innerHTML='<div class="result-line"><span class="busy"></span>Lese '+files.length+' Screenshot(s) … (Bilder werden nicht gespeichert)</div>';
   try{
     const imgs=await imgParts(files);
-    const sys='Du liest Screenshots einer Notenrechner-App eines bayerischen Oberstufenschülers (G9). Extrahiere pro Fach die Halbjahres-Notenpunkte (ganze Zahlen 0–15) der Ausbildungsabschnitte 12/1, 12/2, 13/1, 13/2. Antworte NUR mit JSON, kein anderer Text: {"faecher":[{"name":"Fachname","hjl":[12,9,null,null]}]} – nutze null für nicht erkennbare oder leere Werte. Erfinde nichts.';
-    const out=await claude([{role:'user',content:imgs.concat([{type:'text',text:'Bitte auslesen.'}])}],sys,1500);
+    const sys='Du liest Screenshots der Noten-App eines bayerischen Oberstufenschülers (G9). Extrahiere pro Fach und pro Ausbildungsabschnitt (12/1, 12/2, 13/1, 13/2) die Einzelnoten in Notenpunkten (0–15): die Schulaufgabe (großer Leistungsnachweis) und die kleinen Leistungsnachweise (mündlich, Tests, Stegreif – als Liste). Falls die App bereits eine fertige Halbjahresleistung anzeigt, gib sie zusätzlich als "hjl" an. Reihenfolge der Abschnitte IMMER 12/1, 12/2, 13/1, 13/2. Antworte NUR mit JSON, kein anderer Text: {"faecher":[{"name":"Fachname","abschnitte":[{"schulaufgabe":12,"kleine":[13,11],"hjl":null},{...},{...},{...}]}]} – nutze null für nicht Erkennbares, [] für keine kleinen Noten. Erfinde nichts; gib nur ab, was wirklich sichtbar ist.';
+    const out=await claude([{role:'user',content:imgs.concat([{type:'text',text:'Bitte auslesen.'}])}],sys,8000);
     const j=parseJson(out);importCheck(j.faecher||[]);
   }catch(err){s.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}
 });})();
+function importVorschauHJL(x,i){
+  /* berechnet die HJL für die Vorschau anhand der erkannten Einzelnoten + geschätzter Kategorie */
+  const ab=(x.abschnitte||[])[i];if(!ab)return '–';
+  const pseudo={kategorie:guessKat(x.name),istLF:false};
+  const klein=(ab.kleine||[]).filter(v=>v!=null&&!isNaN(v)).map(Number);
+  const sa=(ab.schulaufgabe==null||isNaN(ab.schulaufgabe))?'':Number(ab.schulaufgabe);
+  if(sa===''&&!klein.length){return (ab.hjl!=null&&!isNaN(ab.hjl))?String(rundeP(ab.hjl)):'–';}
+  const h=computeHJL(pseudo,i,{sa:sa,klein:klein});return h===''?'–':String(h);
+}
 function importCheck(list){
   const s=document.getElementById('kiStatus');
-  if(!list.length){s.innerHTML='<div class="result-line warn">Keine Punkte erkannt – probier schärfere Screenshots.</div>';return;}
+  if(!list.length){s.innerHTML='<div class="result-line warn">Keine Noten erkannt – probier schärfere Screenshots.</div>';return;}
   window._import=list;
-  s.innerHTML='<div class="result-line warn">Erkannt – bitte kurz prüfen, dann übernehmen:</div>'+
-    list.map(x=>'<div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:700;padding:6px 0;border-bottom:1px solid var(--line)"><span>'+esc(x.name||'?')+'</span><span>'+(x.hjl||[]).map(v=>v==null?'–':v).join(' · ')+'</span></div>').join('')+
+  const ABKZ=['12/1','12/2','13/1','13/2'];
+  s.innerHTML='<div class="result-line warn">Erkannt – bitte prüfen (HJL = berechnete Halbjahresleistung), dann übernehmen:</div>'+
+    list.map(function(x){
+      const zeilen=ABKZ.map(function(lbl,i){const ab=(x.abschnitte||[])[i]||{};
+        const sa=(ab.schulaufgabe==null)?'–':ab.schulaufgabe;
+        const kl=(ab.kleine||[]).filter(v=>v!=null).join(', ')||'–';
+        return '<div style="font-size:12px;color:var(--muted);padding:2px 0">'+lbl+': SA '+esc(String(sa))+' · klein '+esc(kl)+' → <b style="color:var(--ink)">HJL '+importVorschauHJL(x,i)+'</b></div>';
+      }).join('');
+      return '<div style="padding:7px 0;border-bottom:1px solid var(--line)"><div style="font-size:13.5px;font-weight:700">'+esc(x.name||'?')+'</div>'+zeilen+'</div>';
+    }).join('')+
+    '<div class="hint" style="margin-top:8px">Wichtig: Markiere danach unter „Meine Fächer" dein Leistungsfach (LF) und die Kategorie (Deutsch/Mathe) – nur dann zählt in 13/2 die Schulaufgabe korrekt.</div>'+
     '<div class="row-btns" style="margin-top:10px"><button class="btn sm" onclick="importApply()">Übernehmen</button>'+
     '<button class="btn ghost sm" onclick="document.getElementById(\'kiStatus\').innerHTML=\'\'">Verwerfen</button></div>';
 }
 function importApply(){
   (window._import||[]).forEach(function(x){
     let f=state.faecher.find(f=>f.name.toLowerCase().trim()===String(x.name||'').toLowerCase().trim());
-    if(!f){f={id:id(),name:String(x.name||'Fach'),kategorie:'other',istAbiturfach:false,istLF:false,hjl:['','','','']};state.faecher.push(f);}
-    (x.hjl||[]).forEach(function(v,i){if(v!=null&&!isNaN(v)&&i<4)f.hjl[i]=String(Math.max(0,Math.min(15,Math.round(v))));});
+    if(!f){f={id:id(),name:String(x.name||'Fach'),kategorie:guessKat(x.name),istAbiturfach:false,istLF:false,hjl:['','','',''],noten:[{},{},{},{}],abiErgebnis:''};state.faecher.push(f);}
+    if(!Array.isArray(f.noten)||f.noten.length!==4)f.noten=[{},{},{},{}];
+    (x.abschnitte||[]).forEach(function(ab,i){
+      if(i>3||!ab)return;
+      const klein=(ab.kleine||[]).filter(v=>v!=null&&!isNaN(v)).map(function(v){return rundeP(v);});
+      const sa=(ab.schulaufgabe==null||isNaN(ab.schulaufgabe))?'':rundeP(ab.schulaufgabe);
+      if(sa!==''||klein.length){f.noten[i]={sa:sa,klein:klein};}
+      else if(ab.hjl!=null&&!isNaN(ab.hjl)){f.hjl[i]=String(rundeP(ab.hjl));}
+    });
   });
   window._import=null;save();renderAll();
-  document.getElementById('kiStatus').innerHTML='<div class="result-line">Übernommen. Vergleich im Zweifel kurz mit der alten App – dann bist du sicher.</div>';
-  toast('Punkte importiert');
+  document.getElementById('kiStatus').innerHTML='<div class="result-line">Übernommen – die Halbjahresleistungen wurden aus den Einzelnoten berechnet (Schulaufgabe : kleine = 1:1). Vergleich im Zweifel kurz mit Antons alter App.</div>';
+  toast('Noten importiert');
 }
 
 /* ===== Einrichten: Fächerplaner / Notenübersicht / Klausurplan importieren ===== */
@@ -1748,21 +1900,59 @@ function uebenTyp(fid,tid){
   if(t&&t.modus==='m')return muendlichStart(fid);
   uebenStart(fid,tid);
 }
-async function uebenStart(fid,forcedTid){
+function uebenFrei(fid){
+  const fEl=document.getElementById('frei-form-'+fid),tEl=document.getElementById('frei-thema-'+fid);
+  const n=fEl?fEl.value.trim():'',thema=tEl?tEl.value.trim():'';
+  if(!n){const b=document.getElementById('flow-'+fid);if(b)b.innerHTML='<div class="result-line warn">Trag zuerst die Aufgabenform ein (z. B. „Rede schreiben") – oder nutze „Was könnte drankommen?", wenn du nur den Stoff weißt.</div>';return;}
+  uebenStart(fid,null,{n:n,thema:thema});
+}
+/* Prüfungs-Radar: aus Stoff (+ optional Form) eine vielfältige Liste realistischer Varianten */
+async function uebenRadar(fid){
+  const f=fachById(fid),cfg=fachCfg(f),box=document.getElementById('flow-'+fid);if(!box)return;
+  if(!cfg||!cfg.aktiv){box.innerHTML='<div class="result-line warn">Dieses Fach ist noch in Vorbereitung.</div>';return;}
+  if(!getKey()){box.innerHTML='<div class="result-line warn">AbiTool nutzt Claude als Motor. Richte den Schlüssel einmal unter „Meine Daten → Claude als Motor" ein.</div>';return;}
+  const tEl=document.getElementById('frei-thema-'+fid),fEl=document.getElementById('frei-form-'+fid);
+  const stoff=tEl?tEl.value.trim():'',form=fEl?fEl.value.trim():'';
+  if(!stoff){box.innerHTML='<div class="result-line warn">Trag zuerst den Stoff/das Thema ein, das in der Schulaufgabe drankommt.</div>';return;}
+  box.innerHTML='<div class="result-line"><span class="busy"></span>Ich prüfe, was zu „'+esc(stoff)+'" realistisch drankommen kann …</div>';
+  try{
+    const sys='Du bist erfahrene Prüferin im bayerischen Abitur, Fach '+cfg.fach+'. '
+      +(cfg.hinweise?cfg.hinweise+' ':'')
+      +'Erstelle für den angegebenen Stoff eine VIELFÄLTIGE Liste von 6 realistisch möglichen Prüfungs-/Schulaufgaben-Varianten, die dazu drankommen könnten. Variiere bewusst Aufgabenform, Operator und Anforderungsbereich – AFB I, II und III sollen alle vertreten sein. Verwende nur Aufgabenformen, die in diesem Fach in Bayern tatsächlich üblich sind'+(form?'; berücksichtige besonders die erwartete Form „'+form+'"':'')+'. '
+      +'Stoff: '+stoff+'. '
+      +'Antworte NUR mit JSON: {"varianten":[{"form":"Aufgabenform","operator":"Operator","afb":"I|II|III","fokus":"konkreter inhaltlicher Schwerpunkt in 1 Satz"}]}'+JSONRULE;
+    const out=await claude([{role:'user',content:'Bitte die Varianten.'}],sys,2500);
+    const j=parseJson(out),vs=(j.varianten||[]).slice(0,8);
+    if(!vs.length){box.innerHTML='<div class="result-line warn">Keine Varianten erkannt – bitte nochmal versuchen.</div>';return;}
+    window._radar=window._radar||{};window._radar[fid]={stoff:stoff,vs:vs};
+    box.innerHTML='<div class="aufgabe"><h3>Was zu „'+esc(stoff)+'" drankommen kann</h3>'+
+      '<div class="hint" style="margin:0 0 8px">'+vs.length+' realistische Varianten quer über Operatoren und Anforderungsbereiche – tippe eine an, um die volle Übung mit Erwartungshorizont zu erzeugen:</div>'+
+      vs.map(function(v,i){return '<div style="padding:8px 0;border-bottom:1px solid var(--line)"><div style="font-weight:700;font-size:13.5px">'+esc(v.form||'Aufgabe')+' <span class="chip">'+esc(v.operator||'')+'</span><span class="chip">AFB '+esc(v.afb||'')+'</span></div><div style="color:var(--muted);font-size:12.5px;margin:3px 0 6px">'+esc(v.fokus||'')+'</div><button class="btn ghost sm" onclick="uebenRadarPick(\''+fid+'\','+i+')">Diese üben</button></div>';}).join('')+
+      '<div class="row-btns" style="margin-top:10px"><button class="btn ghost sm" onclick="uebenRadar(\''+fid+'\')">Andere Varianten</button></div></div>';
+  }catch(err){box.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}
+}
+function uebenRadarPick(fid,i){
+  const r=(window._radar||{})[fid];if(!r||!r.vs[i])return;
+  const v=r.vs[i];
+  uebenStart(fid,null,{n:v.form,thema:r.stoff+(v.fokus?' – '+v.fokus:'')});
+}
+async function uebenStart(fid,forcedTid,frei){
   const f=fachById(fid);if(!f)return;
   const cfg=fachCfg(f);
   const box=document.getElementById('flow-'+fid);if(!box)return;
   if(!cfg||!cfg.aktiv||!(cfg.typen||[]).length){box.innerHTML='<div class="result-line warn">Dieses Fach ist noch in Vorbereitung – der Aufgabenkatalog wird fachlich freigeschaltet.</div>';return;}
   if(!getKey()){box.innerHTML='<div class="result-line warn">AbiTool nutzt Claude als Motor, um deine Übung zu erstellen. Richte den Schlüssel einmal unter „Meine Daten → Claude als Motor" ein – dann geht\'s los.</div>';return;}
   const nx=kommende().find(x=>x.p.fid===fid);
-  const themen=themenLabels(cfg,nx&&nx.p);
+  let themen=themenLabels(cfg,nx&&nx.p);
+  if(frei&&frei.thema)themen=[frei.thema];
   const modus=nx?(nx.p.muendlich?'m':'s'):null;
   const typenAll=cfg.typen;
   const pool=modus?typenAll.filter(t=>t.modus===modus):typenAll;
   const auswahl=pool.length?pool:typenAll;
   const cov=state.coverage[fid]||{};
   let ziel=null;
-  if(forcedTid)ziel=typenAll.find(t=>t.id===forcedTid)||null;
+  if(frei&&frei.n)ziel={id:'frei',n:frei.n,modus:'s'};
+  if(!ziel&&forcedTid)ziel=typenAll.find(t=>t.id===forcedTid)||null;
   if(!ziel){const offen=auswahl.filter(t=>!cov[t.id]);ziel=offen.length?offen[0]:auswahl[Math.floor(Math.random()*auswahl.length)];}
   const mu=((state.muster||{})[fid]||[]).slice(-3);
   const istM=ziel.modus==='m';
@@ -1781,6 +1971,7 @@ async function uebenStart(fid,forcedTid){
       +(istM?'Es ist eine MÜNDLICHE Aufgabe: formuliere eine Sprechaufgabe (Impuls bzw. Diskussionsfragen), keinen zu schreibenden Text. '
             :istKarik?'Es ist eine KARIKATUR-Analyse: BESCHREIBE eine zum Thema passende, selbst erdachte Karikatur ausführlich in Worten (Bildelemente, Symbole, Übertreibung, Bildunterschrift) — kein urheberrechtlich geschütztes Original — und stelle die Analyseaufgabe: beschreiben → deuten (Symbolik/Stilmittel) → Aussageabsicht & Bewertung. '
             :'Bei Textaufgaben: liefere den Ausgangstext mit (300–450 Wörter, selbst verfasst im Stil authentischer Prüfungstexte). ')
+      +((frei&&frei.n)?'WICHTIG: Die Aufgabenform ist exakt „'+frei.n+'" – halte dich strikt daran und weiche nicht auf ein anderes Format aus. Wenn die Form ein eigenes Verfassen verlangt (z. B. Rede, Brief, Kommentar, Erörterung, gestaltendes/materialgestütztes Schreiben), formuliere einen klaren Schreibauftrag mit Situierung (Anlass, Adressat, Ziel) und – wo passend – einem kurzen Materialimpuls, statt einen fertigen Text vorzugeben. ':'')
       +(vorlage?'Dir liegt eine ECHTE Beispielaufgabe vor. Erzeuge die neue Übung durch TRANSFORMATION dieser Vorlage: Kontext, Namen, Zahlen und Material variieren, aber Format, Operator, Anforderungsbereich und Schwierigkeitsgrad beibehalten. Erfinde NICHT frei. VORLAGE-ANGABE: <<<'+vorlage.angabe+'>>>'+(vorlage.erwartung?' VORLAGE-ERWARTUNGSHORIZONT: <<<'+vorlage.erwartung+'>>>':'')+'. ':'')
       +'Antworte NUR mit JSON, kein anderer Text: {"titel":"…","operator":"Operator","afb":"I|II|III","angabe":"vollständige Aufgabenstellung'+(cfg.label==='Englisch'?' auf Englisch':'')+', inkl. Material","erwartung":["Kernpunkt 1","Kernpunkt 2","…"],"fokus":"1 ermutigender Satz auf Deutsch: worauf es für ihn ankommt"}'+JSONRULE;
     const out=await claude([{role:'user',content:'Bitte eine Aufgabe.'}],sys,4096);
@@ -1792,7 +1983,7 @@ async function uebenStart(fid,forcedTid){
       '<details style="margin-top:10px"><summary style="font-weight:700;color:var(--primary);cursor:pointer">Erwartungshorizont – erst nach dem Bearbeiten öffnen</summary><ul style="margin:8px 0 0;padding-left:20px">'+(a.erwartung||[]).map(x=>'<li style="margin-bottom:5px">'+esc(x)+'</li>').join('')+'</ul></details>'+
       '<div class="row-btns" style="margin-top:12px">'+
       '<button class="btn sm" onclick="hakAb(\''+fid+'\',\''+ziel.id+'\')">Bearbeitet – abhaken</button>'+
-      '<button class="btn ghost sm" onclick="uebenStart(\''+fid+'\')">Andere Aufgabe</button></div></div>';
+      '<button class="btn ghost sm" onclick="'+((frei&&frei.n)?'uebenFrei(\''+fid+'\')':'uebenStart(\''+fid+'\')')+'">Andere Aufgabe</button></div></div>';
   }catch(err){box.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}
 }
 function hakAb(fid,tid){
@@ -1965,7 +2156,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v10';
+    const C='abiloop-v17';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
