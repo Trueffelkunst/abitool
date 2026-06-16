@@ -88,10 +88,18 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .subj .del{color:var(--rose);font-size:20px;padding:4px 8px;font-weight:700;line-height:1}
 .hjl-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
 .hjl{display:flex;flex-direction:column;gap:3px}
-.hjl span{font-size:10.5px;color:var(--muted);text-align:center;font-weight:700}
+.hjl span{font-size:11px;color:var(--muted);text-align:center;font-weight:700}
 .hjl input{width:100%;text-align:center;font-size:16px;font-weight:700;padding:9px 0;border-radius:11px;
   border:1.5px solid var(--line);background:#fff;color:var(--ink)}
 .hjl input:focus{outline:none;border-color:var(--primary);background:#f8fbff}
+/* Notenzahlen größer & fett (Anton-Wunsch) */
+.hjl select{width:100%;text-align:center;text-align-last:center;font-size:20px;font-weight:850;line-height:1;
+  padding:8px 0;border-radius:11px;border:1.5px solid var(--line);background:#fff;color:var(--ink);
+  -webkit-appearance:none;appearance:none;font-family:inherit}
+.hjl select:focus{outline:none;border-color:var(--primary);background:#f8fbff}
+.abirow select.apkt2{text-align:center;text-align-last:center;font-size:19px;font-weight:850;
+  border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:6px 10px;
+  -webkit-appearance:none;appearance:none;font-family:inherit}
 .flag{display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:8px;
   background:#EDEEE8;color:var(--primary);margin-left:6px;vertical-align:middle}
 
@@ -292,6 +300,19 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
   <!-- ===== TAB: DATEN ===== -->
   <div class="tab hide" id="tab-daten">
     <div class="card">
+      <h2>Was kann AbiTool?</h2>
+      <div class="hint" style="margin-bottom:0">Dein persönlicher Begleiter fürs bayerische G9-Abitur – damit du jederzeit weißt, wo du stehst und gezielt das Richtige übst.</div>
+      <details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:var(--primary);font-weight:700;list-style:none">Was bringt es dir? (kurz erklärt)</summary>
+      <ul style="margin:8px 0 0;padding-left:20px;font-size:13.5px;line-height:1.6;color:var(--ink)">
+        <li><b>Noten & Schnitt im Blick:</b> Du trägst deine Leistungen ein, AbiTool berechnet die Halbjahresleistungen (Schulaufgabe : kleine = 1:1), deine Einbringung und deinen voraussichtlichen Abischnitt – nach den offiziellen bayerischen Regeln.</li>
+        <li><b>Was-wäre-wenn:</b> Spiel Abiturprüfungen und Noten durch und sieh sofort, wie sich dein Schnitt bewegt – und welche Note du wo noch brauchst.</li>
+        <li><b>Prüfungsplan:</b> Alle deine Schulaufgaben mit Termin und Stoff an einem Ort, immer im Blick, was als Nächstes dran ist.</li>
+        <li><b>Gezielt üben mit echten Aufgabentypen:</b> Zu jedem Fach die echten Aufgabenformen (nach LehrplanPLUS/ISB). Aus echtem Material – z. B. den ISB-Beispielaufgaben – werden passende Übungen, damit du die Aufgabenformen schon kennst, bevor sie in der Schulaufgabe drankommen.</li>
+        <li><b>Auf dich zugeschnitten:</b> Du scannst deine zurückbekommenen, korrigierten Schulaufgaben ein. AbiTool erkennt daraus deine <b>typischen Fehlerschwerpunkte</b> (z. B. Operator-Handling, Beleg- oder Materialbezug, Fachbegriffe, Argumentationsstruktur) und steuert die nächsten Übungen gezielt darauf zu – du arbeitest also genau an dem, was dir in den Prüfungen wirklich Punkte kostet, statt an dem, was du eh schon kannst.</li>
+        <li><b>Privat:</b> Alle Daten bleiben lokal auf deinem Gerät – keine Cloud, kein Konto.</li>
+      </ul></details>
+    </div>
+    <div class="card">
       <h2>So richtest du AbiTool ein</h2>
       <div class="hint" style="margin-bottom:8px">In fünf Schritten – bitte <b>in dieser Reihenfolge</b>, damit alles dem richtigen Fach zugeordnet wird. Alle Daten bleiben lokal auf diesem Gerät:</div>
       <ol style="margin:0;padding-left:20px;font-size:13.5px;line-height:1.55;color:var(--ink)">
@@ -464,7 +485,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v6.5 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v6.9 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -1070,11 +1091,17 @@ function loadAnton(){
 /* ===== Daten sichern/laden als lokale Datei (bleibt privat, nichts geht ins Netz) ===== */
 function exportData(){
   try{
+    state.lastBackup=Date.now();save();
     const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
     a.download='antons-abitool-daten.json';document.body.appendChild(a);a.click();a.remove();
-    toast('Daten gesichert');
+    toast('Daten gesichert');renderNextStrip();
   }catch(e){toast('Sichern fehlgeschlagen');}
+}
+/* Tage seit letzter Sicherung (null = noch nie) */
+function tageSeitBackup(){
+  if(!state.lastBackup)return null;
+  return Math.floor((Date.now()-state.lastBackup)/86400000);
 }
 (function(){const inp=document.getElementById('dataImport');if(!inp)return;
 inp.addEventListener('change',function(e){
@@ -1172,12 +1199,16 @@ function renderNextStrip(){
   if(needsSetup){
     el.innerHTML='';   /* Einrichten-Hinweis steht schon in der großen Willkommens-Karte – keine Dopplung */
     return;}
+  const t=tageSeitBackup();
+  const rem=(t===null||t>=7)
+    ? '<div class="nextstrip" style="background:linear-gradient(135deg,#fff0e9,#ffffff)"><span class="ic">💾</span><div class="tx"><b>'+(t===null?'Noch nie gesichert':'Seit '+t+' Tagen nicht gesichert')+'</b><small>Sichere deine Daten als Datei, damit nichts verloren geht</small></div><button class="btn sm cta" onclick="exportData()">Jetzt sichern</button></div>'
+    : '';
   const k=kommende();
   if(!k.length){
-    el.innerHTML='<div class="nextstrip"><span class="ic">📅</span><div class="tx"><b>Noch keine Prüfung eingetragen</b><small>Trag im Prüfungsplan deinen nächsten Termin ein</small></div><button class="btn sm cta" onclick="switchTab(\'plan\')">Eintragen</button></div>';
+    el.innerHTML=rem+'<div class="nextstrip"><span class="ic">📅</span><div class="tx"><b>Noch keine Prüfung eingetragen</b><small>Trag im Prüfungsplan deinen nächsten Termin ein</small></div><button class="btn sm cta" onclick="switchTab(\'plan\')">Eintragen</button></div>';
     return;}
   const x=k[0],f=fachById(x.p.fid),cfg=f?fachCfg(f):null;
-  el.innerHTML='<div class="nextstrip"><span class="ic">⏳</span><div class="tx"><b>'+esc(f?f.name:'?')+' · '+esc(artLabel(x.p))+'</b>'+
+  el.innerHTML=rem+'<div class="nextstrip"><span class="ic">⏳</span><div class="tx"><b>'+esc(f?f.name:'?')+' · '+esc(artLabel(x.p))+'</b>'+
     '<small>'+inWorten(tageBis(x.d))+' · '+fmtDat(x.d)+(x.p.scope?' · '+esc(x.p.scope):'')+'</small></div>'+
     ((cfg&&cfg.aktiv)?'<button class="btn sm cta" onclick="switchTab(\'loops\')">Pirsch</button>':'<button class="btn ghost sm cta" onclick="switchTab(\'plan\')">Plan</button>')+'</div>';
 }
@@ -2419,7 +2450,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v41';
+    const C='abiloop-v45';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
