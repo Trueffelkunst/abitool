@@ -298,12 +298,12 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
         <li><b>Fächer anlegen</b> – unten bei „Meine Fächer" auf <b>„Antons Profil"</b> tippen (oder Fächer einzeln wählen und mit „Abi"/„LF" markieren).</li>
         <li><b>Claude-Schlüssel eintragen</b> – unten bei „Claude als Motor". Nötig für die Übungen und um Noten aus Fotos auszulesen.</li>
         <li><b>Noten erfassen</b> – einzeln über <b>„Neue Note eintragen"</b> (jederzeit, wenn du eine Note bekommst) oder per Foto über <b>„Noten-Screenshots importieren"</b> (bei „Claude als Motor").</li>
-        <li><b>Klausurtermine</b> – im Reiter <b>„Prüfungsplan"</b> eintragen, oder hier einen Klausurplan-Screenshot importieren.</li>
+        <li><b>Klausurtermine</b> – im Reiter <b>„Prüfungsplan"</b> eintragen, oder hier einen Klausurplan als <b>Foto/Screenshot oder PDF</b> importieren.</li>
       </ol>
-      <div class="hint" style="margin:10px 0 4px">Optionale Foto-Importe (brauchst du nur, wenn du nicht manuell eintragen willst):</div>
+      <div class="hint" style="margin:10px 0 4px">Optionale Importe – <b>Foto/Screenshot oder PDF</b> (brauchst du nur, wenn du nicht manuell eintragen willst):</div>
       <div class="row-btns">
-        <button class="btn ghost sm" onclick="document.getElementById('impFaecher').click()">Fächerplan-Foto</button>
-        <button class="btn ghost sm" onclick="document.getElementById('impPlan').click()">Klausurplan-Foto</button>
+        <button class="btn ghost sm" onclick="document.getElementById('impFaecher').click()">Fächerplan (Foto/PDF)</button>
+        <button class="btn ghost sm" onclick="document.getElementById('impPlan').click()">Klausurplan (Foto/PDF)</button>
       </div>
       <input type="file" id="impFaecher" accept="image/*,application/pdf" multiple style="display:none">
       <input type="file" id="impPlan" accept="image/*,application/pdf" multiple style="display:none">
@@ -463,7 +463,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v5.8 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v6.0 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -2036,7 +2036,7 @@ inp.addEventListener('change',async function(e){
   const files=Array.from(e.target.files);e.target.value='';if(!files.length)return;
   const st=document.getElementById('stPlan');if(setupNoKey(st))return;
   try{
-    const sys='Du liest einen Schulaufgaben-/Klausurplan eines bayerischen Oberstufenschülers. Extrahiere pro Eintrag: Fach, Ausbildungsabschnitt ("12/1","12/2","13/1" oder "13/2"; ordne anhand des Datums grob zu, falls nicht angegeben), Datum im Format YYYY-MM-DD, ob mündlich (true/false), und Stoff/Thema falls angegeben. Antworte NUR mit JSON: {"termine":[{"fach":"Deutsch","abschnitt":"12/2","datum":"2026-06-17","muendlich":false,"scope":"Drama"}]}'+JSONRULE;
+    const sys='Du liest einen bayerischen Schulaufgaben-/Klausurplan der Oberstufe (Q12/Q13). Sehr häufig ist es ein WOCHEN-RASTER: die linke Spalte nennt einen Wochenbereich (z. B. "17.11. - 21.11.25"), die Kopfzeile die Wochentage (Montag bis Freitag), und jede Zelle enthält Fachkürzel. Leite das Datum aus Wochenbereich + Wochentagsspalte ab (Montag = erster Tag des Bereichs, Dienstag = zweiter Tag usw.) und gib es als YYYY-MM-DD aus. Eine Zelle kann MEHRERE Fächer enthalten (durch Komma getrennt) – erzeuge dann je Fach einen eigenen Eintrag mit demselben Datum. Zahlen hinter einem Kürzel sind KURSGRUPPEN (z. B. "Ph1+2" = Physik-Kurse 1 und 2, "B2+3" = Biologie-Kurse 2 und 3) – diese Zahlen NICHT in das Feld fach schreiben, höchstens in scope vermerken. Löse die Kürzel zu vollen Fachnamen auf: D=Deutsch, M=Mathematik, E=Englisch, F=Französisch, L=Latein, Ph=Physik, B=Biologie, C=Chemie, Geo=Geographie, WR=Wirtschaft und Recht, G=Geschichte, PuG=Politik und Gesellschaft, K=Katholische Religionslehre, Ev=Evangelische Religionslehre, Eth=Ethik, Ku=Kunst, Mu=Musik, Sp=Sport, Sps=Sport, LF=Leistungsfach. Ordne den Ausbildungsabschnitt anhand des Datums zu ("13/1" bis zum Notenschluss/Jahreswechsel, danach "13/2"; analog "12/1" und "12/2"). mündlich=true NUR wenn ausdrücklich "(mündlich)" dabeisteht, sonst false. IGNORIERE alle Nicht-Prüfungs-Einträge vollständig, also: Ferien, Feiertage, Notenschluss, Zeugnisausgabe/AA-Zeugnis, Probentage, SMV-Seminar, StuBo, Abgabe der Seminararbeit, schriftliches Abitur, Kolloquium, mündliche Zusatzprüfungen, Entlassung. Antworte NUR mit JSON: {"termine":[{"fach":"Physik","abschnitt":"13/1","datum":"2025-11-17","muendlich":false,"scope":"Kurse 1+2"}]}'+JSONRULE;
     const j=await impRun(files,st,sys,8000);window._impP=(j.termine||[]);
     if(!window._impP.length){st.innerHTML='<div class="result-line warn">Keine Termine erkannt – schärferes Bild probieren.</div>';return;}
     st.innerHTML='<div class="result-line warn">Erkannt – bitte prüfen, dann übernehmen:</div>'+
@@ -2396,7 +2396,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v34';
+    const C='abiloop-v36';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
