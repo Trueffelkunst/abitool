@@ -245,18 +245,17 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
     <button data-tab="plan">Prüfungsplan</button>
     <button data-tab="daten">Meine Daten</button>
     <button data-tab="ergebnis">Ergebnis</button>
-    <button data-tab="wenndann">Was-wäre-wenn</button>
-    <button data-tab="ziel">Zielnote</button>
-    <button data-tab="lohnt">Lohnt sich Üben?</button>
   </div>
 
   <!-- ===== TAB: HEUTE (Metaebene) ===== -->
   <div class="tab" id="tab-heute">
-    <div class="card" id="nextExamCard"></div>
     <div class="card">
-      <h2>Demnächst</h2>
-      <div class="hint">Deine nächsten Prüfungen über alle Fächer – von Schulaufgabe zu Schulaufgabe.</div>
-      <div id="upcomingList"></div>
+      <div id="nextExamCard"></div>
+      <div id="upcomingWrap" style="margin-top:18px;border-top:1px solid var(--line);padding-top:14px">
+        <h2 style="font-size:15px;margin:0 0 4px">Demnächst</h2>
+        <div class="hint" style="margin-bottom:8px">Deine nächsten Prüfungen über alle Fächer – von Schulaufgabe zu Schulaufgabe.</div>
+        <div id="upcomingList"></div>
+      </div>
     </div>
   </div>
 
@@ -274,17 +273,6 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       <div class="row-btns" style="margin-top:10px"><button class="btn" onclick="karikStart()">Karikatur-Aufgabe erzeugen</button></div>
       <div id="karikBox" style="margin-top:12px"></div>
       <details style="margin-top:12px"><summary style="font-weight:700;color:var(--primary);cursor:pointer">Geprüfte Karikatur-Quellen zum Aussuchen</summary><div id="karikQuellen" style="margin-top:8px"></div></details>
-    </div>
-    <div class="card" id="vorschauCard">
-      <h2>Fach-Vorschau (für Lehrkräfte – zum Prüfen)</h2>
-      <div class="hint">Jedes freigeschaltete Fach ansehen und eine Beispielaufgabe erzeugen – ohne es in Antons Profil einzutragen. Gedacht zum fachlichen Gegenchecken, nicht für den Schüleralltag.</div>
-      <div class="row-btns" style="gap:8px;flex-wrap:wrap;margin-top:4px">
-        <select id="vorschauFach" onchange="renderVorschau()" style="flex:1;min-width:140px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"></select>
-        <select id="vorschauTyp" style="flex:1;min-width:140px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"></select>
-      </div>
-      <div class="row-btns" style="margin-top:10px"><button class="btn ghost" onclick="vorschauStart()">Beispielaufgabe erzeugen</button></div>
-      <div id="vorschauInfo" class="hint" style="margin-top:8px"></div>
-      <div id="vorschauBox" style="margin-top:12px"></div>
     </div>
   </div>
 
@@ -304,18 +292,22 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
   <!-- ===== TAB: DATEN ===== -->
   <div class="tab hide" id="tab-daten">
     <div class="card">
-      <h2>Schnell einrichten – per Foto/Screenshot</h2>
-      <div class="hint">Lade Bilder hoch, Claude füllt automatisch aus (du bestätigst jeweils). Reihenfolge am besten 1 → 2 → 3. Voraussetzung: „Claude als Motor" (weiter unten) ist eingerichtet. Bilder werden nur zur Analyse gesendet, nicht gespeichert.</div>
+      <h2>So richtest du AbiTool ein</h2>
+      <div class="hint" style="margin-bottom:8px">In vier Schritten – alle Daten bleiben lokal auf diesem Gerät:</div>
+      <ol style="margin:0;padding-left:20px;font-size:13.5px;line-height:1.55;color:var(--ink)">
+        <li><b>Fächer anlegen</b> – unten bei „Meine Fächer" auf <b>„Antons Profil"</b> tippen (oder Fächer einzeln wählen und mit „Abi"/„LF" markieren).</li>
+        <li><b>Claude-Schlüssel eintragen</b> – unten bei „Claude als Motor". Nötig für die Übungen und um Noten aus Fotos auszulesen.</li>
+        <li><b>Noten erfassen</b> – einzeln über <b>„Neue Note eintragen"</b> (jederzeit, wenn er eine Note zurückbekommt) oder per Foto über <b>„Noten-Screenshots importieren"</b> (bei „Claude als Motor").</li>
+        <li><b>Klausurtermine</b> – im Reiter <b>„Prüfungsplan"</b> eintragen, oder hier einen Klausurplan-Screenshot importieren.</li>
+      </ol>
+      <div class="hint" style="margin:10px 0 4px">Optionale Foto-Importe (brauchst du nur, wenn du nicht manuell eintragen willst):</div>
       <div class="row-btns">
-        <button class="btn ghost sm" onclick="document.getElementById('impFaecher').click()">1 · Fächerplaner</button>
-        <button class="btn ghost sm" onclick="document.getElementById('impNoten').click()">2 · Notenübersicht</button>
-        <button class="btn ghost sm" onclick="document.getElementById('impPlan').click()">3 · Klausurplan</button>
+        <button class="btn ghost sm" onclick="document.getElementById('impFaecher').click()">Fächerplan-Foto</button>
+        <button class="btn ghost sm" onclick="document.getElementById('impPlan').click()">Klausurplan-Foto</button>
       </div>
       <input type="file" id="impFaecher" accept="image/*" multiple style="display:none">
-      <input type="file" id="impNoten" accept="image/*" multiple style="display:none">
       <input type="file" id="impPlan" accept="image/*" multiple style="display:none">
       <div id="stFaecher" style="margin-top:8px"></div>
-      <div id="stNoten" style="margin-top:8px"></div>
       <div id="stPlan" style="margin-top:8px"></div>
     </div>
 
@@ -375,8 +367,9 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
         <input class="kiinput" type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off"></div>
       <div class="row-btns">
         <button class="btn ghost sm" onclick="testKey()">Verbindung testen</button>
-        <button class="btn ghost sm" onclick="document.getElementById('shotInput').click()">Punkte aus Screenshots übernehmen</button>
+        <button class="btn ghost sm" onclick="document.getElementById('shotInput').click()">Noten-Screenshots importieren</button>
       </div>
+      <div class="hint" style="margin-top:8px">„Noten-Screenshots importieren": Fotos der Notenübersicht hochladen – AbiTool liest Einzelnoten aus, berechnet die Halbjahresleistungen und ergänzt sie, ohne vorhandene Noten zu überschreiben.</div>
       <input type="file" id="shotInput" accept="image/*" multiple style="display:none">
       <div id="kiStatus" style="margin-top:10px"></div>
     </div>
@@ -387,6 +380,18 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       <div class="row-btns"><button class="btn ghost sm" onclick="document.getElementById('impArchiv').click()">Aufgabenmaterial hochladen</button></div>
       <input type="file" id="impArchiv" accept="image/*" multiple style="display:none">
       <div id="stArchiv" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card" id="vorschauCard">
+      <h2>Fach-Vorschau (für Lehrkräfte – zum Prüfen)</h2>
+      <div class="hint">Jedes freigeschaltete Fach ansehen und eine Beispielaufgabe erzeugen – ohne es in Antons Profil einzutragen. Gedacht zum fachlichen Gegenchecken, nicht für den Schüleralltag.</div>
+      <div class="row-btns" style="gap:8px;flex-wrap:wrap;margin-top:4px">
+        <select id="vorschauFach" onchange="renderVorschau()" style="flex:1;min-width:140px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"></select>
+        <select id="vorschauTyp" style="flex:1;min-width:140px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"></select>
+      </div>
+      <div class="row-btns" style="margin-top:10px"><button class="btn ghost" onclick="vorschauStart()">Beispielaufgabe erzeugen</button></div>
+      <div id="vorschauInfo" class="hint" style="margin-top:8px"></div>
+      <div id="vorschauBox" style="margin-top:12px"></div>
     </div>
   </div>
 
@@ -424,10 +429,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       <div class="hint">Jede Halbjahresleistung wird geprüft: zählt sie in die besten 40, oder wird sie gestrichen? Bei gestrichenen, an denen sich auch mit Verbesserung nichts ändert, musst du dir keine Mühe mehr geben.</div>
       <div id="streichBox" style="margin-top:10px">—</div>
     </div>
-  </div>
 
-  <!-- ===== TAB: WAS-WÄRE-WENN ===== -->
-  <div class="tab hide" id="tab-wenndann">
     <div class="card">
       <h2>Was-wäre-wenn</h2>
       <div class="hint">Spiel eine kommende Abiturprüfung durch und sieh sofort, wie sich dein Schnitt bewegt.</div>
@@ -441,10 +443,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       </div>
       <div class="result-line" id="wfResult">Wähle eine Prüfung.</div>
     </div>
-  </div>
 
-  <!-- ===== TAB: ZIELNOTE ===== -->
-  <div class="tab hide" id="tab-ziel">
     <div class="card">
       <h2>Zielnoten-Rückrechnung</h2>
       <div class="hint">Was brauchst du in den noch offenen Abiturprüfungen im Schnitt, um deine Wunschnote zu erreichen?</div>
@@ -452,10 +451,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       <input type="range" id="zielRange" min="10" max="40" value="20" step="1">
       <div class="result-line" id="zielResult" style="margin-top:14px">—</div>
     </div>
-  </div>
 
-  <!-- ===== TAB: LOHNT SICH ÜBEN ===== -->
-  <div class="tab hide" id="tab-lohnt">
     <div class="card">
       <h2>Wo sich Üben (nicht) lohnt</h2>
       <div class="hint">Clever lernen statt viel lernen: Wo bringt 1 Punkt mehr noch eine bessere Note – und wo ändert es praktisch nichts?</div>
@@ -465,7 +461,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v4.9 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v5.3 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -580,6 +576,7 @@ const FAECHER=[['Deutsch','d'],['Englisch','fs'],['Mathematik','m'],
   ['Geschichte','other'],['Sozialkunde / Politik u. Gesellschaft','other'],['Geographie','other'],['Wirtschaft und Recht','other'],
   ['Katholische Religionslehre','other'],['Evangelische Religionslehre','other'],['Ethik','other'],
   ['Kunst','other'],['Musik','other'],['Sport','sport'],['Psychologie','other'],
+  ['Politik und Gesellschaft','other'],['Englisch Konversation','zusatz'],
   ['Vertiefungskurs Deutsch','vk'],['Vertiefungskurs Mathematik','vk']];
 function inFaecher(n){return FAECHER.some(s=>s[0]===n);}
 function fachOptions(sel){
@@ -1151,6 +1148,24 @@ const RASTER={
 };
 /* typen[].modus: 's' = schriftlich · 'm' = mündlich */
 const KATALOG={
+  englischkonv:{label:'Englisch Konversation',aktiv:true,match:['konversation'],raster:RASTER.sprache,
+    fach:'Englisch-Konversationskurs (Profil-/Wahlkurs der bayerischen Oberstufe; Schwerpunkt Sprechfertigkeit und Diskussion, Niveau B2+)',
+    hinweise:'Konversationskurs mit Schwerpunkt mündliche Sprachkompetenz: dialogisches und monologisches Sprechen, Diskussion/Debatte, Argumentieren, Wortschatz/Register. Leistungsnachweise meist mündlich (Kurzpräsentation, Diskussion), ergänzt um schriftliche Stellungnahme oder Sprachmittlung. Operatoren nach ISB je Anforderungsbereich (outline/summarize · analyse/explain · comment/discuss/evaluate).',
+    typen:[
+      {id:'mono',n:'Monologisches Sprechen / Kurzpräsentation',modus:'m'},
+      {id:'dialog',n:'Dialogisches Sprechen / Diskussion',modus:'m'},
+      {id:'debate',n:'Debatte / Argumentieren (pro & kontra)',modus:'m'},
+      {id:'stellung',n:'Schriftliche Stellungnahme (comment)',modus:'s'},
+      {id:'mediation',n:'Sprachmittlung (mediation)',modus:'s'},
+      {id:'hv',n:'Hör-/Hörsehverstehen',modus:'s'}],
+    themen:[
+      {id:'currentaffairs',n:'Current affairs & news'},
+      {id:'society',n:'Society & everyday life'},
+      {id:'media',n:'Media & social media'},
+      {id:'science',n:'Science, technology & environment'},
+      {id:'culture',n:'Culture, film & literature'},
+      {id:'work',n:'Education & world of work'}],
+    quelle:'Schulinterner Profil-/Wahlkurs (kein zentraler LehrplanPLUS-Fachlehrplan); orientiert an den Sprechkompetenzen Englisch B2+ (ISB).'},
   englisch:{label:'Englisch',aktiv:true,match:['engl'],raster:RASTER.sprache,
     fach:'Englisch (G9, Profil- und Leistungsstufe, Niveau B2+; Abitur in Bayern ab 2026)',
     hinweise:'Aufgaben entstehen durch Transformation typischer ISB-/IQB-/Abiturformate (kein untypisches freies Erfinden). Operatoren nach ISB je Anforderungsbereich: AFB I (outline, summarize, describe), AFB II (analyse, examine, explain, compare, characterise), AFB III (discuss, comment, evaluate, assess, justify, write/design). Schriftliche SA: Hörverstehen 20 %, Schreiben 55 %, Sprachmittlung 25 %. Mündliche SA: zweiteilig (monologische Kurzpräsentation + dialogische Diskussion), Inhalt : Sprache = 40 : 60.',
@@ -1436,7 +1451,7 @@ function fachKey(f){const n=((f&&f.name)||'').toLowerCase();
   for(const key in KATALOG){if(KATALOG[key].match.some(m=>n.indexOf(m)>-1))return key;}
   return null;}
 function loopKey(f){return fachKey(f);}            /* Alias (Abwärtskompatibilität) */
-function fachCfg(f){if(f&&f.kategorie==='wsem')return null;const key=fachKey(f);return key?KATALOG[key]:null;}
+function fachCfg(f){if(f&&(f.kategorie==='wsem'||f.kategorie==='vk'))return null;const key=fachKey(f);return key?KATALOG[key]:null;}
 
 /* ===== Prüfungsplan: SA-Slots automatisch aus der Fächerwahl ===== */
 const ABS=['12/1','12/2','13/1','13/2'];
@@ -1626,9 +1641,10 @@ function renderLoops(){
         '<div class="hint" style="margin:4px 0 0;font-size:11.5px">Tipp: Heft-Einträge fotografieren – dann passt die Übung genau auf euren durchgenommenen Stoff.</div>'+
         '<div class="row-btns" style="margin-top:8px"><button class="btn sm" onclick="uebenRadar(\''+f.id+'\')">Was könnte drankommen?</button><button class="btn ghost sm" onclick="uebenFrei(\''+f.id+'\')">Direkt dafür üben</button></div></div>';
       /* SEKUNDÄR: gezielt nach Aufgabentyp (Abdeckung) + Pirsch */
-      html+='<div style="display:flex;align-items:center;gap:14px;margin:16px 0 8px">'+
+      html+='<details style="margin-top:14px"><summary style="font-weight:700;color:var(--primary);cursor:pointer">Gezielt nach Aufgabentyp üben · Strecke '+done+'/'+typen.length+(offen.length?'':' 🎀')+'</summary>'+
+        '<div style="display:flex;align-items:center;gap:14px;margin:10px 0 8px">'+
         ring(typen.length?Math.round(done/typen.length*100):0, done+'/'+typen.length, 'Strecke')+
-        '<div class="hint" style="margin:0"><b style="color:var(--ink)">Oder gezielt nach Aufgabentyp</b>'+(modusLbl?' ('+modusLbl+' SA)':'')+': '+done+' von '+typen.length+' erlegt'+
+        '<div class="hint" style="margin:0"><b style="color:var(--ink)">Aufgabentypen</b>'+(modusLbl?' ('+modusLbl+' SA)':'')+': '+done+' von '+typen.length+' erlegt'+
         (offen.length?' – frische Fährte: <b>'+esc(offen[0].n)+'</b>':' – alles erlegt, stark! 🎀')+'</div></div>'+
         '<div class="cov">'+typen.map(t=>'<button class="'+(cov[t.id]?'done':'')+'" onclick="uebenTyp(\''+f.id+'\',\''+t.id+'\')" title="Übung zu diesem Aufgabentyp">'+(cov[t.id]?'✓ ':'')+esc(t.n)+'</button>').join('')+'</div>'+'<div class="hint" style="margin:6px 0 0;font-size:12px">Tippe einen Aufgabentyp, um gezielt dafür zu üben – das Häkchen kommt nach „Bearbeitet – abhaken".</div>'+
         ((cfg.cartoons&&cfg.cartoons.length)?'<div class="hint" style="margin-top:14px"><b style="color:var(--ink)">Karikatur-Antizipation</b> – diese Motive kommen zu deinem Fach erfahrungsgemäß dran (echte Karikatur selbst beilegen, Urheberrecht):</div><div class="tchips">'+cfg.cartoons.map(c=>'<span class="tchip" style="cursor:default;background:#F2EAD5;color:#836A38;border-color:#E6D9B6"><b>'+esc(c.t)+':</b> '+esc(c.m)+'</span>').join('')+'</div>':'')+
@@ -1637,7 +1653,7 @@ function renderLoops(){
         (modus==='m'
           ?'<button class="btn ghost" onclick="muendlichStart(\''+f.id+'\')">Mündliche Pirsch (Simulator)</button><button class="btn ghost" onclick="uebenStart(\''+f.id+'\')">Schriftliche Pirsch</button>'
           :'<button class="btn ghost" onclick="uebenStart(\''+f.id+'\')">Auf die Pirsch</button>'+(typenAll.some(t=>t.modus==='m')?'<button class="btn ghost" onclick="muendlichStart(\''+f.id+'\')">Mündliche Pirsch</button>':''))+
-        '</div>';
+        '</div></details>';
       /* SCHICHT: Individualisierung über die eigenen Fehler */
       html+='<div class="hint" style="margin-top:14px">'+
         (mu.length?'Deine Übungen zielen gerade zusätzlich auf: '+mu.map(m=>'<span class="chip">'+esc(m.label)+'</span>').join(' ')
@@ -1800,7 +1816,7 @@ function parseJson(t){
   const j=m[0];
   try{return JSON.parse(j);}catch(e){}
   try{return JSON.parse(j.replace(/,\s*([}\]])/g,'$1'));}catch(e){}
-  throw new Error('Antwort war nicht im richtigen Format – tippe bitte „Andere Aufgabe".');
+  throw new Error('Antwort war nicht im richtigen Format – bitte erneut versuchen (bei Importen: schärferes oder kleineres Bild).');
 }
 function fileToB64(f){return new Promise(function(res,rej){const r=new FileReader();
   r.onload=function(){res({media:f.type||'image/jpeg',data:String(r.result).split(',')[1]});};
@@ -1886,7 +1902,7 @@ inp.addEventListener('change',async function(e){
   const st=document.getElementById('stFaecher');if(setupNoKey(st))return;
   try{
     const sys='Du liest einen Screenshot/Foto des bayerischen Oberstufen-Fächerplaners (G9). Extrahiere die belegten Fächer des Schülers. Markiere das Leistungsfach (istLF) und die fünf Abiturprüfungsfächer (istAbiturfach), soweit erkennbar. Kategorie je Fach: "d"=Deutsch, "m"=Mathematik, "fs"=einzige fortgeführte Fremdsprache, "nw"=einzige Naturwissenschaft, "pruefung"=sonstiges Abiturfach, "other"=sonstiges. Antworte NUR mit JSON: {"faecher":[{"name":"Englisch","kategorie":"fs","istAbiturfach":true,"istLF":true}]}'+JSONRULE;
-    const j=await impRun(files,st,sys,1800);window._impF=(j.faecher||[]);
+    const j=await impRun(files,st,sys,4000);window._impF=(j.faecher||[]);
     if(!window._impF.length){st.innerHTML='<div class="result-line warn">Keine Fächer erkannt – schärferes Bild probieren.</div>';return;}
     st.innerHTML='<div class="result-line warn">Erkannt – bitte prüfen, dann übernehmen (ersetzt deine bisherige Fächerliste):</div>'+
       window._impF.map(f=>'<div style="font-size:13.5px;font-weight:700;padding:5px 0;border-bottom:1px solid var(--line)">'+esc(f.name||'?')+(f.istLF?' · LF':'')+(f.istAbiturfach?' · Abi':'')+'</div>').join('')+
@@ -1940,7 +1956,7 @@ inp.addEventListener('change',async function(e){
   const st=document.getElementById('stPlan');if(setupNoKey(st))return;
   try{
     const sys='Du liest einen Schulaufgaben-/Klausurplan eines bayerischen Oberstufenschülers. Extrahiere pro Eintrag: Fach, Ausbildungsabschnitt ("12/1","12/2","13/1" oder "13/2"; ordne anhand des Datums grob zu, falls nicht angegeben), Datum im Format YYYY-MM-DD, ob mündlich (true/false), und Stoff/Thema falls angegeben. Antworte NUR mit JSON: {"termine":[{"fach":"Deutsch","abschnitt":"12/2","datum":"2026-06-17","muendlich":false,"scope":"Drama"}]}'+JSONRULE;
-    const j=await impRun(files,st,sys,2000);window._impP=(j.termine||[]);
+    const j=await impRun(files,st,sys,8000);window._impP=(j.termine||[]);
     if(!window._impP.length){st.innerHTML='<div class="result-line warn">Keine Termine erkannt – schärferes Bild probieren.</div>';return;}
     st.innerHTML='<div class="result-line warn">Erkannt – bitte prüfen, dann übernehmen:</div>'+
       window._impP.map(t=>'<div style="font-size:13.5px;font-weight:700;padding:5px 0;border-bottom:1px solid var(--line)">'+esc(t.fach||'?')+' · '+esc(t.abschnitt||'?')+' · '+esc(t.datum||'?')+(t.muendlich?' · mündlich':'')+(t.scope?' · '+esc(t.scope):'')+'</div>').join('')+
@@ -2299,7 +2315,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v25';
+    const C='abiloop-v29';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
