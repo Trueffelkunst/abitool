@@ -485,7 +485,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v6.9 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v7.0 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -523,6 +523,7 @@ const Engine = (function(){
     let pflicht=[],optBest=[],rest=[],poolFS=[],poolNW=[];
     faecher.forEach(f=>{
       let hjl=[];['12/1','12/2','13/1','13/2'].forEach((ab,i)=>{
+        if(i>=belegtOf(f))return;   /* nicht belegte Halbjahre zählen nicht */
         let p=f.hjl&&f.hjl[i];if(p===''||p==null||isNaN(p))return;
         hjl.push({fid:f.id,fach:f.name,abschnitt:ab,punkte:+p});});
       if(!hjl.length)return;
@@ -695,24 +696,31 @@ function computeHJL(f,i,nt){
   return meanK!=null?rundeP(meanK):'';      /* 13/2 ohne Schulaufgabe */
 }
 function notenVorhanden(nt){return !!(nt&&((nt.sa!==''&&nt.sa!=null&&!isNaN(nt.sa))||((nt.klein||[]).some(v=>v!==''&&v!=null&&!isNaN(v)))));}
-/* Aufklappbare Einzelnoten-Übersicht je Fach (große + kleine Leistungsnachweise) */
-function einzelHtml(f){
+/* Aufklappbare Einzelnoten-Übersicht je Fach (große + kleine Leistungsnachweise);
+   bei kleinen LN ein editierbares Feld für die Art der Leistung (Referat, Ausfrage …) */
+function einzelHtml(f,fi){
   const noten=Array.isArray(f.noten)?f.noten:[];
   if(!noten.some(nt=>notenVorhanden(nt)))
     return '<div class="hint" style="margin:6px 0 0">Noch keine Einzelnoten erfasst – über „Neue Note eintragen" hinzufügen.</div>';
   let h='';
-  ['12/1','12/2','13/1','13/2'].forEach(function(ab,i){
-    const nt=noten[i];if(!notenVorhanden(nt))return;
-    const kl=(nt.klein||[]).map(function(v,j){
-      if(v===''||v==null||isNaN(v))return '';
-      const nz=(nt.kleinNotiz&&nt.kleinNotiz[j])?' ('+esc(String(nt.kleinNotiz[j]))+')':'';
-      return esc(String(v))+nz;}).filter(Boolean);
-    const klStr=kl.length?kl.join(', '):'–';
-    const saTxt=hatSchulaufgabe(f,i)
+  ['12/1','12/2','13/1','13/2'].forEach(function(ab,ai){
+    if(ai>=belegtOf(f))return;
+    const nt=noten[ai];if(!notenVorhanden(nt))return;
+    const saTxt=hatSchulaufgabe(f,ai)
       ?('Schulaufgabe '+((nt.sa===''||nt.sa==null||isNaN(nt.sa))?'–':esc(String(nt.sa))))
       :'keine Schulaufgabe';
-    const hjl=computeHJL(f,i,nt);
-    h+='<div style="font-size:12px;color:var(--muted);padding:4px 0;border-top:1px solid var(--line)"><b style="color:var(--ink)">'+ab+'</b> · '+saTxt+' · kleine: '+klStr+' → HJL <b style="color:var(--ink)">'+(hjl===''?'–':hjl)+'</b></div>';
+    const hjl=computeHJL(f,ai,nt);
+    h+='<div style="padding:6px 0;border-top:1px solid var(--line)">';
+    h+='<div style="font-size:12.5px;font-weight:700;color:var(--ink)">'+ab+' · '+saTxt+' → HJL '+(hjl===''?'–':hjl)+'</div>';
+    (nt.klein||[]).forEach(function(v,j){
+      if(v===''||v==null||isNaN(v))return;
+      const notiz=(nt.kleinNotiz&&nt.kleinNotiz[j]!=null)?esc(String(nt.kleinNotiz[j])):'';
+      h+='<div style="display:flex;align-items:center;gap:8px;margin-top:5px">'+
+         '<span style="font-size:15px;font-weight:800;color:var(--ink);min-width:24px;text-align:center">'+esc(String(v))+'</span>'+
+         '<input type="text" class="kln" data-i="'+fi+'" data-ai="'+ai+'" data-j="'+j+'" value="'+notiz+'" placeholder="Art der Leistung (z. B. Referat, Ausfrage, Test)" style="flex:1;min-width:0;font-size:12.5px;border:none;background:#f6f6fc;border-radius:9px;padding:7px 9px;color:var(--ink)">'+
+         '</div>';
+    });
+    h+='</div>';
   });
   return '<div style="margin-top:4px">'+h+'</div>';
 }
@@ -765,10 +773,12 @@ function renderSubj(){
       ${isCustom?`<input class="name" value="${esc(f.name)}" data-i="${i}" placeholder="Fachname eingeben" style="width:100%;margin:2px 0 8px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:9px 11px;border-radius:11px;color:var(--ink)">`:''}
       <div style="margin:-4px 0 8px 2px">${flag}</div>
       <div class="hjl-row">
-        ${['12/1','12/2','13/1','13/2'].map((ab,j)=>`<label class="hjl"><span>${ab}</span>
+        ${['12/1','12/2','13/1','13/2'].slice(0,belegtOf(f)).map((ab,j)=>`<label class="hjl"><span>${ab}</span>
           <select data-i="${i}" data-j="${j}">${punkteOpts(f.hjl[j])}</select></label>`).join('')}
       </div>
-      <details class="einzel" style="margin:2px 0 4px"><summary style="cursor:pointer;font-size:12.5px;color:var(--primary);font-weight:700;list-style:none">Einzelnoten anzeigen</summary>${einzelHtml(f)}</details>
+      ${(!(f.istAbiturfach||f.istLF||f.kategorie==='d'||f.kategorie==='m'))?`<label style="display:flex;align-items:center;gap:6px;margin:6px 0 2px 2px;font-size:11.5px;color:var(--muted);font-weight:700">belegte Halbjahre:
+        <select class="belegt" data-i="${i}" style="font-size:12px;font-weight:700;border:none;background:#EDEEE8;color:var(--primary);padding:5px 8px;border-radius:9px;-webkit-appearance:none;appearance:none"><option value="4"${belegtOf(f)===4?' selected':''}>4 (alle)</option><option value="3"${belegtOf(f)===3?' selected':''}>3</option><option value="2"${belegtOf(f)===2?' selected':''}>2</option></select></label>`:''}
+      <details class="einzel" style="margin:2px 0 4px"><summary style="cursor:pointer;font-size:12.5px;color:var(--primary);font-weight:700;list-style:none">Einzelnoten anzeigen</summary>${einzelHtml(f,i)}</details>
       ${f.istAbiturfach?`<div class="abirow"><span>Abiturprüfung (×4)</span><select class="apkt2" data-i="${i}">${punkteOpts(f.abiErgebnis)}</select></div>`:''}`;
     c.appendChild(d);
   });
@@ -794,6 +804,14 @@ function renderSubj(){
     state.faecher[+e.target.dataset.i].abiErgebnis=e.target.value;save();recompute();}));
   c.querySelectorAll('.hjl select').forEach(s=>s.addEventListener('change',e=>{
     state.faecher[+e.target.dataset.i].hjl[+e.target.dataset.j]=e.target.value;save();recompute();}));
+  c.querySelectorAll('select.belegt').forEach(s=>s.addEventListener('change',e=>{
+    state.faecher[+e.target.dataset.i].belegt=+e.target.value;save();renderAll();}));
+  c.querySelectorAll('input.kln').forEach(inp=>inp.addEventListener('input',e=>{
+    const i=+e.target.dataset.i,ai=+e.target.dataset.ai,j=+e.target.dataset.j;
+    const f=state.faecher[i];if(!f||!Array.isArray(f.noten)||!f.noten[ai])return;
+    if(!Array.isArray(f.noten[ai].kleinNotiz))f.noten[ai].kleinNotiz=[];
+    while(f.noten[ai].kleinNotiz.length<=j)f.noten[ai].kleinNotiz.push('');
+    f.noten[ai].kleinNotiz[j]=e.target.value;save();}));
   c.querySelectorAll('.del').forEach(b=>b.addEventListener('click',e=>{
     state.faecher.splice(+e.target.dataset.i,1);save();renderAll();}));
 }
@@ -864,8 +882,9 @@ function recompute(){
     const avgOf=hjl=>{const v=(hjl||[]).filter(x=>x!==''&&x!=null&&!isNaN(x)).map(Number);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;};
     /* Jedes Fach auf 4 Halbjahre bei seinem aktuellen Schnitt hochrechnen … */
     const full=(state.faecher||[]).map(f=>{const m=avgOf(f.hjl);if(m==null)return null;
-      return {id:f.id,name:f.name,kategorie:f.kategorie,istAbiturfach:f.istAbiturfach,istLF:f.istLF,
-        hjl:(f.hjl||['','','','']).map(v=>(v===''||v==null||isNaN(v))?m:Number(v))};}).filter(Boolean);
+      const nb=belegtOf(f);
+      return {id:f.id,name:f.name,kategorie:f.kategorie,istAbiturfach:f.istAbiturfach,istLF:f.istLF,belegt:f.belegt,
+        hjl:(f.hjl||['','','','']).map((v,i)=>(i>=nb)?'':((v===''||v==null||isNaN(v))?m:Number(v)))};}).filter(Boolean);
     if(!full.length)return;
     /* … dann die besten 40 wählen (Streichen wird berücksichtigt) */
     const bI=Engine.waehleBlockI(full);if(!bI.anzahl)return;
@@ -1589,7 +1608,13 @@ function fachCfg(f){if(f&&(f.kategorie==='wsem'||f.kategorie==='vk'))return null
 
 /* ===== Prüfungsplan: SA-Slots automatisch aus der Fächerwahl ===== */
 const ABS=['12/1','12/2','13/1','13/2'];
-function saAbschnitte(f){return (f.kategorie==='d'||f.kategorie==='m'||f.istLF)?ABS:ABS.slice(0,3);}
+/* Wie viele Halbjahre wird ein Fach belegt? D/M/LF/Abiturfach immer 4; sonst frei wählbar (Standard 4). */
+function belegtOf(f){
+  if(!f)return 4;
+  if(f.istAbiturfach||f.istLF||f.kategorie==='d'||f.kategorie==='m'||f.kategorie==='wsem')return 4;
+  const b=+f.belegt;return (b===2||b===3)?b:4;
+}
+function saAbschnitte(f){const base=(f.kategorie==='d'||f.kategorie==='m'||f.istLF)?ABS:ABS.slice(0,3);return base.slice(0,belegtOf(f));}
 function syncPlan(){
   const want=[];
   state.faecher.forEach(f=>{if(f.kategorie==='wsem')return;saAbschnitte(f).forEach(ab=>want.push(f.id+'|'+ab));});
@@ -2450,7 +2475,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v45';
+    const C='abiloop-v46';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
