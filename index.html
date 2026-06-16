@@ -293,12 +293,13 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
   <div class="tab hide" id="tab-daten">
     <div class="card">
       <h2>So richtest du AbiTool ein</h2>
-      <div class="hint" style="margin-bottom:8px">In vier Schritten – alle Daten bleiben lokal auf diesem Gerät:</div>
+      <div class="hint" style="margin-bottom:8px">In fünf Schritten – bitte <b>in dieser Reihenfolge</b>, damit alles dem richtigen Fach zugeordnet wird. Alle Daten bleiben lokal auf diesem Gerät:</div>
       <ol style="margin:0;padding-left:20px;font-size:13.5px;line-height:1.55;color:var(--ink)">
-        <li><b>Fächer anlegen</b> – unten bei „Meine Fächer" auf <b>„Antons Profil"</b> tippen (oder Fächer einzeln wählen und mit „Abi"/„LF" markieren).</li>
-        <li><b>Claude-Schlüssel eintragen</b> – unten bei „Claude als Motor". Nötig für die Übungen und um Noten aus Fotos auszulesen.</li>
-        <li><b>Noten erfassen</b> – einzeln über <b>„Neue Note eintragen"</b> (jederzeit, wenn du eine Note bekommst) oder per Foto über <b>„Noten-Screenshots importieren"</b> (bei „Claude als Motor").</li>
-        <li><b>Klausurtermine</b> – im Reiter <b>„Prüfungsplan"</b> eintragen, oder hier einen Klausurplan als <b>Foto/Screenshot oder PDF</b> importieren.</li>
+        <li><b>Claude-Schlüssel eintragen</b> – unten bei „Claude als Motor". Nötig für die Übungen und um Fotos/PDFs auszulesen. (Das reine Laden der Archiv-Datei braucht ihn nicht.)</li>
+        <li><b>Fächer anlegen</b> – unten bei „Meine Fächer" auf <b>„Antons Profil"</b> tippen oder unten „Fächerplan (Foto/PDF)" importieren. Danach die 5 <b>„Abi"</b>-Fächer, das <b>„LF"</b> und bei Deutsch/Mathe die Kategorie markieren. <b>Immer zuerst die Fächer</b> – die nächsten Schritte bauen darauf auf.</li>
+        <li><b>Bisherige Noten</b> – einzeln über <b>„Neue Note eintragen"</b> (jederzeit, wenn du eine Note bekommst) oder per <b>„Noten-Screenshots importieren"</b> (bei „Claude als Motor").</li>
+        <li><b>Klausurplan</b> – im Reiter <b>„Prüfungsplan"</b> eintragen, oder unten als <b>Foto/Screenshot oder PDF</b> importieren.</li>
+        <li><b>Aufgaben-Archiv laden</b> – unten bei „Echtes Aufgabenmaterial" auf <b>„Archiv-Datei laden (ISB-Set)"</b>. Die Aufgaben verteilen sich automatisch auf die passenden Fächer.</li>
       </ol>
       <div class="hint" style="margin:10px 0 4px">Optionale Importe – <b>Foto/Screenshot oder PDF</b> (brauchst du nur, wenn du nicht manuell eintragen willst):</div>
       <div class="row-btns">
@@ -463,7 +464,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v6.0 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v6.1 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -2396,7 +2397,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v36';
+    const C='abiloop-v37';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
