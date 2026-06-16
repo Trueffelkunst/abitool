@@ -250,10 +250,10 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
   <div class="tabs" id="tabs">
     <button data-tab="heute" class="active">Heute</button>
     <button data-tab="loops">Reviere</button>
-    <button data-tab="plan">Prüfungsplan</button>
     <button data-tab="strecke">Strecke</button>
-    <button data-tab="daten">Meine Daten</button>
     <button data-tab="ergebnis">Ergebnis</button>
+    <button data-tab="plan">Prüfungsplan</button>
+    <button data-tab="daten">Meine Daten</button>
   </div>
 
   <!-- ===== TAB: HEUTE (Metaebene) ===== -->
@@ -489,7 +489,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v7.6 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v7.7 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -2535,7 +2535,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v52';
+    const C='abiloop-v53';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
