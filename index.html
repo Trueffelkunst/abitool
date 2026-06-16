@@ -464,7 +464,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v6.4 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v6.5 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -576,7 +576,7 @@ const KAT=[['other','Sonstiges'],['pruefung','Abiturfach'],['d','Deutsch'],['m',
 const FAECHER=[['Deutsch','d'],['Englisch','fs'],['Mathematik','m'],
   ['Französisch','fs'],['Spanisch','fs'],['Italienisch','fs'],['Latein','fs'],['Griechisch','fs'],['Russisch','fs'],
   ['Physik','nw'],['Chemie','nw'],['Biologie','nw'],['Informatik','other'],
-  ['Geschichte','other'],['Sozialkunde / Politik u. Gesellschaft','other'],['Geographie','other'],['Wirtschaft und Recht','other'],
+  ['Geschichte','other'],['Politik und Gesellschaft','other'],['Geographie','other'],['Wirtschaft und Recht','other'],
   ['Katholische Religionslehre','other'],['Evangelische Religionslehre','other'],['Ethik','other'],
   ['Kunst','other'],['Musik','other'],['Sport','sport'],['Psychologie','other'],
   ['Politik und Gesellschaft','other'],['Englisch Konversation','zusatz'],
@@ -674,6 +674,27 @@ function computeHJL(f,i,nt){
   return meanK!=null?rundeP(meanK):'';      /* 13/2 ohne Schulaufgabe */
 }
 function notenVorhanden(nt){return !!(nt&&((nt.sa!==''&&nt.sa!=null&&!isNaN(nt.sa))||((nt.klein||[]).some(v=>v!==''&&v!=null&&!isNaN(v)))));}
+/* Aufklappbare Einzelnoten-Übersicht je Fach (große + kleine Leistungsnachweise) */
+function einzelHtml(f){
+  const noten=Array.isArray(f.noten)?f.noten:[];
+  if(!noten.some(nt=>notenVorhanden(nt)))
+    return '<div class="hint" style="margin:6px 0 0">Noch keine Einzelnoten erfasst – über „Neue Note eintragen" hinzufügen.</div>';
+  let h='';
+  ['12/1','12/2','13/1','13/2'].forEach(function(ab,i){
+    const nt=noten[i];if(!notenVorhanden(nt))return;
+    const kl=(nt.klein||[]).map(function(v,j){
+      if(v===''||v==null||isNaN(v))return '';
+      const nz=(nt.kleinNotiz&&nt.kleinNotiz[j])?' ('+esc(String(nt.kleinNotiz[j]))+')':'';
+      return esc(String(v))+nz;}).filter(Boolean);
+    const klStr=kl.length?kl.join(', '):'–';
+    const saTxt=hatSchulaufgabe(f,i)
+      ?('Schulaufgabe '+((nt.sa===''||nt.sa==null||isNaN(nt.sa))?'–':esc(String(nt.sa))))
+      :'keine Schulaufgabe';
+    const hjl=computeHJL(f,i,nt);
+    h+='<div style="font-size:12px;color:var(--muted);padding:4px 0;border-top:1px solid var(--line)"><b style="color:var(--ink)">'+ab+'</b> · '+saTxt+' · kleine: '+klStr+' → HJL <b style="color:var(--ink)">'+(hjl===''?'–':hjl)+'</b></div>';
+  });
+  return '<div style="margin-top:4px">'+h+'</div>';
+}
 /* Aus den Einzelnoten die Halbjahresleistungen ableiten (nur wo Einzelnoten vorliegen) */
 function recomputeNoten(){
   (state.faecher||[]).forEach(function(f){
@@ -726,6 +747,7 @@ function renderSubj(){
         ${['12/1','12/2','13/1','13/2'].map((ab,j)=>`<label class="hjl"><span>${ab}</span>
           <select data-i="${i}" data-j="${j}">${punkteOpts(f.hjl[j])}</select></label>`).join('')}
       </div>
+      <details class="einzel" style="margin:2px 0 4px"><summary style="cursor:pointer;font-size:12.5px;color:var(--primary);font-weight:700;list-style:none">Einzelnoten anzeigen</summary>${einzelHtml(f)}</details>
       ${f.istAbiturfach?`<div class="abirow"><span>Abiturprüfung (×4)</span><select class="apkt2" data-i="${i}">${punkteOpts(f.abiErgebnis)}</select></div>`:''}`;
     c.appendChild(d);
   });
@@ -1362,7 +1384,7 @@ const KATALOG={
     quelle:'ISB Bayern, Illustrierende Prüfungsaufgaben Geschichte; LehrplanPLUS Geschichte 12/13; ISB-Operatorenliste.'},
 
   sozialkunde:{label:'Politik und Gesellschaft',aktiv:true,match:['sozial','politik','gesellschaft','pug'],raster:RASTER.analyse,
-    fach:'Sozialkunde / Politik und Gesellschaft (G9, Bayern)',
+    fach:'Politik und Gesellschaft (G9, Bayern)',
     hinweise:'Materialgebundene Aufgaben. Operatoren nach AFB: I (nennen, beschreiben, darstellen), II (analysieren, erläutern, einordnen, vergleichen, herausarbeiten), III (beurteilen, bewerten, erörtern, Stellung nehmen). Trennung von Sach- und Werturteil. Karikaturen: beschreiben → deuten (Symbole/Stilmittel/Überzeichnung) → Sach-/Werturteil.',
     typen:[
       {id:'karikatur',n:'Karikaturanalyse',modus:'s'},
@@ -2397,7 +2419,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v40';
+    const C='abiloop-v41';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
