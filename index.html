@@ -313,8 +313,8 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       </ul></details>
     </div>
     <div class="card">
-      <h2>So richtest du AbiTool ein</h2>
-      <div class="hint" style="margin-bottom:8px">In fünf Schritten – bitte <b>in dieser Reihenfolge</b>, damit alles dem richtigen Fach zugeordnet wird. Alle Daten bleiben lokal auf diesem Gerät:</div>
+      <details><summary style="cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px"><span style="font-size:17px;font-weight:800;letter-spacing:-.02em">So richtest du AbiTool ein</span><span style="font-size:12px;color:var(--muted);font-weight:700">– zum Aufklappen</span></summary>
+      <div class="hint" style="margin:8px 0 8px">In fünf Schritten – bitte <b>in dieser Reihenfolge</b>, damit alles dem richtigen Fach zugeordnet wird. Alle Daten bleiben lokal auf diesem Gerät:</div>
       <ol style="margin:0;padding-left:20px;font-size:13.5px;line-height:1.55;color:var(--ink)">
         <li><b>Claude-Schlüssel eintragen</b> – unten bei „Claude als Motor". Nötig für die Übungen und um Fotos/PDFs auszulesen. (Das reine Laden der Archiv-Datei braucht ihn nicht.)</li>
         <li><b>Fächer anlegen</b> – unten bei „Meine Fächer" auf <b>„Antons Profil"</b> tippen oder unten „Fächerplan (Foto/PDF)" importieren. Danach die 5 <b>„Abi"</b>-Fächer, das <b>„LF"</b> und bei Deutsch/Mathe die Kategorie markieren. <b>Immer zuerst die Fächer</b> – die nächsten Schritte bauen darauf auf.</li>
@@ -331,6 +331,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       <input type="file" id="impPlan" accept="image/*,application/pdf" multiple style="display:none">
       <div id="stFaecher" style="margin-top:8px"></div>
       <div id="stPlan" style="margin-top:8px"></div>
+      </details>
     </div>
 
     <div class="card">
@@ -485,7 +486,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v7.0 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v7.1 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -702,13 +703,16 @@ function einzelHtml(f,fi){
   const noten=Array.isArray(f.noten)?f.noten:[];
   if(!noten.some(nt=>notenVorhanden(nt)))
     return '<div class="hint" style="margin:6px 0 0">Noch keine Einzelnoten erfasst – über „Neue Note eintragen" hinzufügen.</div>';
+  const xbtn='style="color:var(--rose);font-weight:800;font-size:16px;line-height:1;background:none;border:none;padding:0 4px;cursor:pointer;flex:0 0 auto"';
   let h='';
   ['12/1','12/2','13/1','13/2'].forEach(function(ab,ai){
     if(ai>=belegtOf(f))return;
     const nt=noten[ai];if(!notenVorhanden(nt))return;
-    const saTxt=hatSchulaufgabe(f,ai)
-      ?('Schulaufgabe '+((nt.sa===''||nt.sa==null||isNaN(nt.sa))?'–':esc(String(nt.sa))))
-      :'keine Schulaufgabe';
+    let saTxt;
+    if(hatSchulaufgabe(f,ai)){
+      const leer=(nt.sa===''||nt.sa==null||isNaN(nt.sa));
+      saTxt='Schulaufgabe '+(leer?'–':('<b>'+esc(String(nt.sa))+'</b> <button '+xbtn+' title="Schulaufgabe löschen" onclick="noteDel(\''+f.id+'\','+ai+',\'sa\')">×</button>'));
+    }else saTxt='keine Schulaufgabe';
     const hjl=computeHJL(f,ai,nt);
     h+='<div style="padding:6px 0;border-top:1px solid var(--line)">';
     h+='<div style="font-size:12.5px;font-weight:700;color:var(--ink)">'+ab+' · '+saTxt+' → HJL '+(hjl===''?'–':hjl)+'</div>';
@@ -718,6 +722,7 @@ function einzelHtml(f,fi){
       h+='<div style="display:flex;align-items:center;gap:8px;margin-top:5px">'+
          '<span style="font-size:15px;font-weight:800;color:var(--ink);min-width:24px;text-align:center">'+esc(String(v))+'</span>'+
          '<input type="text" class="kln" data-i="'+fi+'" data-ai="'+ai+'" data-j="'+j+'" value="'+notiz+'" placeholder="Art der Leistung (z. B. Referat, Ausfrage, Test)" style="flex:1;min-width:0;font-size:12.5px;border:none;background:#f6f6fc;border-radius:9px;padding:7px 9px;color:var(--ink)">'+
+         '<button '+xbtn+' title="kleine Note löschen" onclick="noteDel(\''+f.id+'\','+ai+',\'klein\','+j+')">×</button>'+
          '</div>';
     });
     h+='</div>';
@@ -861,6 +866,7 @@ function renderWsem(){
 }
 
 /* ===== Recompute & hero ===== */
+let _proj=null;   /* aktuelle Hochrechnung („wenn es so weiterläuft") für die Ergebnis-Funktionen */
 function recompute(){
   recomputeNoten();
   syncWsem();
@@ -899,8 +905,9 @@ function recompute(){
     while(cnt<5){summe+=avgSel;cnt++;}
     const projBII=Math.min(300,Math.round(summe*4));
     const total=projBI+projBII;
-    proj={note:Engine.punkteZuNote(total),total:total,bi:projBI,bii:projBII};
+    proj={note:Engine.punkteZuNote(total),total:total,bi:projBI,bii:projBII,avgSel:avgSel};
   })();
+  _proj=proj;
   const set=(id,v)=>{document.getElementById(id).textContent=v;};
   const sub=document.getElementById('heroSub');
   const badge=document.getElementById('heroBadge');
@@ -1002,40 +1009,62 @@ function computeWennDann(){
   const sel=document.getElementById('wfFach'),box=document.getElementById('wfResult');
   const range=document.getElementById('wfRange'),v=+range.value;
   document.getElementById('wfVal').textContent=v;
-  if(sel.value===''){box.textContent='Es sind bereits alle Prüfungen erfasst – nutze „Was-wäre-wenn" über die Halbjahresleistungen.';box.className='result-line warn';return;}
+  if(!sel||sel.value===''){box.textContent='Es sind bereits alle Prüfungen erfasst.';box.className='result-line warn';return;}
   const i=+sel.value;
+  const name=((state.abiturfaecher||[])[i]||{}).name||'?';
+  if(_proj&&_proj.total!=null){
+    /* Hochrechnung: die gewählte Prüfung von ihrem projizierten Wert auf v ändern, Rest wie projiziert */
+    const avgSel=_proj.avgSel||0;
+    const delta=Math.round((v-avgSel)*4);
+    const total=Math.max(0,Math.min(900,_proj.total+delta));
+    const note=Engine.punkteZuNote(total);
+    box.className='result-line';
+    box.innerHTML='Mit <b>'+v+' Punkten</b> in „'+esc(name)+'" (×4 = '+(v*4)+' P) statt der Hochrechnung (~'+avgSel.toFixed(1)+' P):<br>'+
+      'voraussichtlicher Schnitt <b>'+(note!=null?fmt(note):'–')+'</b> · Gesamt <b>'+total+'</b> P ('+(delta>=0?'+':'')+delta+').'+
+      '<div class="hint" style="margin:6px 0 0">Basis: Hochrechnung „wenn es so weiterläuft"; die übrigen offenen Prüfungen bleiben wie projiziert.</div>';
+    return;
+  }
+  /* vollständige Daten: exakt rechnen */
   const base=Engine.berechne(state);
   const clone=JSON.parse(JSON.stringify(state));clone.abiturfaecher[i].ergebnis=v;
   const after=Engine.berechne(clone);
   const dn=after.note!=null?fmt(after.note):'–';
   const diff=after.gesamtpunkte-base.gesamtpunkte;
   box.className='result-line';
-  box.innerHTML=`Mit <b>${v} Punkten</b> in „${esc(state.abiturfaecher[i].name)}" (×4 = ${v*4} P):<br>
-    Schnitt <b>${dn}</b> · Gesamt <b>${after.gesamtpunkte}</b> P (${diff>=0?'+':''}${diff}).`;
+  box.innerHTML='Mit <b>'+v+' Punkten</b> in „'+esc(name)+'" (×4 = '+(v*4)+' P):<br>Schnitt <b>'+dn+'</b> · Gesamt <b>'+after.gesamtpunkte+'</b> P ('+(diff>=0?'+':'')+diff+').';
 }
 
 /* ===== Zielnote ===== */
 function renderZiel(){
-  const r=document.getElementById('zielRange'),zn=(+r.value)/10;
+  const rEl=document.getElementById('zielRange'),zn=(+rEl.value)/10;
   document.getElementById('zielVal').textContent=fmt(zn);
   const box=document.getElementById('zielResult');
-  const res=Engine.zielnote(state,zn);
-  if(!res.moeglich&&res.grund){box.className='result-line warn';box.textContent=res.grund;return;}
-  if(res.schonErreicht){box.className='result-line';
-    box.innerHTML=`Schnitt <b>${fmt(zn)}</b> ist mit den bisherigen Eingaben bereits gesichert. 🎀`;return;}
-  if(!res.moeglich){box.className='result-line bad';
-    box.innerHTML=`Für <b>${fmt(zn)}</b> wären im Schnitt mehr als 15 Punkte je Prüfung nötig – mit den aktuellen Halbjahres-Daten nicht erreichbar.`;return;}
+  const af=state.abiturfaecher||[];
+  if(!af.length){box.className='result-line warn';box.textContent='Markiere zuerst deine 5 Abiturprüfungsfächer (mit „Abi" unter Meine Fächer).';return;}
+  const offene=af.filter(a=>a.ergebnis===''||a.ergebnis==null||isNaN(a.ergebnis)).length;
+  if(offene===0){box.className='result-line';box.innerHTML='Alle Abiturprüfungen sind erfasst – dein Schnitt steht fest.';return;}
+  /* Fixierter Teil: (hochgerechneter) Block I + bereits erfasste Abiturprüfungen */
+  const projBI=_proj?_proj.bi:Engine.waehleBlockI(state.faecher||[]).punkte;
+  const enteredBII=af.reduce((s,a)=>s+((a.ergebnis!==''&&a.ergebnis!=null&&!isNaN(a.ergebnis))?Number(a.ergebnis)*4:0),0);
+  const fixed=projBI+enteredBII;
+  let need=null;for(let P=300;P<=900;P++){const n=Engine.punkteZuNote(P);if(n!=null&&n<=zn+1e-9){need=P;break;}}
+  if(need==null){box.className='result-line warn';box.textContent='Diese Zielnote ist nicht definiert.';return;}
+  const fehlt=need-fixed, roh=(fehlt/offene)/4;
+  const proHint=_proj?'<div class="hint" style="margin:6px 0 0">Block I ist dabei als Prognose „wenn es so weiterläuft" hochgerechnet.</div>':'';
+  if(fehlt<=0){box.className='result-line';box.innerHTML='Schnitt <b>'+fmt(zn)+'</b> ist nach aktueller Hochrechnung bereits in Reichweite. 🎀'+proHint;return;}
+  if(roh>15+1e-9){box.className='result-line bad';box.innerHTML='Für <b>'+fmt(zn)+'</b> wären im Schnitt mehr als 15 Punkte je Prüfung nötig – mit den aktuellen Daten nicht erreichbar.'+proHint;return;}
   box.className='result-line';
-  box.innerHTML=`Für Schnitt <b>${fmt(zn)}</b> brauchst du in den <b>${res.offenePruefungen}</b> offenen Abiturprüfungen
-    im Schnitt noch <b>${res.rohSchnitt.toFixed(1)} Punkte</b> (von 15) je Prüfung.`;
+  box.innerHTML='Für Schnitt <b>'+fmt(zn)+'</b> brauchst du in den <b>'+offene+'</b> offenen Abiturprüfungen im Schnitt noch <b>'+roh.toFixed(1)+' Punkte</b> (von 15) je Prüfung.'+proHint;
 }
 
 /* ===== Lohnt sich Üben ===== */
 function renderLohnt(r){
-  const box=document.getElementById('lohntBox');
-  if(r.gesamtpunkte===0){box.innerHTML='<div class="result-line warn">Trag erst ein paar Punkte ein, dann zeige ich dir, wo der Hebel sitzt.</div>';return;}
-  const sw=Engine.naechsteSchwelle(r.gesamtpunkte);
-  let html='';
+  const box=document.getElementById('lohntBox');if(!box)return;
+  const prog=(!r.vollstaendig&&_proj&&_proj.total!=null);
+  const g=prog?_proj.total:r.gesamtpunkte;
+  if(!g){box.innerHTML='<div class="result-line warn">Trag erst ein paar Punkte ein, dann zeige ich dir, wo der Hebel sitzt.</div>';return;}
+  const sw=Engine.naechsteSchwelle(g);
+  let html=prog?'<div class="hint" style="margin:0 0 8px">Auf Basis der Hochrechnung „wenn es so weiterläuft":</div>':'';
   if(!sw){html+=`<div class="result-line">Bestnote 1,0 erreicht – besser geht der Schnitt nicht. 🎀</div>`;}
   else{
     const abiPruef=Math.ceil(sw.abstand/4), hjlPkt=sw.abstand;
@@ -2475,7 +2504,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v46';
+    const C='abiloop-v47';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
