@@ -464,7 +464,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v6.1 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v6.3 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -1148,7 +1148,7 @@ function renderNextStrip(){
   const el=document.getElementById('nextStrip');if(!el)return;
   const needsSetup=!state.faecher.some(f=>fachCfg(f));
   if(needsSetup){
-    el.innerHTML='<div class="nextstrip" style="background:linear-gradient(135deg,#EDEEE8,#ffffff)"><span class="ic">👋</span><div class="tx"><b>Willkommen bei Antons AbiTool!</b><small>Schritt 1: Wähle zuerst deine Fächer aus</small></div><button class="btn sm cta" onclick="switchTab(\'daten\')">Fächer wählen</button></div>';
+    el.innerHTML='';   /* Einrichten-Hinweis steht schon in der großen Willkommens-Karte – keine Dopplung */
     return;}
   const k=kommende();
   if(!k.length){
@@ -1569,9 +1569,9 @@ function renderHeute(){
   if(needsSetup){
     card.innerHTML='<div style="display:flex;align-items:center;gap:16px"><div style="flex:0 0 auto">'+frischling(86)+'</div><div>'+
       '<div class="nextlbl">Willkommen, Anton 🌿</div>'+
-      '<div class="nextbig">In 2 Schritten startklar</div>'+
-      '<div class="hint" style="margin:6px 0 12px">1. Unter „Meine Daten" deine Fächer anlegen (z. B. Englisch, Deutsch …) und die Kategorie wählen.<br>2. Im Prüfungsplan Termin und Stoff deiner nächsten Schulaufgabe eintragen.<br>Dann zeigt dir AbiTool hier immer, was als Nächstes dran ist – und übt gezielt dafür.</div>'+
-      '<button class="btn" onclick="switchTab(\'daten\')">Schritt 1: Fächer wählen</button></div></div>';
+      '<div class="nextbig">In wenigen Schritten startklar</div>'+
+      '<div class="hint" style="margin:6px 0 12px">Unter „Meine Daten" steht die Anleitung in der richtigen Reihenfolge: <b>1.</b> Claude-Schlüssel, <b>2.</b> Fächer anlegen und „Abi"/„LF" markieren, <b>3.</b> Noten, <b>4.</b> Klausurplan, <b>5.</b> ISB-Aufgaben-Archiv laden.<br>Danach zeigt dir AbiTool hier immer, was als Nächstes dran ist – und übt gezielt dafür.</div>'+
+      '<button class="btn" onclick="switchTab(\'daten\')">Jetzt einrichten</button></div></div>';
     list.innerHTML='<div class="hint">Sobald Fächer und Termine stehen, erscheinen hier deine nächsten Prüfungen.</div>';
     return;
   }
@@ -2397,7 +2397,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v37';
+    const C='abiloop-v39';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
