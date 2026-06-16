@@ -297,7 +297,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       <ol style="margin:0;padding-left:20px;font-size:13.5px;line-height:1.55;color:var(--ink)">
         <li><b>Fächer anlegen</b> – unten bei „Meine Fächer" auf <b>„Antons Profil"</b> tippen (oder Fächer einzeln wählen und mit „Abi"/„LF" markieren).</li>
         <li><b>Claude-Schlüssel eintragen</b> – unten bei „Claude als Motor". Nötig für die Übungen und um Noten aus Fotos auszulesen.</li>
-        <li><b>Noten erfassen</b> – einzeln über <b>„Neue Note eintragen"</b> (jederzeit, wenn er eine Note zurückbekommt) oder per Foto über <b>„Noten-Screenshots importieren"</b> (bei „Claude als Motor").</li>
+        <li><b>Noten erfassen</b> – einzeln über <b>„Neue Note eintragen"</b> (jederzeit, wenn du eine Note bekommst) oder per Foto über <b>„Noten-Screenshots importieren"</b> (bei „Claude als Motor").</li>
         <li><b>Klausurtermine</b> – im Reiter <b>„Prüfungsplan"</b> eintragen, oder hier einen Klausurplan-Screenshot importieren.</li>
       </ol>
       <div class="hint" style="margin:10px 0 4px">Optionale Foto-Importe (brauchst du nur, wenn du nicht manuell eintragen willst):</div>
@@ -305,8 +305,8 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
         <button class="btn ghost sm" onclick="document.getElementById('impFaecher').click()">Fächerplan-Foto</button>
         <button class="btn ghost sm" onclick="document.getElementById('impPlan').click()">Klausurplan-Foto</button>
       </div>
-      <input type="file" id="impFaecher" accept="image/*" multiple style="display:none">
-      <input type="file" id="impPlan" accept="image/*" multiple style="display:none">
+      <input type="file" id="impFaecher" accept="image/*,application/pdf" multiple style="display:none">
+      <input type="file" id="impPlan" accept="image/*,application/pdf" multiple style="display:none">
       <div id="stFaecher" style="margin-top:8px"></div>
       <div id="stPlan" style="margin-top:8px"></div>
     </div>
@@ -327,12 +327,12 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
     <div class="card" id="noteCard">
       <h2>Neue Note eintragen</h2>
-      <div class="hint">Sobald Anton eine Note zurückbekommt, hier eintragen – Halbjahresleistung und voraussichtlicher Schnitt aktualisieren sich automatisch. Schulaufgabe/Klausur = großer, mündlich/Stegreif = kleiner Leistungsnachweis (1:1 gewichtet).</div>
+      <div class="hint">Sobald du eine Note bekommst, hier eintragen – Halbjahresleistung und voraussichtlicher Schnitt aktualisieren sich automatisch. Schulaufgabe/Klausur = großer, mündlich/Stegreif = kleiner Leistungsnachweis (1:1 gewichtet).</div>
       <div class="row-btns" style="gap:8px;flex-wrap:wrap;margin-top:4px">
         <select id="noteFach" onchange="renderNoteList()" style="flex:1;min-width:130px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"></select>
         <select id="noteHj" onchange="renderNoteList()" style="font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"><option value="0">12/1</option><option value="1">12/2</option><option value="2">13/1</option><option value="3">13/2</option></select>
         <select id="noteArt" style="font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"><option value="sa">Schulaufgabe</option><option value="klein">mündlich / klein</option></select>
-        <input id="noteWert" type="number" inputmode="numeric" min="0" max="15" placeholder="0–15" style="width:84px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)">
+        <select id="noteWert" style="font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)"><option value="">Punkte</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option></select>
         <input id="noteNotiz" placeholder="Notiz, z. B. Referat (optional)" style="flex:1;min-width:150px;font-size:13px;border:none;background:#f6f6fc;padding:10px 11px;border-radius:11px;color:var(--ink)">
         <button class="btn sm" onclick="noteAdd()">Hinzufügen</button>
       </div>
@@ -344,10 +344,10 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       <div class="hint">Das W-Seminar bringt <b>4 der 40 Halbjahresleistungen</b> ein: die Kursleistung in 12/1 und 12/2 sowie das <b>Gesamtergebnis der Seminararbeit</b> (zählt als 2 HJL). Gesamtergebnis = (schriftliche Arbeit ×3 + Präsentation/Prüfungsgespräch ×1) ⁄ 2, max. 30 Punkte.</div>
       <input id="wsemLeit" placeholder="Leitfach / Thema (optional)" oninput="wsemSet('leitfach',this)" style="width:100%;margin:2px 0 10px;font-size:14px;font-weight:700;border:none;background:#f6f6fc;padding:9px 11px;border-radius:11px;color:var(--ink)">
       <div class="hjl-row">
-        <label class="hjl"><span>Kurs 12/1</span><input type="number" inputmode="numeric" min="0" max="15" placeholder="–" id="wsemWs1" oninput="wsemSet('ws1',this)"></label>
-        <label class="hjl"><span>Kurs 12/2</span><input type="number" inputmode="numeric" min="0" max="15" placeholder="–" id="wsemWs2" oninput="wsemSet('ws2',this)"></label>
-        <label class="hjl"><span>Arbeit ×3</span><input type="number" inputmode="numeric" min="0" max="15" placeholder="–" id="wsemArb" oninput="wsemSet('arbeit',this)"></label>
-        <label class="hjl"><span>Präsent. ×1</span><input type="number" inputmode="numeric" min="0" max="15" placeholder="–" id="wsemPra" oninput="wsemSet('praes',this)"></label>
+        <label class="hjl"><span>Kurs 12/1</span><select id="wsemWs1" onchange="wsemSet('ws1',this)"><option value="">–</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option></select></label>
+        <label class="hjl"><span>Kurs 12/2</span><select id="wsemWs2" onchange="wsemSet('ws2',this)"><option value="">–</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option></select></label>
+        <label class="hjl"><span>Arbeit ×3</span><select id="wsemArb" onchange="wsemSet('arbeit',this)"><option value="">–</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option></select></label>
+        <label class="hjl"><span>Präsent. ×1</span><select id="wsemPra" onchange="wsemSet('praes',this)"><option value="">–</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option></select></label>
       </div>
       <div id="wsemOut" class="result-line warn" style="margin-top:8px"></div>
     </div>
@@ -376,9 +376,11 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
     <div class="card">
       <h2>Echtes Aufgabenmaterial (für verlässliche Übungen)</h2>
-      <div class="hint">Lade echte Prüfungs-/Abituraufgaben hoch (Foto, mit Erwartungshorizont falls vorhanden). AbiTool erzeugt Übungen dann durch <b>Transformation echter Vorlagen</b> statt frei zu erfinden — gekennzeichnet als „aus echtem Material transformiert". Nur Aufgabenmaterial, keine fremden korrigierten Arbeiten.</div>
-      <div class="row-btns"><button class="btn ghost sm" onclick="document.getElementById('impArchiv').click()">Aufgabenmaterial hochladen</button></div>
-      <input type="file" id="impArchiv" accept="image/*" multiple style="display:none">
+      <div class="hint">Lade echte Prüfungs-/Abituraufgaben hoch — <b>Foto oder PDF</b> (z. B. die ISB-Beispielaufgaben), mit Erwartungshorizont falls vorhanden. AbiTool erzeugt Übungen dann durch <b>Transformation echter Vorlagen</b> statt frei zu erfinden — gekennzeichnet als „aus echtem Material transformiert". Nur Aufgabenmaterial, keine fremden korrigierten Arbeiten.</div>
+      <div class="row-btns"><button class="btn ghost sm" onclick="document.getElementById('impArchiv').click()">Aufgabenmaterial hochladen (Bild/PDF)</button><button class="btn ghost sm" onclick="document.getElementById('archivImport').click()">Archiv-Datei laden (ISB-Set)</button></div>
+      <input type="file" id="impArchiv" accept="image/*,application/pdf" multiple style="display:none">
+      <input type="file" id="archivImport" style="display:none">
+      <div class="hint" style="margin-top:6px">„Archiv-Datei laden" spielt ein fertiges Aufgaben-Set (z. B. das ISB-Set) ein – <b>deine Noten und Fächer bleiben unangetastet</b>.</div>
       <div id="stArchiv" style="margin-top:8px"></div>
     </div>
 
@@ -461,7 +463,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v5.3 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v5.8 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -721,10 +723,9 @@ function renderSubj(){
       <div style="margin:-4px 0 8px 2px">${flag}</div>
       <div class="hjl-row">
         ${['12/1','12/2','13/1','13/2'].map((ab,j)=>`<label class="hjl"><span>${ab}</span>
-          <input type="number" inputmode="numeric" min="0" max="15" placeholder="–"
-            value="${f.hjl[j]}" data-i="${i}" data-j="${j}"></label>`).join('')}
+          <select data-i="${i}" data-j="${j}">${punkteOpts(f.hjl[j])}</select></label>`).join('')}
       </div>
-      ${f.istAbiturfach?`<div class="abirow"><span>Abiturprüfung (×4)</span><input class="apkt2" type="number" inputmode="numeric" min="0" max="15" placeholder="–" value="${esc(f.abiErgebnis||'')}" data-i="${i}"></div>`:''}`;
+      ${f.istAbiturfach?`<div class="abirow"><span>Abiturprüfung (×4)</span><select class="apkt2" data-i="${i}">${punkteOpts(f.abiErgebnis)}</select></div>`:''}`;
     c.appendChild(d);
   });
   c.querySelectorAll('select.fachsel').forEach(s=>s.addEventListener('change',e=>{
@@ -745,12 +746,10 @@ function renderSubj(){
   c.querySelectorAll('.abt').forEach(b=>b.addEventListener('click',e=>{
     const i=+e.currentTarget.dataset.i;state.faecher[i].istAbiturfach=!state.faecher[i].istAbiturfach;
     save();renderAll();}));
-  c.querySelectorAll('input.apkt2').forEach(inp=>inp.addEventListener('input',e=>{
-    let v=clamp(e.target.value);if(v!==e.target.value&&v!=='')e.target.value=v;
-    state.faecher[+e.target.dataset.i].abiErgebnis=v;save();recompute();}));
-  c.querySelectorAll('.hjl input').forEach(inp=>inp.addEventListener('input',e=>{
-    let v=clamp(e.target.value);if(v!==e.target.value&&v!=='')e.target.value=v;
-    state.faecher[+e.target.dataset.i].hjl[+e.target.dataset.j]=v;save();recompute();}));
+  c.querySelectorAll('select.apkt2').forEach(s=>s.addEventListener('change',e=>{
+    state.faecher[+e.target.dataset.i].abiErgebnis=e.target.value;save();recompute();}));
+  c.querySelectorAll('.hjl select').forEach(s=>s.addEventListener('change',e=>{
+    state.faecher[+e.target.dataset.i].hjl[+e.target.dataset.j]=e.target.value;save();recompute();}));
   c.querySelectorAll('.del').forEach(b=>b.addEventListener('click',e=>{
     state.faecher.splice(+e.target.dataset.i,1);save();renderAll();}));
 }
@@ -998,6 +997,7 @@ function renderLohnt(r){
 /* ===== Helpers ===== */
 function fmt(n){return n.toFixed(1).replace('.',',');}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function punkteOpts(sel){let o='<option value="">–</option>';for(let p=0;p<=15;p++){o+='<option value="'+p+'"'+(String(sel)===String(p)?' selected':'')+'>'+p+'</option>';}return o;}
 function clamp(v){if(v==='')return '';let n=Math.round(+v);if(isNaN(n))return '';return String(Math.max(0,Math.min(15,n)));}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800);}
@@ -1063,6 +1063,31 @@ inp.addEventListener('change',function(e){
     if(!obj||!Array.isArray(obj.faecher))throw new Error('Diese Datei enthält keine gültigen AbiTool-Daten.');
     state=migrate(obj);save();renderAll();
     st.innerHTML='<div class="result-line">Daten geladen: '+state.faecher.length+' Fächer übernommen.</div>';toast('Daten geladen');
+  }catch(err){st.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}};
+  r.readAsText(file);
+});})();
+/* ===== Archiv-Set laden: NUR archiv[] mergen, Noten/Fächer bleiben ===== */
+(function(){const inp=document.getElementById('archivImport');if(!inp)return;
+inp.addEventListener('change',function(e){
+  const file=e.target.files[0];e.target.value='';if(!file)return;
+  const st=document.getElementById('stArchiv');
+  const r=new FileReader();
+  r.onload=function(){try{
+    const obj=JSON.parse(r.result);
+    const incoming=Array.isArray(obj)?obj:(Array.isArray(obj.archiv)?obj.archiv:null);
+    if(!incoming)throw new Error('Diese Datei enthält kein gültiges Aufgaben-Archiv.');
+    state.archiv=state.archiv||[];
+    const have=new Set(state.archiv.map(a=>((a.fach||'')+'|'+(a.typ||'')+'|'+(a.angabe||'')).slice(0,160)));
+    let added=0;
+    incoming.forEach(function(x){
+      if(!x||!x.angabe)return;
+      const sig=((x.fach||'')+'|'+(x.typ||'')+'|'+(x.angabe||'')).slice(0,160);
+      if(have.has(sig))return;have.add(sig);
+      state.archiv.push({fach:String(x.fach||''),typ:String(x.typ||''),thema:String(x.thema||''),angabe:String(x.angabe||''),erwartung:String(x.erwartung||''),quelle:String(x.quelle||'')});
+      added++;
+    });
+    save();renderAll();
+    st.innerHTML='<div class="result-line">Archiv-Set geladen: '+added+' neue Aufgabe(n) hinzugefügt. Im Archiv jetzt '+state.archiv.length+' insgesamt. Deine Noten sind unverändert.</div>';toast('Archiv-Set geladen');
   }catch(err){st.innerHTML='<div class="result-line bad">'+esc(err.message)+'</div>';}};
   r.readAsText(file);
 });})();
@@ -1144,6 +1169,7 @@ const RASTER={
   text:['Fachwissen / inhaltliche Richtigkeit','Argumentation / Struktur','Operator-Handling','Beleg- / Materialbezug','Fachsprache / Darstellung'],
   analyse:['Material-/Quellenauswertung','Operator-Handling','Beschreibung statt Deutung/Urteil','Sach-/Werturteil getrennt','Fachbegriffe','Argumentation / Struktur'],
   mathnw:['Ansatz / Strategie','Rechnung / Umformung','Begründung / Herleitung','Einheiten / Genauigkeit','Fachbegriffe / Notation','Flüchtigkeitsfehler'],
+  bio:['Fachwissen / Konzeptverständnis','Material-/Diagrammauswertung','Anwendung auf neuen Kontext','Operator-Handling','Fachsprache / Darstellung','Bewertung / Stellungnahme'],
   psych:['Theorie-/Modellbezug','Anwendung auf Fallbeispiel','Operator-Handling','Fachbegriffe / Fachsprache','empirisch-methodischer Bezug','Argumentation / Struktur']
 };
 /* typen[].modus: 's' = schriftlich · 'm' = mündlich */
@@ -1241,8 +1267,48 @@ const KATALOG={
       {id:'statistik',n:'Beurteilende Statistik'}],
     quelle:'ISB Bayern, Mathematik-Abitur ab 2026 (Teil A/B); LehrplanPLUS Mathematik 12/13; ISB-Operatorenliste.'},
 
-  nawi:{label:'Naturwissenschaft',aktiv:false,match:['physik','chemie','biolog','nawi','natur'],raster:RASTER.mathnw,
-    fach:'Naturwissenschaft (Physik/Chemie/Biologie, G9)',hinweise:'',typen:[],
+  physik:{label:'Physik',aktiv:true,match:['physik'],raster:RASTER.mathnw,
+    fach:'Physik (G9, Bayern; Abiturprüfung ab 2026)',
+    hinweise:'Schriftliche Prüfung: aus 4 vorgelegten Aufgaben werden 3 bearbeitet (gA 255 min / 90 BE, eA 300 min / 120 BE). Mindestens die Hälfte der Aufgaben stammt aus dem länderübergreifenden Abituraufgabenpool (IQB) – also bundesweit erprobte Formate. Drei Inhaltsbereiche: (1) elektrische & magnetische Felder inkl. Induktion und Spezieller Relativitätstheorie, (2) mechanische & elektromagnetische Schwingungen/Wellen, (3) Quanten-, Kern- & Teilchenphysik (alternativ Astrophysik). Geprüft werden vier Kompetenzbereiche: Modelle/Experimente nutzen, Erkenntnisse gewinnen, kommunizieren, bewerten. Stärker als früher: Auswertung von Messdaten inkl. Messunsicherheiten. Operatoren nach AFB: I (gib an, nenne, beschreibe, skizziere, berechne nach bekanntem Verfahren), II (erläutere, leite her, werte aus, wende an, ordne ein, untersuche), III (begründe, beurteile, bewerte, verallgemeinere, entwickle eine Hypothese). Bei Herleitungen vollständige, kausal korrekte Begründung mit sauberer Notation und Einheiten.',
+    typen:[
+      {id:'berechnung',n:'Berechnung / quantitative Betrachtung',modus:'s'},
+      {id:'messdaten',n:'Messdaten-/Diagrammauswertung (inkl. Messunsicherheiten)',modus:'s'},
+      {id:'modell',n:'Modell-/Gesetzanwendung auf neuen Kontext',modus:'s'},
+      {id:'herleitung',n:'Herleitung / Begründung',modus:'s'},
+      {id:'versuch',n:'Hypothesenbildung & Versuchsplanung',modus:'s'},
+      {id:'bewertung',n:'Bewertung / Diskussion (z. B. Strahlenschutz, Kernenergie)',modus:'s'},
+      {id:'koll',n:'Kolloquium (mündlich)',modus:'m'}],
+    themen:[
+      {id:'felder',n:'Elektrische & magnetische Felder; relativistischer Impuls/Energie'},
+      {id:'induktion',n:'Elektromagnetische Induktion & Schwingkreis'},
+      {id:'wellen',n:'Elektromagnetische Wellen, Interferenz (Doppelspalt/Gitter)'},
+      {id:'quanten',n:'Grundideen der Quantenphysik (Photon, de-Broglie, Doppelspalt)'},
+      {id:'atom',n:'Atommodell der Quantenphysik (Potentialtopf, Spektren, Franck-Hertz)'},
+      {id:'materie',n:'Strukturuntersuchungen & Standardmodell der Teilchenphysik'},
+      {id:'kern',n:'Kernphysik & Radioaktivität (Zerfallsgesetz, Strahlenschutz, Reaktor)'}],
+    quelle:'ISB Bayern, Illustrierende Prüfungsaufgaben Physik (Erläuterungen, Stand 2023) gA/eA mit Lösungsvorschlägen; LehrplanPLUS Physik 12/13; länderübergreifender IQB-Abiturpool.'},
+
+  biologie:{label:'Biologie',aktiv:true,match:['biolog'],raster:RASTER.bio,
+    fach:'Biologie (G9, Bayern; Abiturprüfung ab 2026)',
+    hinweise:'Schriftliche Prüfung: aus 4 vorgelegten Aufgaben werden 3 bearbeitet (gA 255 min / 90 BE, eA 300 min / 120 BE). Jede Aufgabe hat einen Schwerpunkt aus einem der vier Inhaltsbereiche (Leben und Energie · Informationsverarbeitung in Lebewesen · Lebewesen in ihrer Umwelt · Vielfalt des Lebens) und 4–6 unabhängig lösbare Teilaufgaben. Aufgaben sind durchgehend materialgeleitet (eigenes Material „M 1" usw.) und decken immer alle vier Kompetenzbereiche ab – Sach-, Erkenntnisgewinnungs-, Kommunikations- und Bewertungskompetenz; die Bewertungskompetenz (auch Bioethik) hat höheren Stellenwert als früher. Operatoren nach AFB: I (nenne, gib an, beschreibe, skizziere, stelle dar), II (erläutere, erkläre, vergleiche, analysiere, interpretiere, wende an, ordne ein, leite ab, plane), III (beurteile, bewerte, nimm Stellung, stelle eine Hypothese auf). Belegtes gA→eA-Muster: „begründe, weshalb" → „beurteile, ob".',
+    typen:[
+      {id:'material',n:'Materialgebundene Analyse (Diagramm-/Tabellenauswertung)',modus:'s'},
+      {id:'experiment',n:'Experimentplanung & -auswertung (hypothesengeleitet)',modus:'s'},
+      {id:'anwendung',n:'Konzeptanwendung auf neuen Kontext',modus:'s'},
+      {id:'erklaeren',n:'Mechanismus / Zusammenhang erklären',modus:'s'},
+      {id:'bewertung',n:'Bewertung / Stellungnahme (inkl. Bioethik)',modus:'s'},
+      {id:'koll',n:'Kolloquium (mündlich)',modus:'m'}],
+    themen:[
+      {id:'genetik',n:'Genetik & Gentechnik (Proteinbiosynthese, PCR, CRISPR, Erbgänge)'},
+      {id:'evolution',n:'Evolution (Belege, Mechanismen, Artbildung)'},
+      {id:'verhalten',n:'Verhaltensökologie (adaptiver Wert, Kosten-Nutzen, Altruismus)'},
+      {id:'neuro',n:'Neuronale Informationsverarbeitung (Ruhe-/Aktionspotential, Synapse)'},
+      {id:'stoffwechsel',n:'Stoffwechselphysiologie (Photosynthese, Enzyme, Zellatmung)'},
+      {id:'oekologie',n:'Ökologie & Biodiversität (Nische, Populationsdynamik, Nachhaltigkeit)'}],
+    quelle:'ISB Bayern, Illustrierende Prüfungsaufgaben Biologie (Erläuterungen, Stand Dez. 2025) gA/eA mit Lösungsvorschlägen; LehrplanPLUS Biologie 12/13; länderübergreifender IQB-Abiturpool (Operatoren-Grundstock).'},
+
+  nawi:{label:'Chemie / Naturwissenschaft',aktiv:false,match:['chemie','nawi','natur'],raster:RASTER.mathnw,
+    fach:'Chemie / weitere Naturwissenschaft (G9)',hinweise:'',typen:[],
     quelle:'Aufgabentypen/AFB nach ISB – bei Freischaltung ergänzt.'},
 
   informatik:{label:'Informatik',aktiv:false,match:['informat'],raster:RASTER.mathnw,
@@ -1440,6 +1506,20 @@ const QUELLEN={
     {t:'LehrplanPLUS · Fachprofil Psychologie',url:'https://www.lehrplanplus.bayern.de/fachprofil/gymnasium/ps',was:'Gegenstandsbereiche, Kompetenzstrukturmodell, Modulverteilung 12/13, Profilfach-Charakter.',art:'lehrplan',frei:'amtlich, frei'},
     {t:'ISB · Operatorenliste Politik und Gesellschaft (PDF)',url:'https://www.isb.bayern.de/fileadmin/user_upload/Gymnasium/Faecher/Politik_Gesellschaft/EPA/EPA-Operatorenliste_ISB.pdf',was:'AFB I–III + Operatoren mit Definitionen – fachnächster Ersatz mangels eigener Psychologie-Liste.',art:'material',frei:'amtlich, frei'},
     {t:'ISB · Leitfaden „Kompetenzorientierte Leistungsaufgaben" (PDF)',url:'https://www.isb.bayern.de/fileadmin/user_upload/Grundsatzabteilung/Kompetenzorientierung/Leitfaden_kompetenzorientierte_leistungsaufgaben_2019.pdf',was:'Grundprinzipien für Leistungsaufgaben, AFB-Ausgewogenheit, Operatorenkonzept.',art:'material',frei:'amtlich, frei'}
+  ],
+  physik:[
+    {t:'ISB · Illustrierende Prüfungsaufgaben Physik (ab 2026)',url:'https://www.isb.bayern.de/schularten/gymnasium/faecher/physik/illustrierende-pruefungsaufgaben/',was:'Beispielaufgaben gA/gA-Astro/eA mit Material und Lösungsvorschlägen + Erläuterungen + Hinweise mündliche Prüfung.',art:'aufgaben',frei:'amtlich, frei',top:true},
+    {t:'ISB · Erläuterungen Physik (PDF)',url:'https://www.isb.bayern.de/fileadmin/user_upload/Gymnasium/IlluPA/Ph/IPA_Physik_Erlaeuterungen.pdf',was:'Prüfungsstruktur (3 Hefte, 4-von-3-Aufgaben, BE/Zeiten), Inhalts- & Kompetenzbereiche, Pool-Anteil ≥50 %, Operatorengebrauch.',art:'material',frei:'amtlich, frei'},
+    {t:'IQB · Abituraufgabenpool',url:'https://www.iqb.hu-berlin.de/abitur',was:'Bundesweiter Länderpool – Quelle eines Teils der bayerischen Physik-Abituraufgaben (nicht öffentlich frei einsehbar).',art:'aufgaben',frei:'nur Lehrkräfte/Länder'},
+    {t:'LehrplanPLUS · Physik 12 (gA)',url:'https://www.lehrplanplus.bayern.de/fachlehrplan/gymnasium/12/physik/grundlegend',was:'Lernbereiche 12.1–12.3 (Felder, Induktion/Schwingungen, EM-Wellen) mit Kompetenzerwartungen.',art:'lehrplan',frei:'amtlich'},
+    {t:'LehrplanPLUS · Physik 13 (gA)',url:'https://www.lehrplanplus.bayern.de/fachlehrplan/gymnasium/13/physik/grundlegend',was:'Lernbereiche 13.1–13.4 (Quantenphysik, Atommodell, Materie/Standardmodell, Kernphysik).',art:'lehrplan',frei:'amtlich'}
+  ],
+  biologie:[
+    {t:'ISB · Illustrierende Prüfungsaufgaben Biologie (ab 2026)',url:'https://www.isb.bayern.de/schularten/gymnasium/faecher/biologie/illustrierende-pruefungsaufgaben/',was:'Beispielaufgaben gA/eA mit Lösungsvorschlägen, Erläuterungen, Übersichtsblatt, Hinweise mündliche Prüfung.',art:'aufgaben',frei:'amtlich, frei',top:true},
+    {t:'ISB · Beispielaufgabe Biologie gA (PDF)',url:'https://www.isb.bayern.de/fileadmin/user_upload/Gymnasium/Faecher/Biologie/1201_IlluPA_Biologie_Beispielaufgabe_gA_02.pdf',was:'Vollständige Musterprüfung gA (4 Aufgaben, Material); Lösungen separat als …Loesungsvorschlaege_gA_02.pdf.',art:'aufgaben',frei:'amtlich, frei'},
+    {t:'ISB · Erläuterungen Biologie (PDF)',url:'https://www.isb.bayern.de/fileadmin/user_upload/Gymnasium/Faecher/Biologie/1201_IlluPA_Biologie_Erlaeuterungen_eA_gA_02.pdf',was:'Aufgabenkultur, Basiskonzepte, AFB I–III, gA/eA-Differenzierung, Operatorengebrauch.',art:'material',frei:'amtlich, frei'},
+    {t:'LehrplanPLUS · Biologie 12 (gA)',url:'https://www.lehrplanplus.bayern.de/fachlehrplan/gymnasium/12/biologie/grundlegend',was:'Lernbereiche Genetik/Gentechnik, Evolution, Verhaltensökologie.',art:'lehrplan',frei:'amtlich'},
+    {t:'LehrplanPLUS · Biologie 13 (gA)',url:'https://www.lehrplanplus.bayern.de/fachlehrplan/gymnasium/13/biologie/grundlegend',was:'Lernbereiche Neurobiologie, Stoffwechselphysiologie, Ökologie & Biodiversität.',art:'lehrplan',frei:'amtlich'}
   ]
 };
 function quellenHtml(f,arten){
@@ -1822,7 +1902,8 @@ function fileToB64(f){return new Promise(function(res,rej){const r=new FileReade
   r.onload=function(){res({media:f.type||'image/jpeg',data:String(r.result).split(',')[1]});};
   r.onerror=rej;r.readAsDataURL(f);});}
 async function imgParts(files){const out=[];for(const f of files){const b=await fileToB64(f);
-  out.push({type:'image',source:{type:'base64',media_type:b.media,data:b.data}});}return out;}
+  if(/pdf/i.test(b.media)){out.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:b.data}});}
+  else{out.push({type:'image',source:{type:'base64',media_type:b.media,data:b.data}});}}return out;}
 async function testKey(){const s=document.getElementById('kiStatus');
   s.innerHTML='<div class="result-line"><span class="busy"></span>Teste Verbindung …</div>';
   try{await claude([{role:'user',content:'Antworte nur mit: OK'}],'',16);
@@ -1883,7 +1964,7 @@ function importApply(){
     });
   });
   window._import=null;save();renderAll();
-  document.getElementById('kiStatus').innerHTML='<div class="result-line">Übernommen – die Halbjahresleistungen wurden aus den Einzelnoten berechnet (Schulaufgabe : kleine = 1:1). Vergleich im Zweifel kurz mit Antons alter App.</div>';
+  document.getElementById('kiStatus').innerHTML='<div class="result-line">Übernommen – die Halbjahresleistungen wurden aus den Einzelnoten berechnet (Schulaufgabe : kleine = 1:1). Vergleich im Zweifel kurz mit deiner alten Notenrechner-App.</div>';
   toast('Noten importiert');
 }
 
@@ -2315,7 +2396,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v29';
+    const C='abiloop-v34';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
