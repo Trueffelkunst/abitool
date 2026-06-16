@@ -251,6 +251,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
     <button data-tab="heute" class="active">Heute</button>
     <button data-tab="loops">Reviere</button>
     <button data-tab="plan">Prüfungsplan</button>
+    <button data-tab="strecke">Strecke</button>
     <button data-tab="daten">Meine Daten</button>
     <button data-tab="ergebnis">Ergebnis</button>
   </div>
@@ -297,46 +298,17 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
     </div>
   </div>
 
-  <!-- ===== TAB: DATEN ===== -->
-  <div class="tab hide" id="tab-daten">
-    <div class="card">
-      <h2>Was kann AbiTool?</h2>
-      <div class="hint" style="margin-bottom:0">Dein persönlicher Begleiter fürs bayerische G9-Abitur – damit du jederzeit weißt, wo du stehst und gezielt das Richtige übst.</div>
-      <details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:var(--primary);font-weight:700;list-style:none">Was bringt es dir? (kurz erklärt)</summary>
-      <ul style="margin:8px 0 0;padding-left:20px;font-size:13.5px;line-height:1.6;color:var(--ink)">
-        <li><b>Noten & Schnitt im Blick:</b> Du trägst deine Leistungen ein, AbiTool berechnet die Halbjahresleistungen (Schulaufgabe : kleine = 1:1), deine Einbringung und deinen voraussichtlichen Abischnitt – nach den offiziellen bayerischen Regeln.</li>
-        <li><b>Was-wäre-wenn:</b> Spiel Abiturprüfungen und Noten durch und sieh sofort, wie sich dein Schnitt bewegt – und welche Note du wo noch brauchst.</li>
-        <li><b>Prüfungsplan:</b> Alle deine Schulaufgaben mit Termin und Stoff an einem Ort, immer im Blick, was als Nächstes dran ist.</li>
-        <li><b>Gezielt üben mit echten Aufgabentypen:</b> Zu jedem Fach die echten Aufgabenformen (nach LehrplanPLUS/ISB). Aus echtem Material – z. B. den ISB-Beispielaufgaben – werden passende Übungen, damit du die Aufgabenformen schon kennst, bevor sie in der Schulaufgabe drankommen.</li>
-        <li><b>Auf dich zugeschnitten:</b> Du scannst deine zurückbekommenen, korrigierten Schulaufgaben ein. AbiTool erkennt daraus deine <b>typischen Fehlerschwerpunkte</b> (z. B. Operator-Handling, Beleg- oder Materialbezug, Fachbegriffe, Argumentationsstruktur) und steuert die nächsten Übungen gezielt darauf zu – du arbeitest also genau an dem, was dir in den Prüfungen wirklich Punkte kostet, statt an dem, was du eh schon kannst.</li>
-        <li><b>Privat:</b> Alle Daten bleiben lokal auf deinem Gerät – keine Cloud, kein Konto.</li>
-      </ul></details>
-    </div>
-    <div class="card">
-      <details><summary style="cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px"><span style="font-size:17px;font-weight:800;letter-spacing:-.02em">So richtest du AbiTool ein</span><span style="font-size:12px;color:var(--muted);font-weight:700">– zum Aufklappen</span></summary>
-      <div class="hint" style="margin:8px 0 8px">In fünf Schritten – bitte <b>in dieser Reihenfolge</b>, damit alles dem richtigen Fach zugeordnet wird. Alle Daten bleiben lokal auf diesem Gerät:</div>
-      <ol style="margin:0;padding-left:20px;font-size:13.5px;line-height:1.55;color:var(--ink)">
-        <li><b>Claude-Schlüssel eintragen</b> – unten bei „Claude als Motor". Nötig für die Übungen und um Fotos/PDFs auszulesen. (Das reine Laden der Archiv-Datei braucht ihn nicht.)</li>
-        <li><b>Fächer anlegen</b> – unten bei „Meine Fächer" auf <b>„Antons Profil"</b> tippen oder unten „Fächerplan (Foto/PDF)" importieren. Danach die 5 <b>„Abi"</b>-Fächer, das <b>„LF"</b> und bei Deutsch/Mathe die Kategorie markieren. <b>Immer zuerst die Fächer</b> – die nächsten Schritte bauen darauf auf.</li>
-        <li><b>Bisherige Noten</b> – einzeln über <b>„Neue Note eintragen"</b> (jederzeit, wenn du eine Note bekommst) oder per <b>„Noten importieren (Foto/PDF)"</b> (bei „Claude als Motor").</li>
-        <li><b>Klausurplan</b> – im Reiter <b>„Prüfungsplan"</b> eintragen, oder unten als <b>Foto/Screenshot oder PDF</b> importieren.</li>
-        <li><b>Aufgaben-Archiv laden</b> – unten bei „Echtes Aufgabenmaterial" auf <b>„Archiv-Datei laden (ISB-Set)"</b>. Die Aufgaben verteilen sich automatisch auf die passenden Fächer.</li>
-      </ol>
-      <div class="hint" style="margin:10px 0 4px">Optionale Importe – <b>Foto/Screenshot oder PDF</b> (brauchst du nur, wenn du nicht manuell eintragen willst):</div>
-      <div class="row-btns">
-        <button class="btn ghost sm" onclick="document.getElementById('impFaecher').click()">Fächerplan (Foto/PDF)</button>
-        <button class="btn ghost sm" onclick="document.getElementById('impPlan').click()">Klausurplan (Foto/PDF)</button>
-      </div>
-      <input type="file" id="impFaecher" accept="image/*,application/pdf" multiple style="display:none">
-      <input type="file" id="impPlan" accept="image/*,application/pdf" multiple style="display:none">
-      <div id="stFaecher" style="margin-top:8px"></div>
-      <div id="stPlan" style="margin-top:8px"></div>
-      </details>
+  <!-- ===== TAB: STRECKE (Notenstand & Noten) ===== -->
+  <div class="tab hide" id="tab-strecke">
+    <div class="card" style="background:var(--grad);color:#fff">
+      <div class="nextlbl" style="color:#fff;opacity:.9">Deine Strecke · Notenstand</div>
+      <div class="note-big" style="margin:4px 0 2px"><span class="n" id="streckeNote">–</span> <span class="sub" id="streckePunkte"></span></div>
+      <div style="font-size:13px;opacity:.95;font-weight:600" id="streckeInfo">Trag deine Noten ein – Schnitt und Hochrechnung erscheinen hier.</div>
     </div>
 
     <div class="card">
       <div class="section-title">
-        <div><h2>Meine Fächer</h2><div class="hint">Wähle deine Fächer und trag die Halbjahres-Notenpunkte (0–15) ein. Markiere mit „Abi" deine 5 Abiturprüfungsfächer und mit „LF" dein Leistungsfach – beim Abiturfach erscheint ein Feld für das Abiturergebnis.</div></div>
+        <div><h2>Meine Fächer</h2><div class="hint">Deine Fächer mit den Halbjahres-Notenpunkten (0–15). Markiere mit „Abi" deine 5 Abiturprüfungsfächer und mit „LF" dein Leistungsfach. Tippe „Einzelnoten anzeigen", um einzelne Noten zu sehen, zu löschen oder zu beschriften.</div></div>
       </div>
       <div id="abiHint" class="result-line warn hide" style="margin-bottom:12px"></div>
       <div id="subjList"></div>
@@ -374,6 +346,45 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
       </div>
       <div id="wsemOut" class="result-line warn" style="margin-top:8px"></div>
     </div>
+  </div>
+
+  <!-- ===== TAB: DATEN ===== -->
+  <div class="tab hide" id="tab-daten">
+    <div class="card">
+      <h2>Was kann AbiTool?</h2>
+      <div class="hint" style="margin-bottom:0">Dein persönlicher Begleiter fürs bayerische G9-Abitur – damit du jederzeit weißt, wo du stehst und gezielt das Richtige übst.</div>
+      <details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:var(--primary);font-weight:700;list-style:none">Was bringt es dir? (kurz erklärt)</summary>
+      <ul style="margin:8px 0 0;padding-left:20px;font-size:13.5px;line-height:1.6;color:var(--ink)">
+        <li><b>Noten & Schnitt im Blick:</b> Du trägst deine Leistungen ein, AbiTool berechnet die Halbjahresleistungen (Schulaufgabe : kleine = 1:1), deine Einbringung und deinen voraussichtlichen Abischnitt – nach den offiziellen bayerischen Regeln.</li>
+        <li><b>Was-wäre-wenn:</b> Spiel Abiturprüfungen und Noten durch und sieh sofort, wie sich dein Schnitt bewegt – und welche Note du wo noch brauchst.</li>
+        <li><b>Prüfungsplan:</b> Alle deine Schulaufgaben mit Termin und Stoff an einem Ort, immer im Blick, was als Nächstes dran ist.</li>
+        <li><b>Gezielt üben mit echten Aufgabentypen:</b> Zu jedem Fach die echten Aufgabenformen (nach LehrplanPLUS/ISB). Aus echtem Material – z. B. den ISB-Beispielaufgaben – werden passende Übungen, damit du die Aufgabenformen schon kennst, bevor sie in der Schulaufgabe drankommen.</li>
+        <li><b>Auf dich zugeschnitten:</b> Du scannst deine zurückbekommenen, korrigierten Schulaufgaben ein. AbiTool erkennt daraus deine <b>typischen Fehlerschwerpunkte</b> (z. B. Operator-Handling, Beleg- oder Materialbezug, Fachbegriffe, Argumentationsstruktur) und steuert die nächsten Übungen gezielt darauf zu – du arbeitest also genau an dem, was dir in den Prüfungen wirklich Punkte kostet, statt an dem, was du eh schon kannst.</li>
+        <li><b>Privat:</b> Alle Daten bleiben lokal auf deinem Gerät – keine Cloud, kein Konto.</li>
+      </ul></details>
+    </div>
+    <div class="card">
+      <details><summary style="cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px"><span style="font-size:17px;font-weight:800;letter-spacing:-.02em">So richtest du AbiTool ein</span><span style="font-size:12px;color:var(--muted);font-weight:700">– zum Aufklappen</span></summary>
+      <div class="hint" style="margin:8px 0 8px">In fünf Schritten – bitte <b>in dieser Reihenfolge</b>, damit alles dem richtigen Fach zugeordnet wird. Alle Daten bleiben lokal auf diesem Gerät:</div>
+      <ol style="margin:0;padding-left:20px;font-size:13.5px;line-height:1.55;color:var(--ink)">
+        <li><b>Claude-Schlüssel eintragen</b> – unten bei „Claude als Motor". Nötig für die Übungen und um Fotos/PDFs auszulesen. (Das reine Laden der Archiv-Datei braucht ihn nicht.)</li>
+        <li><b>Fächer anlegen</b> – im Reiter <b>„Strecke"</b> auf <b>„Antons Profil"</b> tippen, oder hier unten „Fächerplan (Foto/PDF)" importieren. Danach im Reiter „Strecke" die 5 <b>„Abi"</b>-Fächer, das <b>„LF"</b> und bei Deutsch/Mathe die Kategorie markieren. <b>Immer zuerst die Fächer</b> – die nächsten Schritte bauen darauf auf.</li>
+        <li><b>Bisherige Noten</b> – im Reiter <b>„Strecke"</b> über <b>„Neue Note eintragen"</b> (jederzeit, wenn du eine Note bekommst) oder hier unten per <b>„Noten importieren (Foto/PDF)"</b> (bei „Claude als Motor").</li>
+        <li><b>Klausurplan</b> – im Reiter <b>„Prüfungsplan"</b> eintragen, oder unten als <b>Foto/Screenshot oder PDF</b> importieren.</li>
+        <li><b>Aufgaben-Archiv laden</b> – unten bei „Echtes Aufgabenmaterial" auf <b>„Archiv-Datei laden (ISB-Set)"</b>. Die Aufgaben verteilen sich automatisch auf die passenden Fächer.</li>
+      </ol>
+      <div class="hint" style="margin:10px 0 4px">Optionale Importe – <b>Foto/Screenshot oder PDF</b> (brauchst du nur, wenn du nicht manuell eintragen willst):</div>
+      <div class="row-btns">
+        <button class="btn ghost sm" onclick="document.getElementById('impFaecher').click()">Fächerplan (Foto/PDF)</button>
+        <button class="btn ghost sm" onclick="document.getElementById('impPlan').click()">Klausurplan (Foto/PDF)</button>
+      </div>
+      <input type="file" id="impFaecher" accept="image/*,application/pdf" multiple style="display:none">
+      <input type="file" id="impPlan" accept="image/*,application/pdf" multiple style="display:none">
+      <div id="stFaecher" style="margin-top:8px"></div>
+      <div id="stPlan" style="margin-top:8px"></div>
+      </details>
+    </div>
+
 
     <div class="card">
       <h2>Daten sichern &amp; laden</h2>
@@ -443,16 +454,8 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
     </div>
 
     <div class="card">
-      <h2>Eingebrachte Halbjahresleistungen</h2>
-      <div class="hint">Diese 40 (beste zulässige Auswahl) zählen für Block I. Schwache, die du noch hebeln kannst, sind rot.</div>
-      <div class="list-sel" id="selList">—</div>
-      <div class="result-line warn hide" id="selWarn"></div>
-    </div>
-
-    <div class="card">
-      <h2>Einbringen &amp; Streichen – wo lohnt sich Mühe?</h2>
-      <div class="hint">Jede Halbjahresleistung wird geprüft: zählt sie in die besten 40, oder wird sie gestrichen? Bei gestrichenen, an denen sich auch mit Verbesserung nichts ändert, musst du dir keine Mühe mehr geben.</div>
-      <div id="streichBox" style="margin-top:10px">—</div>
+      <h2>Was zählt – und wo Üben lohnt</h2>
+      <div id="streichBox" style="margin-top:6px">—</div>
     </div>
 
     <div class="card">
@@ -486,7 +489,7 @@ textarea.say:focus{outline:none;border-color:var(--primary)}
 
   <div class="note-foot">
     Rechenregeln 1:1 nach dem offiziellen Qualifikationssystem G9 (KM Bayern, Stand 17.11.2025).
-    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v7.1 · Einrichten</b>
+    Privates Projekt · alle Daten bleiben lokal auf diesem Gerät · keine Cloud, kein ByCS. · <b>Antons AbiTool · Demo v7.6 · Einrichten</b>
     <details class="src"><summary>Quellen & Hinweis zur Verlässlichkeit</summary>
       <div>
         Block I/II, Umrechnung, Einbringung & Optionsregel:<br>
@@ -519,7 +522,7 @@ const Engine = (function(){
   function waehleBlockI(faecher){
     const ZIEL=40;
     const fsC=faecher.filter(f=>f.kategorie==='fs').length, nwC=faecher.filter(f=>f.kategorie==='nw').length;
-    const cap=f=>((f.kategorie==='sport'&&!f.istLF)||f.kategorie==='zusatz')?3:4;
+    const cap=f=>((f.kategorie==='sport'&&!f.istLF)||f.kategorie==='zusatz'||f.kategorie==='vk')?3:4;
     const all4=f=>f.istAbiturfach||f.kategorie==='d'||f.kategorie==='m'||f.kategorie==='wsem'||f.istLF||(f.kategorie==='fs'&&fsC===1)||(f.kategorie==='nw'&&nwC===1);
     let pflicht=[],optBest=[],rest=[],poolFS=[],poolNW=[];
     faecher.forEach(f=>{
@@ -532,7 +535,8 @@ const Engine = (function(){
       if(all4(f)){pflicht=pflicht.concat(hjl);return;}
       if(f.kategorie==='fs'&&fsC>1){poolFS=poolFS.concat(hjl);return;}
       if(f.kategorie==='nw'&&nwC>1){poolNW=poolNW.concat(hjl);return;}
-      optBest=optBest.concat(hjl.slice(0,3));rest=rest.concat(hjl.slice(3));   /* übrige Fächer: 1 streichbar */
+      if((f.kategorie==='sport'&&!f.istLF)||f.kategorie==='zusatz'||f.kategorie==='vk'){rest=rest.concat(hjl);}   /* Sport(kein LF)/Zusatz/Vertiefungskurs: höchstens 3, frei wählbar (VK-Kopplung konservativ: nicht erzwungen) */
+      else{optBest=optBest.concat(hjl.slice(0,3));rest=rest.concat(hjl.slice(3));}   /* übrige Fächer: 1 streichbar (beste 3 verpflichtend) */
     });
     const poolSplit=p=>{p.sort((a,b)=>b.punkte-a.punkte);pflicht=pflicht.concat(p.slice(0,4));optBest=optBest.concat(p.slice(4));};
     if(poolFS.length)poolSplit(poolFS);   /* Fremdsprachen-Pool: beste 4 verpflichtend */
@@ -762,7 +766,14 @@ function renderAbi(){
 }
 function renderSubj(){
   const c=document.getElementById('subjList');c.innerHTML='';
-  state.faecher.forEach((f,i)=>{
+  /* Anzeige-Reihenfolge nach Wichtigkeit: Leistungsfach ganz oben, dann Abiturfächer, dann übrige.
+     data-i bleibt der echte Index in state.faecher – nur die Darstellung wird sortiert. */
+  const prio=f=>f.istLF?0:(f.istAbiturfach?1:2);
+  const order=state.faecher.map((f,i)=>i)
+    .filter(i=>state.faecher[i].kategorie!=='wsem')
+    .sort((a,b)=>prio(state.faecher[a])-prio(state.faecher[b]));
+  order.forEach(i=>{
+    const f=state.faecher[i];
     if(f.kategorie==='wsem')return; /* W-Seminar hat eine eigene Karte */
     const d=document.createElement('div');d.className='subj';
     const opts=KAT.map(k=>`<option value="${k[0]}" ${f.kategorie===k[0]?'selected':''}>${k[1]}</option>`).join('');
@@ -932,6 +943,15 @@ function recompute(){
     badge.className='badge prog';badge.textContent='Prognose (Hochrechnung)';
   }
 
+  // Notenstand im Strecke-Reiter spiegeln (zeigt denselben Schnitt wie der Kopf)
+  (function(){
+    const sn=document.getElementById('streckeNote'),sp=document.getElementById('streckePunkte'),si=document.getElementById('streckeInfo');
+    const leer=(r.gesamtpunkte===0);
+    if(sn)sn.textContent=document.getElementById('heroNote').textContent;
+    if(sp)sp.textContent=leer?'':('· '+document.getElementById('heroPunkte').textContent+' / 900 P');
+    if(si)si.textContent=leer?'Trag deine Noten ein – Schnitt und Hochrechnung erscheinen hier.':sub.textContent;
+  })();
+
   // Ergebnis-Tab
   document.getElementById('bIpkt').textContent=r.blockI.punkte;
   document.getElementById('bIIpkt').textContent=r.blockII.punkte;
@@ -949,13 +969,6 @@ function recompute(){
     `<div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:700;padding:7px 0;border-bottom:1px solid var(--line)">
       <span>${c.erfuellt?'✓':'○'} ${c.label}</span></div>`).join('');
 
-  // eingebrachte HJL
-  const sl=document.getElementById('selList');
-  if(r.blockI.hjl.length===0){sl.innerHTML='Noch keine Halbjahresleistungen erfasst.';}
-  else{const sorted=r.blockI.hjl.slice().sort((a,b)=>a.punkte-b.punkte);
-    sl.innerHTML=sorted.map(h=>`<span class="chip ${h.punkte<=6?'low':''}">${esc(h.fach)} ${h.abschnitt}: ${h.punkte}</span>`).join('');}
-  const sw=document.getElementById('selWarn');
-  if(r.blockI.hinweis){sw.classList.remove('hide');sw.textContent=r.blockI.hinweis;}else sw.classList.add('hide');
 
   renderWennDann(r);renderZiel();renderLohnt(r);renderStreich(r);
   return r;
@@ -976,23 +989,33 @@ function renderStreich(){
   (state.faecher||[]).filter(function(f){return f.kategorie!=='wsem';}).forEach(function(f){
     let cells='';
     ABS2.forEach(function(lbl,i){
+      if(i>=belegtOf(f))return;
       const raw=f.hjl[i];if(raw===''||raw==null||isNaN(raw))return;
       const p=+raw,drin=!!sel[f.id+'|'+lbl];let tag,col;
-      if(drin){tag='zählt';col=['#E3F0E8','#1A5A3E'];}
+      if(drin){tag='zählt für deinen Schnitt';col=['#E3F0E8','#1A5A3E'];}
       else{
         const maxGain=simSum(f.id,i,15)-baseSum;
-        if(maxGain<=0){tag='gestrichen – keine Mühe nötig';col=['#EDEDE6','#7A7F73'];}
+        if(maxGain<=0){tag='zählt nicht – Verbessern ändert nichts';col=['#EDEDE6','#7A7F73'];}
         else{let schwelle=null;for(let v=p+1;v<=15;v++){if(simSum(f.id,i,v)-baseSum>0){schwelle=v;break;}}
-          tag=schwelle!=null?('zählt erst ab '+schwelle+' P'):'gestrichen';col=['#FBEFD9','#8A6D2E'];}
+          tag=schwelle!=null?('zählt erst ab '+schwelle+' Punkten'):'zählt nicht';col=['#FBEFD9','#8A6D2E'];}
       }
-      cells+='<div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:3px 0"><span>'+lbl+': <b>'+p+' P</b></span><span style="background:'+col[0]+';color:'+col[1]+';border-radius:7px;padding:1px 8px;font-size:11px;font-weight:700">'+tag+'</span></div>';
+      cells+='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;padding:3px 0"><span>'+lbl+': <b>'+p+' P</b></span><span style="background:'+col[0]+';color:'+col[1]+';border-radius:7px;padding:1px 8px;font-size:11px;font-weight:700;white-space:nowrap">'+tag+'</span></div>';
     });
     if(cells)rows+='<div style="padding:7px 0;border-bottom:1px solid var(--line)"><div style="font-weight:700;font-size:13px;margin-bottom:2px">'+esc(f.name)+'</div>'+cells+'</div>';
   });
-  if(!rows){box.innerHTML='<div class="hint" style="margin:0">Trag Halbjahresleistungen ein – dann zeige ich dir, welche zählen und wo sich Mühe lohnt.</div>';return;}
-  box.innerHTML=rows+'<div class="hint" style="margin-top:8px">'+(baseN>=40
-    ?'„gestrichen – keine Mühe nötig" heißt: Diese Leistung zählt nicht für den Schnitt, und auch eine bessere Note dort würde nichts ändern. „zählt erst ab X" heißt: erst ab dieser Punktzahl käme sie in die Wertung.'
+  if(!rows){box.innerHTML='<div class="hint" style="margin:0">Trag Halbjahresleistungen ein – dann zeige ich dir, welche zählen und wo sich Üben lohnt.</div>';return;}
+  const intro='<div class="hint" style="margin:0 0 6px">Fürs Abitur zählen nur deine <b>besten 40</b> Halbjahresleistungen. Hier siehst du je Note, ob sie dazugehört – und ob Üben dort etwas bringt:</div>';
+  const legende='<div style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px">'
+    +'<span style="background:#E3F0E8;color:#1A5A3E;border-radius:7px;padding:2px 8px;font-size:11px;font-weight:700">zählt</span>'
+    +'<span style="background:#FBEFD9;color:#8A6D2E;border-radius:7px;padding:2px 8px;font-size:11px;font-weight:700">zählt erst ab …</span>'
+    +'<span style="background:#EDEDE6;color:#7A7F73;border-radius:7px;padding:2px 8px;font-size:11px;font-weight:700">zählt nicht</span></div>';
+  const foot='<div class="hint" style="margin-top:8px">'+(baseN>=40
+    ?'<b>Grau</b>: zählt nicht, und auch eine bessere Note dort ändert nichts. <b>Gelb</b>: ab der genannten Punktzahl würde die Note eine schwächere verdrängen und zählen.'
     :'Erst '+baseN+' von 40 möglichen Einbringungen erfasst – noch wird nichts gestrichen, jede Leistung zählt.')+'</div>';
+  const warn=base.hinweis?'<div class="result-line warn" style="margin-top:8px">'+esc(base.hinweis)+'</div>':'';
+  const hatVK=(state.faecher||[]).some(f=>f.kategorie==='vk');
+  const vkHint=hatVK?'<div class="hint" style="margin-top:8px">Hinweis Vertiefungskurs: Die genaue Einbringungs-Kopplung (VK + 2. Naturwissenschaft bzw. 2. Fremdsprache) ist individuell. AbiTool rechnet hier <b>konservativ</b> (VK frei wählbar, höchstens 3) – vor dem Abitur einmal mit der Oberstufenkoordination bestätigen.</div>':'';
+  box.innerHTML=intro+legende+rows+foot+vkHint+warn;
 }
 
 /* ===== Was-wäre-wenn ===== */
@@ -1117,6 +1140,14 @@ function loadBeispiel(){
   if(deu){
     const s=slot(deu.id,'12/2');if(s){s.datum='2026-06-17';s.muendlich=false;s.scope='Drama (Pflichtlektüre) + Erörterung';s.themen=['drama','eroe'];}   // nächste echte SA: Mittwoch
   }
+  /* Beispiel-Einzelnoten (mit Art-Notiz) zum Testen von „Einzelnoten anzeigen", Löschen & Art-Feld */
+  if(eng){eng.noten=[
+    {sa:13,klein:[13,12],kleinNotiz:['Referat','mündliche Note']},
+    {sa:12,klein:[11,13],kleinNotiz:['Vokabeltest','Ausfrage']},{},{}];}
+  const ges=state.faecher.find(f=>(f.name||'').toLowerCase().indexOf('geschichte')>-1);
+  if(ges){ges.noten=[
+    {sa:9,klein:[8,10],kleinNotiz:['Stegreifaufgabe','Referat']},
+    {sa:8,klein:[7],kleinNotiz:['mündliche Note']},{},{}];}
   save();renderAll();switchTab('heute');toast('Beispiel geladen – tippe oben „Üben"');
 }
 function clearProfile(){if(confirm('Neues, leeres Profil anlegen? Aktuelle Eingaben werden ersetzt.')){state=emptyState();save();renderAll();toast('Neues Profil');}}
@@ -2504,7 +2535,7 @@ if('serviceWorker' in navigator){
   /* network-first: online IMMER die neueste Version, offline aus dem Cache.
      Behebt das „ich sehe meine Änderungen nicht"-Problem des alten cache-first-SW. */
   const sw=`
-    const C='abiloop-v47';
+    const C='abiloop-v52';
     self.addEventListener('install',e=>self.skipWaiting());
     self.addEventListener('activate',e=>e.waitUntil((async()=>{
       const keys=await caches.keys();
